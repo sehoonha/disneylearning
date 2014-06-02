@@ -7,215 +7,215 @@
 
 namespace disneysimple {
 namespace gui {
-    Window::Window()
-        : QMainWindow()
-        , MEMBER_INIT_NULL(timerRender)
-        , MEMBER_INIT_NULL(timerIdle)
-        , MEMBER_INIT_NULL(gl)
-    {
-        srand( (unsigned int) time (NULL) );
-        initApp();
-        initUI();
-        initTimer();
-        setCenter();
+Window::Window()
+    : QMainWindow()
+    , MEMBER_INIT_NULL(timerRender)
+    , MEMBER_INIT_NULL(timerIdle)
+    , MEMBER_INIT_NULL(gl)
+{
+    srand( (unsigned int) time (NULL) );
+    initApp();
+    initUI();
+    initTimer();
+    setCenter();
 
-        set_wasRunning(true);
-    }
+    set_wasRunning(true);
+}
 
-    Window::~Window() {
-        MEMBER_RELEASE_PTR(timerRender);
-        MEMBER_RELEASE_PTR(timerIdle);
-        MEMBER_RELEASE_PTR(gl);
-    }
+Window::~Window() {
+    MEMBER_RELEASE_PTR(timerRender);
+    MEMBER_RELEASE_PTR(timerIdle);
+    MEMBER_RELEASE_PTR(gl);
+}
 
-    void Window::initApp() {
-        // set_app( new Application() );
-        // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
-        // // set_commander( new Commander(app()) );
-        LOG_INFO << FUNCTION_NAME() << " OK";
-    }
+void Window::initApp() {
+    // set_app( new Application() );
+    // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
+    // // set_commander( new Commander(app()) );
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
 
-    void Window::initUI() {
-        QWidget* widget = new QWidget;
-        setCentralWidget(widget);
-        QHBoxLayout* layout = new QHBoxLayout();
+void Window::initUI() {
+    QWidget* widget = new QWidget;
+    setCentralWidget(widget);
+    QHBoxLayout* layout = new QHBoxLayout();
 
-        set_gl( new GLWidget(this) );
-        layout->addWidget( gl() );
+    set_gl( new GLWidget(this) );
+    layout->addWidget( gl() );
 
-        widget->setLayout(layout);
+    widget->setLayout(layout);
 
-        createActions();
-        createToolbars();
-        set_statusbar( statusBar() );
-        statusbar()->showMessage("Hi there!");
-        createMenus();
+    createActions();
+    createToolbars();
+    set_statusbar( statusBar() );
+    statusbar()->showMessage("Hi there!");
+    createMenus();
 
-        LOG_INFO << FUNCTION_NAME() << " OK";
-    }
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
 
-    void Window::initTimer() {
-        set_timerRender( new QTimer(this) );
-        connect(timerRender(), SIGNAL(timeout()), this, SLOT(onTimerRender()));
-        timerRender()->start(30);
+void Window::initTimer() {
+    set_timerRender( new QTimer(this) );
+    connect(timerRender(), SIGNAL(timeout()), this, SLOT(onTimerRender()));
+    timerRender()->start(30);
 
-        set_timerIdle( new QTimer(this) );
-        connect(timerIdle(), SIGNAL(timeout()), this, SLOT(onTimerIdle()));
-        timerIdle()->start(0);
+    set_timerIdle( new QTimer(this) );
+    connect(timerIdle(), SIGNAL(timeout()), this, SLOT(onTimerIdle()));
+    timerIdle()->start(0);
 
-        LOG_INFO << FUNCTION_NAME() << " OK";
-    }
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
 
-    void Window::setCenter() {
-        QWidget* widget = this;
-        QSize size = widget->sizeHint();
-        QDesktopWidget* desktop = QApplication::desktop();
-        int width = desktop->width();
-        int height = desktop->height();
-        int mw = size.width();
-        int mh = size.height();
+void Window::setCenter() {
+    QWidget* widget = this;
+    QSize size = widget->sizeHint();
+    QDesktopWidget* desktop = QApplication::desktop();
+    int width = desktop->width();
+    int height = desktop->height();
+    int mw = size.width();
+    int mh = size.height();
 
-        int centerW = 0;
-        int centerH = 0;
-        widget->move(centerW, centerH);
+    int centerW = 0;
+    int centerH = 0;
+    widget->move(centerW, centerH);
 
-        LOG_INFO << FUNCTION_NAME() << " OK";
-    }
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
 
-    void Window::createActions() {
-        createAction("Play")->setCheckable(true);
-        createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
-    }
+void Window::createActions() {
+    createAction("Play")->setCheckable(true);
+    createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
+}
 
-    QAction* Window::createAction(const char* _name) {
-        std::string name(_name);
-        std::string method = "1onAction" + name + "()"; // SLOT(macro)
-        boost::erase_all(method, " ");
-        // LOG_INFO << "name = " << name << " method = " << method;
-        QAction* action = new QAction(tr(name.c_str()), this);
-        connect(action, SIGNAL(triggered()), this, method.c_str());
-        actions[name] = action;
-        return action;
-    }
+QAction* Window::createAction(const char* _name) {
+    std::string name(_name);
+    std::string method = "1onAction" + name + "()"; // SLOT(macro)
+    boost::erase_all(method, " ");
+    // LOG_INFO << "name = " << name << " method = " << method;
+    QAction* action = new QAction(tr(name.c_str()), this);
+    connect(action, SIGNAL(triggered()), this, method.c_str());
+    actions[name] = action;
+    return action;
+}
     
-    void Window::createToolbars() {
-        QToolBar* toolbar = addToolBar(tr("Playback"));
-        set_labelTime( new QLabel(tr("----")) );
+void Window::createToolbars() {
+    QToolBar* toolbar = addToolBar(tr("Playback"));
+    set_labelTime( new QLabel(tr("----")) );
 
-        toolbar->addWidget( labelTime() );
-        toolbar->addAction( actions["Play"] );
+    toolbar->addWidget( labelTime() );
+    toolbar->addAction( actions["Play"] );
 
-        set_sliderFrame( new QSlider(Qt::Horizontal) );
-        sliderFrame()->setMaximumSize(QSize(200, 30));
-        toolbar->addWidget( sliderFrame() );
-        connect( sliderFrame(), SIGNAL(valueChanged(int)),
-                 this, SLOT(onSliderFrameChanged(int)) );
-
-
-        LOG_INFO << FUNCTION_NAME() << " OK";
-
-    }
+    set_sliderFrame( new QSlider(Qt::Horizontal) );
+    sliderFrame()->setMaximumSize(QSize(200, 30));
+    toolbar->addWidget( sliderFrame() );
+    connect( sliderFrame(), SIGNAL(valueChanged(int)),
+             this, SLOT(onSliderFrameChanged(int)) );
 
 
-    void Window::createMenus() {
-        QMenu* menuFile = menuBar()->addMenu(tr("File"));
-        menuFile->addAction( actions["Load"] );
+    LOG_INFO << FUNCTION_NAME() << " OK";
+
+}
+
+
+void Window::createMenus() {
+    QMenu* menuFile = menuBar()->addMenu(tr("File"));
+    menuFile->addAction( actions["Load"] );
      
-        LOG_INFO << FUNCTION_NAME() << " OK";
-    }
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
     
 
-    void Window::onTimerRender() {
-        gl()->updateGL();
+void Window::onTimerRender() {
+    gl()->updateGL();
+}
+
+void Window::onTimerIdle() {
+    // updateInfo();
+
+}
+
+void Window::onSliderFrameChanged(int index) {
+    // app()->replayUpdateToFrame(index);
+}
+
+void Window::onActionPlay() {
+    LOG_INFO << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionLoad() {
+    QString qfilename = QFileDialog::getOpenFileName(
+        this, tr("Load replay from json"), tr("../data/replay/"), tr("Json Files (*.json)"));
+    std::string filename = qfilename.toStdString();
+    if (filename.length() == 0) {
+        LOG_WARNING << "User cancelled loading";
+        return;
     }
+    // LOG_INFO << "Filename = [" << filename << "]";
+}
 
-    void Window::onTimerIdle() {
-        // updateInfo();
 
+void Window::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_U) {
+        // LOG_INFO << FUNCTION_NAME() << " : U";
+        // app()->up();
+        return;
     }
-
-    void Window::onSliderFrameChanged(int index) {
-        // app()->replayUpdateToFrame(index);
+    if (event->key() == Qt::Key_D) {
+        // LOG_INFO << FUNCTION_NAME() << " : D";
+        // app()->down();
+        return;
     }
-
-    void Window::onActionPlay() {
-        LOG_INFO << FUNCTION_NAME() << " OK";
+    if (event->key() == Qt::Key_P) {
+        // LOG_INFO << FUNCTION_NAME() << " : P";
+        // app()->perturb();
+        return;
     }
+}
 
-    void Window::onActionLoad() {
-        QString qfilename = QFileDialog::getOpenFileName(
-            this, tr("Load replay from json"), tr("../data/replay/"), tr("Json Files (*.json)"));
-        std::string filename = qfilename.toStdString();
-        if (filename.length() == 0) {
-            LOG_WARNING << "User cancelled loading";
-            return;
-        }
-        // LOG_INFO << "Filename = [" << filename << "]";
+int captureRate = 0;
+int captureID = 0;
+void Window::takeCapture() {
+    // if (!actPlay()->isChecked() && !actAnim()->isChecked()) {
+    //     return;
+    // }
+    // if (!actCapture()->isChecked()) {
+    //     return;
+    // }
+    captureRate++;
+    if (captureRate % 10 != 1) {
+        return;
     }
-
-
-    void Window::keyPressEvent(QKeyEvent* event) {
-        if (event->key() == Qt::Key_U) {
-            // LOG_INFO << FUNCTION_NAME() << " : U";
-            // app()->up();
-            return;
-        }
-        if (event->key() == Qt::Key_D) {
-            // LOG_INFO << FUNCTION_NAME() << " : D";
-            // app()->down();
-            return;
-        }
-        if (event->key() == Qt::Key_P) {
-            // LOG_INFO << FUNCTION_NAME() << " : P";
-            // app()->perturb();
-            return;
-        }
-    }
-
-    int captureRate = 0;
-    int captureID = 0;
-    void Window::takeCapture() {
-        // if (!actPlay()->isChecked() && !actAnim()->isChecked()) {
-        //     return;
-        // }
-        // if (!actCapture()->isChecked()) {
-        //     return;
-        // }
-        captureRate++;
-        if (captureRate % 10 != 1) {
-            return;
-        }
         
-        // std::string filename = (boost::format("./captures/capture%04d.png") % captureID).str();
-        std::string filename = (boost::format("./captures/capture.%04d.png")
-                                % captureID).str();
-        takeScreenshot(filename.c_str());
-        captureID++;
+    // std::string filename = (boost::format("./captures/capture%04d.png") % captureID).str();
+    std::string filename = (boost::format("./captures/capture.%04d.png")
+                            % captureID).str();
+    takeScreenshot(filename.c_str());
+    captureID++;
 
-    }
+}
 
-    void Window::takeScreenshot(const char* const filename) {
-        // QPixmap pixmap;
-        // pixmap = QPixmap::grabWindow(this->winId());
-        // // pixmap = pixmap.scaled(1200, 800);
-        // // pixmap.grabWidget(this->gl());
-        // LOG_INFO << "size = " << pixmap.width() << " x " << pixmap.height();
+void Window::takeScreenshot(const char* const filename) {
+    // QPixmap pixmap;
+    // pixmap = QPixmap::grabWindow(this->winId());
+    // // pixmap = pixmap.scaled(1200, 800);
+    // // pixmap.grabWidget(this->gl());
+    // LOG_INFO << "size = " << pixmap.width() << " x " << pixmap.height();
 
-        // pixmap.save(tr(filename), "png");
-        // QImage img(gl()->size(), QImage::Format_RGB32);
-        // QPainter painter(&img);
-        // painter.setPen(Qt::blue);
-        // painter.setFont(QFont("Arial", 30));
-        // painter.drawText(rect(), Qt::AlignCenter, "Qt");
+    // pixmap.save(tr(filename), "png");
+    // QImage img(gl()->size(), QImage::Format_RGB32);
+    // QPainter painter(&img);
+    // painter.setPen(Qt::blue);
+    // painter.setFont(QFont("Arial", 30));
+    // painter.drawText(rect(), Qt::AlignCenter, "Qt");
 
-        QImage img = gl()->grabFrameBuffer();
-        img = img.convertToFormat(QImage::Format_ARGB32);
-        QRect rect(0, 10, 1280, 720);
-        QImage sub = img.copy(rect);
-        img = sub;
-        img.save(filename);
-        LOG_INFO << FUNCTION_NAME() << " : [" << filename << "]";
-    }
+    QImage img = gl()->grabFrameBuffer();
+    img = img.convertToFormat(QImage::Format_ARGB32);
+    QRect rect(0, 10, 1280, 720);
+    QImage sub = img.copy(rect);
+    img = sub;
+    img.save(filename);
+    LOG_INFO << FUNCTION_NAME() << " : [" << filename << "]";
+}
 
 } // namespace gui
 } // namespace disneysimple
