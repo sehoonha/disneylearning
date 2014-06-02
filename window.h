@@ -19,6 +19,9 @@ namespace gui {
 class GLWidget;
 // class Commander;
 } // namespace gui
+namespace sim {
+class Simulation;
+} // namespace sim
 } // namespace disneysimple
 
 
@@ -56,6 +59,8 @@ protected:
     void takeCapture();
     void takeScreenshot(const char* const filename);
 protected:
+    MEMBER_PTR(sim::Simulation*, sim);
+
     MEMBER_PTR(GLWidget*, gl);
     MEMBER_PTR(QTimer*, timerRender);
     MEMBER_PTR(QTimer*, timerIdle);

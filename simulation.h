@@ -25,6 +25,9 @@ public:
     void control();
     void step();
 
+    Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
+    void integrate();
+
 protected:
     Eigen::VectorXd mState;
     Eigen::VectorXd mTorque;

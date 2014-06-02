@@ -4,6 +4,7 @@
 
 #include "glwidget.h"
 #include "cppcommon.h"
+#include "simulation.h"
 
 namespace disneysimple {
 namespace gui {
@@ -29,6 +30,7 @@ Window::~Window() {
 }
 
 void Window::initApp() {
+    set_sim(new sim::Simulation());
     // set_app( new Application() );
     // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
     // // set_commander( new Commander(app()) );

@@ -1,6 +1,10 @@
 #ifndef APP_CPPCOMMON_H
 #define APP_CPPCOMMON_H
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 ////////////////////////////////////////////////////////////
 // Boost Libraries
 #include <boost/format.hpp>
