@@ -62,6 +62,7 @@ target_link_libraries(disneysimple ${OPENGL_LIBRARIES})
 target_link_libraries(disneysimple ${GLUT_LIBRARIES})
 target_link_libraries(disneysimple ${QT_LIBRARIES})
 target_link_libraries(disneysimple ${Boost_LIBRARIES})
+target_link_libraries(disneysimple glog)
 
 set_target_properties(disneysimple PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

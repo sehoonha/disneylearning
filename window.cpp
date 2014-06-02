@@ -32,7 +32,7 @@ void Window::initApp() {
     // set_app( new Application() );
     // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
     // // set_commander( new Commander(app()) );
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::initUI() {
@@ -51,7 +51,7 @@ void Window::initUI() {
     statusbar()->showMessage("Hi there!");
     createMenus();
 
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::initTimer() {
@@ -63,7 +63,7 @@ void Window::initTimer() {
     connect(timerIdle(), SIGNAL(timeout()), this, SLOT(onTimerIdle()));
     timerIdle()->start(0);
 
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::setCenter() {
@@ -79,7 +79,7 @@ void Window::setCenter() {
     int centerH = 0;
     widget->move(centerW, centerH);
 
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::createActions() {
@@ -91,7 +91,7 @@ QAction* Window::createAction(const char* _name) {
     std::string name(_name);
     std::string method = "1onAction" + name + "()"; // SLOT(macro)
     boost::erase_all(method, " ");
-    // LOG_INFO << "name = " << name << " method = " << method;
+    // LOG(INFO) << "name = " << name << " method = " << method;
     QAction* action = new QAction(tr(name.c_str()), this);
     connect(action, SIGNAL(triggered()), this, method.c_str());
     actions[name] = action;
@@ -112,7 +112,7 @@ void Window::createToolbars() {
              this, SLOT(onSliderFrameChanged(int)) );
 
 
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 
 }
 
@@ -121,7 +121,7 @@ void Window::createMenus() {
     QMenu* menuFile = menuBar()->addMenu(tr("File"));
     menuFile->addAction( actions["Load"] );
      
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
     
 
@@ -139,7 +139,7 @@ void Window::onSliderFrameChanged(int index) {
 }
 
 void Window::onActionPlay() {
-    LOG_INFO << FUNCTION_NAME() << " OK";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::onActionLoad() {
@@ -147,26 +147,26 @@ void Window::onActionLoad() {
         this, tr("Load replay from json"), tr("../data/replay/"), tr("Json Files (*.json)"));
     std::string filename = qfilename.toStdString();
     if (filename.length() == 0) {
-        LOG_WARNING << "User cancelled loading";
+        LOG(WARNING) << "User cancelled loading";
         return;
     }
-    // LOG_INFO << "Filename = [" << filename << "]";
+    // LOG(INFO) << "Filename = [" << filename << "]";
 }
 
 
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {
-        // LOG_INFO << FUNCTION_NAME() << " : U";
+        // LOG(INFO) << FUNCTION_NAME() << " : U";
         // app()->up();
         return;
     }
     if (event->key() == Qt::Key_D) {
-        // LOG_INFO << FUNCTION_NAME() << " : D";
+        // LOG(INFO) << FUNCTION_NAME() << " : D";
         // app()->down();
         return;
     }
     if (event->key() == Qt::Key_P) {
-        // LOG_INFO << FUNCTION_NAME() << " : P";
+        // LOG(INFO) << FUNCTION_NAME() << " : P";
         // app()->perturb();
         return;
     }
@@ -199,7 +199,7 @@ void Window::takeScreenshot(const char* const filename) {
     // pixmap = QPixmap::grabWindow(this->winId());
     // // pixmap = pixmap.scaled(1200, 800);
     // // pixmap.grabWidget(this->gl());
-    // LOG_INFO << "size = " << pixmap.width() << " x " << pixmap.height();
+    // LOG(INFO) << "size = " << pixmap.width() << " x " << pixmap.height();
 
     // pixmap.save(tr(filename), "png");
     // QImage img(gl()->size(), QImage::Format_RGB32);
@@ -214,7 +214,7 @@ void Window::takeScreenshot(const char* const filename) {
     QImage sub = img.copy(rect);
     img = sub;
     img.save(filename);
-    LOG_INFO << FUNCTION_NAME() << " : [" << filename << "]";
+    LOG(INFO) << FUNCTION_NAME() << " : [" << filename << "]";
 }
 
 } // namespace gui

@@ -10,16 +10,17 @@
 
 int main(int argc, char *argv[])
 {
-    // // google::ParseCommandLineFlags(&argc, &argv, true);
-    // google::InitGoogleLogging((const char*)argv[0]);
+    // google::ParseCommandLineFlags(&argc, &argv, true);
+    google::InitGoogleLogging((const char*)argv[0]);
+    // Define logging flag
+    FLAGS_alsologtostderr = true;
+    FLAGS_minloglevel = INFO;
+    FLAGS_log_dir = "./glog/";
 
-    // // // Define logging flag
-    // FLAGS_alsologtostderr = true;
-    // FLAGS_minloglevel = INFO;
-    // FLAGS_log_dir = "./glog/";
-
+    // Init GLUT
     glutInit(&argc, argv);
 
+    // Init and launch the application
     QApplication app(argc, argv);
     disneysimple::gui::Window window;
     window.show();

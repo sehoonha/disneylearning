@@ -12,13 +12,13 @@ using namespace boost::assign;
 #define REVERSE_FOREACH BOOST_REVERSE_FOREACH
 ////////////////////////////////////////////////////////////
 
-// ////////////////////////////////////////////////////////////
-// // Google Libraries
-// #include <glog/logging.h>
-// using google::INFO;
-// using google::WARNING;
-// using google::ERROR;
-// using google::FATAL;
+////////////////////////////////////////////////////////////
+// Google Libraries
+#include <glog/logging.h>
+using google::INFO;
+using google::WARNING;
+using google::ERROR;
+using google::FATAL;
 // #include <gflags/gflags.h>
 // #define CHECK_NOTREACHED() do { LOG(FATAL) << "Should not be reached"; } while (false)
 // ////////////////////////////////////////////////////////////
@@ -44,16 +44,17 @@ using namespace boost::assign;
 // #define CHECK_LT(lhs, rhs) if ((lhs) >= (rhs)) BOOST_LOG_TRIVIAL(fatal)
 // #define CHECK_NOTNULL(ptr) if ((ptr) == NULL) BOOST_LOG_TRIVIAL(fatal)
 // #define VLOG_INFO if (verbose) BOOST_LOG_TRIVIAL(info)
-////////////////////////////////////////////////////////////
-// std logging
-#define LOG_INFO if (false) std::cout
-#define LOG_WARNING std::cerr
-#define LOG_ERROR std::cerr
-#define LOG_FATAL std::cerr
-#define CHECK_EQ(lhs, rhs) if ((lhs) != (rhs)) std::cerr
-#define CHECK_LT(lhs, rhs) if ((lhs) >= (rhs)) std::cerr
-#define CHECK_NOTNULL(ptr) if ((ptr) == NULL) std::cerr
-#define VLOG_INFO if (verbose) std::cout
+
+// ////////////////////////////////////////////////////////////
+// // std logging
+// #define LOG_INFO if (false) std::cout
+// #define LOG_WARNING std::cerr
+// #define LOG_ERROR std::cerr
+// #define LOG_FATAL std::cerr
+// #define CHECK_EQ(lhs, rhs) if ((lhs) != (rhs)) std::cerr
+// #define CHECK_LT(lhs, rhs) if ((lhs) >= (rhs)) std::cerr
+// #define CHECK_NOTNULL(ptr) if ((ptr) == NULL) std::cerr
+// #define VLOG_INFO if (verbose) std::cout
 
 
 ////////////////////////////////////////////////////////////
