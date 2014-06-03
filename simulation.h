@@ -40,6 +40,10 @@ public:
     // Render
     void render();
 
+    // History
+    int nStateHistory() { return mStateHistory.size(); }
+    void updateToHistory(int index) { mState = mStateHistory[index]; }
+    void updateToLatestHistory() { mState = mStateHistory[ nStateHistory() - 1]; }
 protected:
     Eigen::VectorXd mState;
     Eigen::VectorXd mTorque;

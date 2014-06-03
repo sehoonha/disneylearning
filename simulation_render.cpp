@@ -127,6 +127,7 @@ void Simulation::render() {
         offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - lrl2*sin(alphab + alphaw + thetar1 + thetar2) - rw*sin(alphab + alphaw) - alphaw*rw - lrl1*sin(alphab + alphaw + thetar1),
         rw + lrl2*cos(alphab + alphaw + thetar1 + thetar2) + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw) + lrl1*cos(alphab + alphaw + thetar1)  ;
 
+    glLineWidth(2);
     const int X = 1;
     const int Y = 2;
     glColor3d(1, 0, 0);
@@ -139,6 +140,8 @@ void Simulation::render() {
     glColor3d(0, 0, 1);
     line(leftCart(X), leftLink1(X), leftCart(Y), leftLink1(Y));
     line(leftLink1(X), leftLink2(X), leftLink1(Y), leftLink2(Y));
+    glColor3d(0, 0, 0);
+    line(-3, 3, 0, 0);
 
 
 }

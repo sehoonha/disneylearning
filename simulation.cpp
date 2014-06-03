@@ -7,7 +7,7 @@ namespace sim {
 
 Simulation::Simulation() {
     init();
-    step();
+    // step();
 
     // Eigen::VectorXd state = Eigen::VectorXd::Zero(12);
     // state(0) = 0.01;
@@ -32,12 +32,17 @@ void Simulation::init() {
         , 0, 0, 0, 0, 0, 0;
         
     mState = xEq + xOffset;
+
+    mStateHistory.clear();
+    mStateHistory.push_back(mState);
 }
 
 void Simulation::control() {
     // Zero control, for now
     int n = nDimConfig();
     mTorque = Eigen::VectorXd::Zero(n);
+
+
 }
 
 void Simulation::step() {
@@ -61,8 +66,8 @@ void Simulation::integrate() {
     Eigen::VectorXd x = mState;
     Eigen::VectorXd u = mTorque;
 
-    LOG(INFO) << "x = " << x.transpose();
-    LOG(INFO) << "u = " << u.transpose();
+    // LOG(INFO) << "x = " << x.transpose();
+    // LOG(INFO) << "u = " << u.transpose();
 
     Eigen::VectorXd k1 = deriv(x, u);
     Eigen::VectorXd k2 = deriv(x + h_2 * k1, u);
@@ -70,9 +75,10 @@ void Simulation::integrate() {
     Eigen::VectorXd k4 = deriv(x + h * k3, u);
 
     Eigen::VectorXd dx = (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
-    LOG(INFO) << "dx = " << dx.transpose();
+    // LOG(INFO) << "dx = " << dx.transpose();
 
     mState = x + h * dx;
+    mStateHistory.push_back(mState);
 }
 
 

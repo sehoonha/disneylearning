@@ -86,6 +86,7 @@ void Window::setCenter() {
 
 void Window::createActions() {
     createAction("Play")->setCheckable(true);
+    createAction("Anim")->setCheckable(true);
     createAction("Step");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
@@ -107,6 +108,7 @@ void Window::createToolbars() {
 
     toolbar->addWidget( labelTime() );
     toolbar->addAction( actions["Play"] );
+    toolbar->addAction( actions["Anim"] );
     toolbar->addAction( actions["Step"] );
 
     set_sliderFrame( new QSlider(Qt::Horizontal) );
@@ -137,16 +139,44 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
     }
-    // updateInfo();
-
+    if (actions["Anim"]->isChecked()) {
+        int i = sliderFrame()->value();
+        int n = sim()->nStateHistory();
+        i++;
+        if (i >= n) {
+            i = 0;
+        }
+        sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
+    }
+    
+    // updateInfo
+    int n = sim()->nStateHistory();
+    double time = (n - 1) * 0.001; 
+    labelTime()->setText(
+        tr( (boost::format("T : %07.4f") % time).str().c_str() )
+        );
+    sliderFrame()->setRange(0, n - 1);
+    std::stringstream sout;
+    sout << "State = ";
+    Eigen::VectorXd state = sim()->getState();
+    for (int i = 0; i < state.size(); i++) {
+        if (i != 0) sout << ", ";
+        sout << state(i);
+    }
+    statusbar()->showMessage(sout.str().c_str());
 }
 
 void Window::onSliderFrameChanged(int index) {
-    // app()->replayUpdateToFrame(index);
+    sim()->updateToHistory(index);
 }
 
 void Window::onActionPlay() {
-    LOG(INFO) << FUNCTION_NAME() << " OK";
+    if (actions["Play"]->isChecked()) {
+        sim()->updateToLatestHistory();
+        LOG(INFO) << FUNCTION_NAME() << " resumes";
+    } else {
+        LOG(INFO) << FUNCTION_NAME() << " pauses";
+    }
 }
 
 void Window::onActionStep() {
