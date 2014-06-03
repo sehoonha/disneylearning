@@ -8,7 +8,7 @@ namespace sim {
 
 Eigen::VectorXd
 Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& control) {
-    int n = dim();
+    int n = nDimConfig();
     Eigen::VectorXd q = x.head(n);
     Eigen::VectorXd dq = x.tail(n);
 
@@ -262,23 +262,24 @@ Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& control) {
     dx.head(n) = dq;
     dx.tail(n) = ddq;
 
-    LOG(INFO) << "q = " << q.transpose();
-    LOG(INFO) << "M = " << endl << M;
-    LOG(INFO) << "C = " << endl << C;
-    LOG(INFO) << "G = " << endl << G;
-    LOG(INFO) << "Psi = " << endl << Psi;
-    LOG(INFO) << "PsiDot = " << endl << PsiDot;
-    LOG(INFO) << "F = " << endl << F;
-    LOG(INFO) << "xEq = " << endl << xEq;
-    LOG(INFO) << "u = " << endl << u;
-    LOG(INFO) << "U = " << endl << U;
-    LOG(INFO) << "D = " << endl << D;
-    LOG(INFO) << "Dv = " << endl << Dv;
-    LOG(INFO) << "lagMult = " << endl << lagMult;
-    LOG(INFO) << "ddq = " << endl << ddq;
-    LOG(INFO) << "dx = " << endl << dx;
-    exit(0);
-    return Eigen::VectorXd::Random(n);
+    // LOG(INFO) << "q = " << q.transpose();
+    // LOG(INFO) << "M = " << endl << M;
+    // LOG(INFO) << "C = " << endl << C;
+    // LOG(INFO) << "G = " << endl << G;
+    // LOG(INFO) << "Psi = " << endl << Psi;
+    // LOG(INFO) << "PsiDot = " << endl << PsiDot;
+    // LOG(INFO) << "F = " << endl << F;
+    // LOG(INFO) << "xEq = " << endl << xEq;
+    // LOG(INFO) << "u = " << endl << u;
+    // LOG(INFO) << "U = " << endl << U;
+    // LOG(INFO) << "D = " << endl << D;
+    // LOG(INFO) << "Dv = " << endl << Dv;
+    // LOG(INFO) << "lagMult = " << endl << lagMult;
+    // LOG(INFO) << "ddq = " << endl << ddq;
+    // LOG(INFO) << "dx = " << endl << dx;
+    // exit(0);
+
+    return dx;
 }
 
 } // namespace sim

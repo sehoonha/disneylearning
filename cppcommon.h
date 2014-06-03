@@ -80,6 +80,13 @@ using google::FATAL;
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define CONFINE(a, lo, hi) (((a)<(lo))?(lo):(  (((a)>(hi))?(hi):(a))           ))
 
+#ifndef PI
+#define PI 3.141592653589793
+#endif
+#ifndef PI_2 
+#define PI_2 1.5707963267948966
+#endif
+
 // #include "Paths.h"
 
 #endif // #ifndef APP_CPPCOMMON_H

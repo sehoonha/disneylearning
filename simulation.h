@@ -8,13 +8,21 @@
 namespace disneysimple {
 namespace sim {
 
+/*
+  q: config 
+  dq: velocity
+  x: state(=config and velocity)
+  n: # dims of config
+  m: # dims of state
+ */
 class Simulation {
 public:
     Simulation();
     virtual ~Simulation();
 
     // State and torque manipulations
-    int dim() const { return mState.size(); }
+    int nDimConfig() const { return mState.size() / 2; }
+    int nDimState() const { return mState.size(); }
     void setState(const Eigen::VectorXd& state ) { mState = state; }
     Eigen::VectorXd getState() const { return mState; }
     void setTorque(const Eigen::VectorXd& torque) { mTorque = torque; }
