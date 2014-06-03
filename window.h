@@ -50,6 +50,7 @@ public slots:
     void onTimerIdle();
     void onSliderFrameChanged(int index);
     void onActionPlay();
+    void onActionStep();
     void onActionLoad();
 
 protected:

@@ -33,8 +33,12 @@ public:
     void control();
     void step();
 
+    // System and integration
     Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
     void integrate();
+
+    // Render
+    void render();
 
 protected:
     Eigen::VectorXd mState;

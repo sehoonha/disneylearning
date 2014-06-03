@@ -86,6 +86,7 @@ void Window::setCenter() {
 
 void Window::createActions() {
     createAction("Play")->setCheckable(true);
+    createAction("Step");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
 
@@ -106,6 +107,7 @@ void Window::createToolbars() {
 
     toolbar->addWidget( labelTime() );
     toolbar->addAction( actions["Play"] );
+    toolbar->addAction( actions["Step"] );
 
     set_sliderFrame( new QSlider(Qt::Horizontal) );
     sliderFrame()->setMaximumSize(QSize(200, 30));
@@ -132,6 +134,9 @@ void Window::onTimerRender() {
 }
 
 void Window::onTimerIdle() {
+    if (actions["Play"]->isChecked()) {
+        sim()->step();
+    }
     // updateInfo();
 
 }
@@ -142,6 +147,11 @@ void Window::onSliderFrameChanged(int index) {
 
 void Window::onActionPlay() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionStep() {
+    // LOG(INFO) << FUNCTION_NAME() << " OK";
+    sim()->step();
 }
 
 void Window::onActionLoad() {

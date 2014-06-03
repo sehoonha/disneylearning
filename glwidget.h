@@ -29,14 +29,9 @@ protected:
     void paintGL();
     void resizeGL( int w, int h );
 
-    void renderAxis();
-    void renderCOM();
-    void renderCOMTrajectory();
-    void renderCOP();
-    void renderController();
+    void enable2D();
+    void disable2D();
 
-    //
-    int buttonToInteger(QMouseEvent* event);
 public slots:
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);

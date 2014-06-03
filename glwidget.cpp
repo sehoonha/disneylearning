@@ -6,6 +6,7 @@
 // Local headers
 #include "window.h"
 #include "camera.h"
+#include "simulation.h"
 
 namespace disneysimple {
 namespace gui {
@@ -110,9 +111,14 @@ void GLWidget::paintGL() {
     glEnable(GL_LIGHTING);
 
     glColor3d(1.0, 0.0, 0.0);
-    // glBlock() {
-    glutSolidSphere(1.0, 10, 10);
-    // }
+
+    // // 3D Stuff
+    // glutSolidSphere(1.0, 10, 10);
+
+    // 2D Stuff
+    enable2D();
+    window()->sim()->render();
+    disable2D();
 }
 
 void GLWidget::resizeGL( int w, int h ) {
@@ -121,6 +127,41 @@ void GLWidget::resizeGL( int w, int h ) {
     glLoadIdentity();
 
     gluPerspective(45.0f, (GLfloat)w/h, 1.0, 100.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void GLWidget::enable2D() {
+    int winX = GL_WINDOW_WIDTH;
+    int winY = GL_WINDOW_HEIGHT;
+    int PPU = 300; // Pixel per unit
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();		
+
+    glDisable(GL_LIGHTING | GL_DEPTH_TEST);
+    glDepthMask(0);
+    // glOrtho(0, winX, winY,0,-1,1);
+    glOrtho(-0.5 * winX / PPU, 0.5 * winX / PPU, -0.2 * winY / PPU, 0.8 * winY / PPU,-1,1);
+
+
+    glViewport(0,0,winX,winY);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+void GLWidget::disable2D() {
+    int winX = GL_WINDOW_WIDTH;
+    int winY = GL_WINDOW_HEIGHT;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();		
+
+    glEnable(GL_DEPTH_TEST | GL_LIGHTING);
+    glDepthMask(1);
+    gluPerspective(45.0f, (double)winX/(double)winY, 1.0, 100.0);
+
+    glViewport(0,0,winX,winY);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
