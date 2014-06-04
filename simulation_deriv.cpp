@@ -7,7 +7,7 @@ namespace sim {
 #define pow2(x) ((x) * (x))
 
 Eigen::VectorXd
-Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& control) {
+Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     int n = nDimConfig();
     Eigen::VectorXd q = x.head(n);
     Eigen::VectorXd dq = x.tail(n);
@@ -205,8 +205,7 @@ Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& control) {
         0,
         0;    
 
-    // Stiffness matrix
-    Eigen::MatrixXd K = Eigen::MatrixXd::Zero(4, n * 2);
+    // // Stiffness matrix
 
     // Actuation Matrix
     Eigen::MatrixXd F(n, 4);
@@ -217,26 +216,9 @@ Simulation::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& control) {
         0, 0, 1, 0,
         0, 0, 0, 1;
 
-    // Equilibrium state
-    Eigen::VectorXd qEq(n);
-    qEq << 0.0, 0.0, 0.0, 0.0, pi/2.0, -pi/2.0;
-    Eigen::VectorXd dqEq(n);
-    dqEq << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    Eigen::VectorXd xEq(n * 2);
-    xEq.head(n) = qEq;
-    xEq.tail(n) = dqEq;
+    // // Equilibrium state
 
-    // Calculate u
-    Eigen::VectorXd u = -K * (x - xEq);
-    for(int i = 0; i < u.size(); i++) {
-        if (fabs(u(i)) > maxTorq) {
-            if (u(i) > 0) {
-                u(i) = maxTorq;
-            } else {
-                u(i) = -maxTorq;
-            }
-        }
-    }
+    // // Calculate u
 
     // Generalized force vector
     Eigen::MatrixXd U = F*u;

@@ -43,6 +43,58 @@ void Simulation::control() {
     mTorque = Eigen::VectorXd::Zero(n);
 
 
+    // Parameters
+    double radius = 0.05;
+    double rw     = radius;
+    double lrl1 = 1;
+    double lrl2 = 0.1;
+    double lll1 = 1;
+    double lll2 = 0.1;
+    double maxTorq = 200; 
+
+
+    // Feedback Matrix
+    Eigen::MatrixXd C(5, 2 * n);
+    C << - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,    
+        1, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0;  
+
+
+    Eigen::MatrixXd F(4, 5);
+    F << -2716691.61124073, -1189377.26019503, 953603.332318603, 10071.8805576070, 768507.689768547,
+        -2716691.61123261, -1189377.26019358, 953603.332315551, 10071.8805576529, 768507.689765388,
+        2716691.61123813, 1189377.26019453, -953603.332317613, -10071.8805576191, -768507.689767548,
+        2716691.61124318, 1189377.26019541, -953603.332319511, -10071.8805575885, -768507.689769501;
+
+    Eigen::MatrixXd K = F * C;
+
+    // State 
+    Eigen::VectorXd x = mState;
+    
+    // Equilibrium state
+    Eigen::VectorXd qEq(n);
+    qEq << 0.0, 0.0, 0.0, 0.0, PI/2.0, -PI/2.0;
+    Eigen::VectorXd dqEq(n);
+    dqEq << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    Eigen::VectorXd xEq(n * 2);
+    xEq.head(n) = qEq;
+    xEq.tail(n) = dqEq;
+        
+    // Calculate u
+    Eigen::VectorXd u = -K * (x - xEq);
+    for(int i = 0; i < u.size(); i++) {
+        if (fabs(u(i)) > maxTorq) {
+            if (u(i) > 0) {
+                u(i) = maxTorq;
+            } else {
+                u(i) = -maxTorq;
+            }
+        }
+    }
+    mTorque = u;
+
 }
 
 void Simulation::step() {
