@@ -6,3 +6,4 @@ install_manifest.txt
 *.cxx
 disneysimple
 glog
+captures

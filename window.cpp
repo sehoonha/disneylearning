@@ -87,6 +87,7 @@ void Window::setCenter() {
 void Window::createActions() {
     createAction("Play")->setCheckable(true);
     createAction("Anim")->setCheckable(true);
+    createAction("Capture")->setCheckable(true);
     createAction("Step");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
@@ -117,6 +118,7 @@ void Window::createToolbars() {
     connect( sliderFrame(), SIGNAL(valueChanged(int)),
              this, SLOT(onSliderFrameChanged(int)) );
 
+    toolbar->addAction( actions["Capture"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
@@ -138,6 +140,9 @@ void Window::onTimerRender() {
 void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
+        if (actions["Capture"]->isChecked()) {
+            takeCapture();
+        }
     }
     if (actions["Anim"]->isChecked()) {
         int i = sliderFrame()->value();
@@ -217,7 +222,7 @@ void Window::keyPressEvent(QKeyEvent* event) {
 int captureRate = 0;
 int captureID = 0;
 void Window::takeCapture() {
-    // if (!actPlay()->isChecked() && !actAnim()->isChecked()) {
+    // if (!actions["Play"]->isChecked()) {
     //     return;
     // }
     // if (!actCapture()->isChecked()) {
@@ -236,6 +241,9 @@ void Window::takeCapture() {
 
 }
 
+// avconv -r 30 -i ./capture.%04d.png output.mp4
+
+
 void Window::takeScreenshot(const char* const filename) {
     // QPixmap pixmap;
     // pixmap = QPixmap::grabWindow(this->winId());
@@ -252,7 +260,7 @@ void Window::takeScreenshot(const char* const filename) {
 
     QImage img = gl()->grabFrameBuffer();
     img = img.convertToFormat(QImage::Format_ARGB32);
-    QRect rect(0, 10, 1280, 720);
+    QRect rect(0, 0, 1280, 720);
     QImage sub = img.copy(rect);
     img = sub;
     img.save(filename);

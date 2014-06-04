@@ -27,7 +27,7 @@ void Simulation::init() {
          , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.03;
+    double angIni = 2;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
         
