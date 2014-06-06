@@ -91,10 +91,12 @@ void Window::createActions() {
     createAction("Anim")->setCheckable(true);
     createAction("Capture")->setCheckable(true);
     createAction("Step");
-    createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
+    createAction("StopAtEnd")->setCheckable(true);
+
 
     createAction("NN");
     createAction("Train");
+    createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -118,6 +120,7 @@ void Window::createToolbars() {
     toolbar->addAction( actions["Anim"] );
     toolbar->addAction( actions["Step"] );
     toolbar->addAction( actions["Capture"] );
+    toolbar->addAction( actions["StopAtEnd"] );
 
     set_sliderFrame( new QSlider(Qt::Horizontal) );
     sliderFrame()->setMaximumSize(QSize(300, 30));
@@ -149,7 +152,8 @@ void Window::onTimerRender() {
 void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
-        if (sim()->getTime() >= 1.99999) {
+
+        if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 1.99999) {
             actions["Play"]->setChecked(false);
             LOG(INFO) << "evaluate = " << sim()->getCost();
         }

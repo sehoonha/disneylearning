@@ -171,16 +171,15 @@ void RLEvolution::train(sim::Simulation* sim) {
     // save();
     // exit(0);
 
-    srand( (unsigned int) time (NULL) );
+    shark::Rng::seed( (unsigned int) time (NULL) );
     imp->sim = sim;
 
     PolicyEvaluation prob(imp);
     shark::CMA cma;
     // cma.init( prob );
-    // cma.setSigma(1.0);
+    // cma.setSigma(10.0);
     shark::RealVector starting(prob.numberOfVariables());
-        
-    cma.init( prob, starting, 32, 16, 10.0 );
+    cma.init( prob, starting, 32, 16, 15.0 );
 
 
     do {
@@ -189,8 +188,9 @@ void RLEvolution::train(sim::Simulation* sim) {
         // Report information on the optimizer state and the current solution to the console.
 
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
+        imp->nn->setParameterVector( cma.solution().point );
         save();
-    } while(cma.solution().value > 50.0 );
+    } while(cma.solution().value > 100.0 );
     imp->nn->setParameterVector( cma.solution().point );
 
 }

@@ -183,6 +183,11 @@ void Simulation::evaluate() {
         + (wheel - cart).squaredNorm();
     mCost += cost;
 
+
+    Eigen::VectorXd dq = mState.tail(n);
+    dq = dq.head(3);
+    mCost += 0.01 * dq.squaredNorm();
+
     const Eigen::VectorXd& u = mTorque;
     Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.size(), u.size());
     R(0, 0) = 1e-6;
