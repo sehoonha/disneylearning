@@ -1,5 +1,6 @@
 #include "RLEvolution.h"
 
+#include <string>
 #include <fstream>
 #include <boost/archive/polymorphic_text_oarchive.hpp>
 #include <boost/archive/polymorphic_text_iarchive.hpp>
@@ -163,31 +164,34 @@ RLEvolution::~RLEvolution() {
 
 // For training
 void RLEvolution::train(sim::Simulation* sim) {
-    Eigen::VectorXd opt(32);
+    // Eigen::VectorXd opt(32);
     // opt << 12.4229,-16.6791,-28.7858,-15.9828,-40.7481,-23.233,10.7884,-17.428,47.411,6.47651,55.07,8.63919,39.1658,15.0118,-60.2714,-5.32964,17.7993,-29.3988,28.0938,40.8798,-2.74794,-13.7966,-41.9069,47.1869,15.139,-33.0323,31.2539,-17.2525,24.8337,8.64727,0.620035,23.617;
-    opt << -19.1507,-4.53068,-41.3912,-38.7542,-46.5239,47.4353,16.212,17.8151,-18.6195,7.42489,-61.2971,28.2913,-8.12158,26.8932,0.089589,3.57483,-52.3572,-4.38877,1.14532,-54.8062,-3.37869,-26.4246,-34.4195,11.4461,-36.5377,23.1277,50.1321,-28.0648,-38.6845,14.1859,16.7063,21.3714; 
-    imp->setNNParams(opt);
-    save();
+    // // opt << -19.1507,-4.53068,-41.3912,-38.7542,-46.5239,47.4353,16.212,17.8151,-18.6195,7.42489,-61.2971,28.2913,-8.12158,26.8932,0.089589,3.57483,-52.3572,-4.38877,1.14532,-54.8062,-3.37869,-26.4246,-34.4195,11.4461,-36.5377,23.1277,50.1321,-28.0648,-38.6845,14.1859,16.7063,21.3714; 
+    // imp->setNNParams(opt);
+    // save();
+    // exit(0);
 
-    // srand( (unsigned int) time (NULL) );
-    // imp->sim = sim;
+    srand( (unsigned int) time (NULL) );
+    imp->sim = sim;
 
-    // PolicyEvaluation prob(imp);
-    // shark::CMA cma;
-    // // cma.init( prob );
-    // // cma.setSigma(1.0);
-    // shark::RealVector starting(prob.numberOfVariables());
+    PolicyEvaluation prob(imp);
+    shark::CMA cma;
+    // cma.init( prob );
+    // cma.setSigma(1.0);
+    shark::RealVector starting(prob.numberOfVariables());
         
-    // cma.init( prob, starting, 32, 16, 10.0 );
+    cma.init( prob, starting, 32, 16, 10.0 );
 
 
-    // do {
-    //     cma.step( prob );
+    do {
+        cma.step( prob );
 
-    //     // Report information on the optimizer state and the current solution to the console.
-    //     LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
-    // } while(cma.solution().value > 50.0 );
-    // imp->nn->setParameterVector( cma.solution().point );
+        // Report information on the optimizer state and the current solution to the console.
+
+        LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
+        save();
+    } while(cma.solution().value > 50.0 );
+    imp->nn->setParameterVector( cma.solution().point );
 
 }
 
@@ -196,14 +200,21 @@ void RLEvolution::save() {
     boost::archive::polymorphic_text_oarchive oa(fout);
     imp->nn->write(oa);
     fout.close();    
-    LOG(INFO) << "save to balance.nn OK";
+    LOG(INFO) << "save balance.nn OK";
 }
 
-void RLEvolution::load() {
-    std::ifstream fin("balance.nn");
+void RLEvolution::load(const char* const filename) {
+    std::string str_filename;
+    if (filename == NULL) {
+        str_filename = "balance.nn";
+    } else {
+        str_filename = filename;
+    }
+    std::ifstream fin(str_filename.c_str());
     boost::archive::polymorphic_text_iarchive ia(fin);
     imp->nn->read(ia);
     fin.close();
+    LOG(INFO) << "load " << str_filename << " OK";
 }
 
 // For using

@@ -95,7 +95,6 @@ void Window::createActions() {
 
     createAction("NN");
     createAction("Train");
-    createAction("Load");
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -126,6 +125,8 @@ void Window::createToolbars() {
     connect( sliderFrame(), SIGNAL(valueChanged(int)),
              this, SLOT(onSliderFrameChanged(int)) );
 
+    toolbar->addAction( actions["NN"] );
+    toolbar->addAction( actions["Load"] );
     toolbar->addAction( actions["Train"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
@@ -219,25 +220,26 @@ void Window::onActionStep() {
 
 void Window::onActionLoad() {
     QString qfilename = QFileDialog::getOpenFileName(
-        this, tr("Load replay from json"), tr("../data/replay/"), tr("Json Files (*.json)"));
+        this, tr("Load Neural Network from nn"), tr("./"), tr("NN Files (*.nn)"));
     std::string filename = qfilename.toStdString();
     if (filename.length() == 0) {
         LOG(WARNING) << "User cancelled loading";
         return;
     }
-    // LOG(INFO) << "Filename = [" << filename << "]";
+    LOG(INFO) << "Filename = [" << filename << "]";
+    sim()->loadNN(filename.c_str());
 }
 
 void Window::onActionNN() {
-}
-
-void Window::onActionLoad() {
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+    sim()->loadNN();
 }
 
 void Window::onActionTrain() {
     sim()->trainNN();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
 
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {

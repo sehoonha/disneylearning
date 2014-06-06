@@ -24,7 +24,7 @@ public:
     // For training
     void train(sim::Simulation* sim);
     void save();
-    void load();
+    void load(const char* const filename);
 
     // For using
     Eigen::VectorXd control(const Eigen::VectorXd& x);

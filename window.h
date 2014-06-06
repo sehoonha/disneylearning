@@ -56,7 +56,7 @@ public slots:
 
     void onActionNN();
     void onActionTrain();
-    void onActionLoad();
+
 
 protected:
     void keyPressEvent(QKeyEvent* event);

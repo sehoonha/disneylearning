@@ -45,6 +45,7 @@ public:
 
     void reset() { init(); }
 
+    void loadNN(const char* const filename = NULL);
     void trainNN();
 
     // System and integration

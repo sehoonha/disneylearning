@@ -161,13 +161,26 @@ void Simulation::evaluate() {
     wheel << 0,
         offset-alphaw*rw,
         rw;
+    // feet cart positions
+    Eigen::Vector3d rightCart;
+    rightCart << 0,
+        offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - rw*sin(alphab + alphaw) - alphaw*rw,
+        rw + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw);
+    
+    Eigen::Vector3d leftCart;
+    leftCart << 0,
+        offset+cos(alphab + alphaw)*(al + lll2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw),
+        rw + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw)  ;          
+    Eigen::Vector3d cart = 0.5 * (leftCart + rightCart);
 
     
     // Ignore the Y offset
     const int Y = 2;
-    top(Y) = wheel(Y) = 0.0;
+    top(Y) = wheel(Y) = cart(Y) = 0.0;
 
-    double cost = (top - wheel).squaredNorm();
+    double cost = (top - wheel).squaredNorm()
+        + (top - cart).squaredNorm()
+        + (wheel - cart).squaredNorm();
     mCost += cost;
 
     const Eigen::VectorXd& u = mTorque;
@@ -185,7 +198,19 @@ void Simulation::step() {
     evaluate();
 }
 
+void Simulation::loadNN(const char* const filename) {
+    if (this->rl == NULL) {
+        this->rl = new disneysimple::learning::RLEvolution();
+        LOG(INFO) << "Create a instance of RLEvolution class"; 
+    }
+    this->rl->load(filename);
+}
+
 void Simulation::trainNN() {
+    if (this->rl == NULL) {
+        LOG(WARNING) << FUNCTION_NAME() << " : do not have rl class instance";
+        return;
+    }
     this->rl = new disneysimple::learning::RLEvolution();
     rl->train(this);
 }

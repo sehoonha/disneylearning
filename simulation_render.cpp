@@ -127,6 +127,8 @@ void Simulation::render() {
         offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - lrl2*sin(alphab + alphaw + thetar1 + thetar2) - rw*sin(alphab + alphaw) - alphaw*rw - lrl1*sin(alphab + alphaw + thetar1),
         rw + lrl2*cos(alphab + alphaw + thetar1 + thetar2) + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw) + lrl1*cos(alphab + alphaw + thetar1)  ;
 
+    Eigen::Vector3d cart = 0.5 * (leftCart + rightCart);
+    
     glLineWidth(2);
     const int X = 1;
     const int Y = 2;
@@ -145,6 +147,7 @@ void Simulation::render() {
 
     glColor3d(0, 1, 1);
     circle( rightLink2(X), rightLink2(Y), 0.02 );
+    circle( cart(X), cart(Y), 0.02 );
 
 }
 
