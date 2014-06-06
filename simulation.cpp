@@ -1,11 +1,14 @@
 #include "simulation.h"
 
 #include "cppcommon.h"
+#include "RLEvolution.h"
 
 namespace disneysimple {
 namespace sim {
 
-Simulation::Simulation() {
+Simulation::Simulation()
+    : rl(NULL)
+{
     init();
     // step();
 
@@ -35,13 +38,20 @@ void Simulation::init() {
 
     mStateHistory.clear();
     mStateHistory.push_back(mState);
+
+    mCost = 0.0;
 }
 
 void Simulation::control() {
-    // Zero control, for now
-    int n = nDimConfig();
-    mTorque = Eigen::VectorXd::Zero(n);
+    if (rl != NULL) {
+        mTorque = rl->control(mState);
+    } else {
+        controlFeedback();
+    }
+}
 
+void Simulation::controlFeedback() {
+    int n = nDimConfig();
 
     // Parameters
     double radius = 0.05;
@@ -67,6 +77,8 @@ void Simulation::control() {
         -2716691.61123261, -1189377.26019358, 953603.332315551, 10071.8805576529, 768507.689765388,
         2716691.61123813, 1189377.26019453, -953603.332317613, -10071.8805576191, -768507.689767548,
         2716691.61124318, 1189377.26019541, -953603.332319511, -10071.8805575885, -768507.689769501;
+
+    // F *= 0.01;
 
     Eigen::MatrixXd K = F * C;
 
@@ -97,10 +109,87 @@ void Simulation::control() {
 
 }
 
+void Simulation::evaluate() {
+    // // The first trial to the rest position
+    // int n = nDimConfig();
+    // const Eigen::VectorXd& x = mState;
+    // const Eigen::VectorXd& u = mTorque;
+
+    // Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(n * 2, n * 2);
+    // Q(0, 0) = 1.0;
+    // Q(1, 1) = 1.0;
+    // Q(2, 2) = 1.0;
+    // for (int i = n; i < n + 3; i++) Q(i, i) = 0.0;
+    // Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.size(), u.size());
+    // R(0, 0) = 0.0;
+    // double cost = x.dot(Q * x) + u.dot(R * u);
+
+
+    // mCost += cost;
+
+
+    // Parameters
+    double offset = 0;
+    double radius = 0.05;
+    double rw     = radius;
+
+    double lrl1 = 1;
+    double lrl2 = 0.1;
+    double lll1 = 1;
+    double lll2 = 0.1;
+
+    // Fetch the state
+    int n = nDimConfig();
+    Eigen::VectorXd q = mState.head(n);
+    double alphaw  = q(0);
+    double alphab  = q(1);
+    double al      = 0.0;
+    double ar      = 0.0;
+    double thetal1 = q(2);
+    double thetar1 = q(3);
+    double thetal2 = q(4);
+    double thetar2 = q(5);
+
+
+    Eigen::Vector3d top;
+    top << 0,
+        offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - lrl2*sin(alphab + alphaw + thetar1 + thetar2) - rw*sin(alphab + alphaw) - alphaw*rw - lrl1*sin(alphab + alphaw + thetar1),
+        rw + lrl2*cos(alphab + alphaw + thetar1 + thetar2) + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw) + lrl1*cos(alphab + alphaw + thetar1)  ;
+
+    // wheel position
+    Eigen::Vector3d wheel;
+    wheel << 0,
+        offset-alphaw*rw,
+        rw;
+
+    
+    // Ignore the Y offset
+    const int Y = 2;
+    top(Y) = wheel(Y) = 0.0;
+
+    double cost = (top - wheel).squaredNorm();
+    mCost += cost;
+
+    const Eigen::VectorXd& u = mTorque;
+    Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.size(), u.size());
+    R(0, 0) = 1e-6;
+    mCost += u.dot(R * u);
+
+
+    // cout << getTime() << " : " << mState.transpose() << " = " << cost << endl;
+}
+
 void Simulation::step() {
     control();
     integrate();
+    evaluate();
 }
+
+void Simulation::trainNN() {
+    this->rl = new disneysimple::learning::RLEvolution();
+    rl->train(this);
+}
+
 
 /*
 // This function's implementation is moved to simulation_deriv.cpp
@@ -130,6 +219,12 @@ void Simulation::integrate() {
     // LOG(INFO) << "dx = " << dx.transpose();
 
     mState = x + h * dx;
+    for (int i = 0; i < mState.size(); i++) {
+        double x = mState(i);
+        if (x < -2.0 * PI) x = -2.0 * PI;
+        if (x >  2.0 * PI) x =  2.0 * PI;
+        mState(i) = x;
+    }
     mStateHistory.push_back(mState);
 }
 

@@ -49,8 +49,13 @@ public slots:
     void onTimerRender();
     void onTimerIdle();
     void onSliderFrameChanged(int index);
+    void onActionReset();
     void onActionPlay();
     void onActionStep();
+    void onActionLoad();
+
+    void onActionNN();
+    void onActionTrain();
     void onActionLoad();
 
 protected:

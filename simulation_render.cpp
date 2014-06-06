@@ -143,6 +143,8 @@ void Simulation::render() {
     glColor3d(0, 0, 0);
     line(-3, 3, 0, 0);
 
+    glColor3d(0, 1, 1);
+    circle( rightLink2(X), rightLink2(Y), 0.02 );
 
 }
 

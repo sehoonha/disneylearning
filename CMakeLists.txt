@@ -1,8 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(CMAKE_BUILD_TYPE "Release")
+
 message(STATUS "=====================================================")
 message(STATUS "configuring build for the simple balancing simulation")
 message(STATUS "=====================================================")
+
+#####################################################################
+#           Explicit macro setup for debug configuration
+#####################################################################
+# enable or disable debugging, default is Release
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE "Release")
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+
+IF(CMAKE_BUILD_TYPE MATCHES "Release")
+  message(STATUS "Set the release mode")
+  ADD_DEFINITIONS(-DNDEBUG )
+  ADD_DEFINITIONS(-DBOOST_UBLAS_NDEBUG )
+ENDIF (CMAKE_BUILD_TYPE MATCHES "Release")
 
 project(disneysimple)
 
@@ -10,15 +28,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-compare")
 message(STATUS "CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
 
 
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glog")
+message(STATUS "Create ${CMAKE_BINARY_DIR}/glog directory")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/captures")
+message(STATUS "Create ${CMAKE_BINARY_DIR}/captures directory")
+
 message(STATUS "=====================================================")
 message(STATUS "configuring dependancies...")
 message(STATUS "=====================================================")
 
 find_package(OpenGL)
 if (OPENGL_FOUND)
-message(STATUS "OPENGL FOUND")
+  message(STATUS "OPENGL FOUND")
 else (OPENGL_FOUND)
-message(STATUS "OPENGL NOT FOUND")
+  message(STATUS "OPENGL NOT FOUND")
 endif ()
 
 find_package(GLUT)
@@ -29,7 +52,7 @@ else (GLUT_FOUND)
   message(STATUS "GLUT NOT FOUND")
 endif ()
 
-find_package( Boost COMPONENTS date_time system filesystem thread chrono log log_setup)
+find_package( Boost COMPONENTS date_time system filesystem thread chrono log log_setup program_options signals serialization)
 message(STATUS "Boost_INCLUDE_DIR =  ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost_LIBRARIES =  ${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
@@ -63,6 +86,7 @@ target_link_libraries(disneysimple ${GLUT_LIBRARIES})
 target_link_libraries(disneysimple ${QT_LIBRARIES})
 target_link_libraries(disneysimple ${Boost_LIBRARIES})
 target_link_libraries(disneysimple glog)
+target_link_libraries(disneysimple shark)
 
 set_target_properties(disneysimple PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

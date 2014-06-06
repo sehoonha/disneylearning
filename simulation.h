@@ -6,6 +6,12 @@
 #include "hppcommon.h"
 
 namespace disneysimple {
+namespace learning {
+class RLEvolution;
+} // namespace learning
+} // namespace disneysimple
+
+namespace disneysimple {
 namespace sim {
 
 /*
@@ -27,11 +33,19 @@ public:
     Eigen::VectorXd getState() const { return mState; }
     void setTorque(const Eigen::VectorXd& torque) { mTorque = torque; }
     Eigen::VectorXd getTorque() const { return mTorque; }
+    double getCost() const { return mCost; }
+    double getTime() const { return (nStateHistory() - 1) * 0.001; }
 
     // Simulation
     void init();
     void control();
+    void controlFeedback();
+    void evaluate();
     void step();
+
+    void reset() { init(); }
+
+    void trainNN();
 
     // System and integration
     Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
@@ -41,13 +55,15 @@ public:
     void render();
 
     // History
-    int nStateHistory() { return mStateHistory.size(); }
+    int nStateHistory() const { return mStateHistory.size(); }
     void updateToHistory(int index) { mState = mStateHistory[index]; }
     void updateToLatestHistory() { mState = mStateHistory[ nStateHistory() - 1]; }
 protected:
     Eigen::VectorXd mState;
     Eigen::VectorXd mTorque;
     std::vector<Eigen::VectorXd> mStateHistory;
+    double mCost;
+    learning::RLEvolution* rl;
 };
 
 } // namespace sim

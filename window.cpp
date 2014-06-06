@@ -1,5 +1,6 @@
 #include "window.h"
 
+#include <iomanip>
 #include <boost/algorithm/string.hpp>
 
 #include "glwidget.h"
@@ -85,11 +86,16 @@ void Window::setCenter() {
 }
 
 void Window::createActions() {
+    createAction("Reset");
     createAction("Play")->setCheckable(true);
     createAction("Anim")->setCheckable(true);
     createAction("Capture")->setCheckable(true);
     createAction("Step");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
+
+    createAction("NN");
+    createAction("Train");
+    createAction("Load");
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -108,17 +114,19 @@ void Window::createToolbars() {
     set_labelTime( new QLabel(tr("----")) );
 
     toolbar->addWidget( labelTime() );
+    toolbar->addAction( actions["Reset"] );
     toolbar->addAction( actions["Play"] );
     toolbar->addAction( actions["Anim"] );
     toolbar->addAction( actions["Step"] );
+    toolbar->addAction( actions["Capture"] );
 
     set_sliderFrame( new QSlider(Qt::Horizontal) );
-    sliderFrame()->setMaximumSize(QSize(200, 30));
+    sliderFrame()->setMaximumSize(QSize(300, 30));
     toolbar->addWidget( sliderFrame() );
     connect( sliderFrame(), SIGNAL(valueChanged(int)),
              this, SLOT(onSliderFrameChanged(int)) );
 
-    toolbar->addAction( actions["Capture"] );
+    toolbar->addAction( actions["Train"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
@@ -140,6 +148,11 @@ void Window::onTimerRender() {
 void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
+        if (sim()->getTime() >= 1.99999) {
+            actions["Play"]->setChecked(false);
+            LOG(INFO) << "evaluate = " << sim()->getCost();
+        }
+
         if (actions["Capture"]->isChecked()) {
             takeCapture();
         }
@@ -162,17 +175,32 @@ void Window::onTimerIdle() {
         );
     sliderFrame()->setRange(0, n - 1);
     std::stringstream sout;
+    sout << std::fixed << std::setprecision(4);
+
     sout << "State = ";
     Eigen::VectorXd state = sim()->getState();
     for (int i = 0; i < state.size(); i++) {
         if (i != 0) sout << ", ";
         sout << state(i);
     }
+    sout << " Torque = ";
+    Eigen::VectorXd torque = sim()->getTorque();
+    for (int i = 0; i < torque.size(); i++) {
+        if (i != 0) sout << ", ";
+        sout << torque(i);
+    }
+    sout << " Result = " << sim()->getCost();
+    
     statusbar()->showMessage(sout.str().c_str());
 }
 
 void Window::onSliderFrameChanged(int index) {
     sim()->updateToHistory(index);
+}
+
+void Window::onActionReset() {
+    sim()->reset();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::onActionPlay() {
@@ -200,6 +228,16 @@ void Window::onActionLoad() {
     // LOG(INFO) << "Filename = [" << filename << "]";
 }
 
+void Window::onActionNN() {
+}
+
+void Window::onActionLoad() {
+}
+
+void Window::onActionTrain() {
+    sim()->trainNN();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
 
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {
@@ -241,7 +279,7 @@ void Window::takeCapture() {
 
 }
 
-// avconv -r 30 -i ./capture.%04d.png output.mp4
+// avconv -r 100 -i ./capture.%04d.png output.mp4
 
 
 void Window::takeScreenshot(const char* const filename) {
