@@ -173,9 +173,17 @@ void Simulation::evaluate() {
         rw + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw)  ;          
     Eigen::Vector3d cart = 0.5 * (leftCart + rightCart);
 
-    
-    // Ignore the Y offset
+    // Define axes
+    const int X = 1;
     const int Y = 2;
+
+    // CHeck the fail
+    const double COST_FAIL = 1000.0;
+    if (top(Y) < 0.0 || cart(Y) < 0.0) {
+        mCost += COST_FAIL;
+    }
+    
+    // From now, ignore the Y offset
     top(Y) = wheel(Y) = cart(Y) = 0.0;
 
     double cost = (top - wheel).squaredNorm()

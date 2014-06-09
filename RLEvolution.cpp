@@ -92,7 +92,7 @@ struct PolicyEvaluation : public shark::SingleObjectiveFunction {
         imp->setNNParams(params);
 
         imp->sim->reset();
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 5000; i++) {
             imp->sim->step();
         }
         double value = imp->sim->getCost();
@@ -190,7 +190,7 @@ void RLEvolution::train(sim::Simulation* sim) {
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
         imp->nn->setParameterVector( cma.solution().point );
         save();
-    } while(cma.solution().value > 100.0 );
+    } while(cma.solution().value > (288.049 * 0.9) );
     imp->nn->setParameterVector( cma.solution().point );
 
 }

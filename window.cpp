@@ -153,7 +153,7 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 1.99999) {
+        if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
             actions["Play"]->setChecked(false);
             LOG(INFO) << "evaluate = " << sim()->getCost();
         }
