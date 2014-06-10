@@ -30,7 +30,11 @@ struct RLEvolutionImp {
     shark::FFNet<shark::LogisticNeuron,shark::LogisticNeuron>* nn;
     sim::Simulation* sim;
 
-    void setNNParams(const Eigen::VectorXd& params) {
+    int numParams() const {
+        return nn->numberOfParameters();
+    }
+
+    void setParams(const Eigen::VectorXd& params) {
         shark::RealVector parameters(params.size());
         for (int i = 0; i < params.size(); i++) {
             parameters(i) = params(i);
@@ -38,7 +42,7 @@ struct RLEvolutionImp {
         nn->setParameterVector(parameters);
     }
 
-    Eigen::VectorXd nnParams() const {
+    Eigen::VectorXd params() const {
         shark::RealVector parameters = nn->parameterVector();
         Eigen::VectorXd params(parameters.size());
         for (int i = 0; i < params.size(); i++) {
@@ -47,9 +51,160 @@ struct RLEvolutionImp {
         return params;
     }
 
-};
+    void create() {
+        this->nn = new shark::FFNet<shark::LogisticNeuron,shark::LogisticNeuron>();
+        LOG(INFO) << "Neural Network";
+        unsigned int numInput  = 6;
+        unsigned int numHidden = 4;
+        unsigned int numOutput = 1;
 
+        bool connectConsecutiveLayers = true;
+        bool connectInputsOutputs     = false;
+        bool connectAll               = false;
+        bool useBiasNeuron            = false;
+
+        this->nn->setStructure(numInput, numHidden, numOutput,
+                              connectConsecutiveLayers, connectInputsOutputs,
+                              connectAll, useBiasNeuron);
+        LOG(INFO) << "Network connected: # parameters = " << this->nn->numberOfParameters();
+
+        
+        Eigen::VectorXd opt(32);
+        opt << -4.63813e+07,6.5714e+06,9.02755e+07,3.42653e+07,1.76467e+07,2.71827e+07,-6.64976e+07,-5.24898e+07,3.49514e+06,7.40673e+07,-2.41122e+07,-1.23729e+07,5.33984e+07,50485.7,-1.22745e+08,-1.04219e+08,1.29488e+08,7.34356e+07,-1.67211e+08,-1.90452e+08,-3.5792e+07,-9.19628e+07,-1.62285e+08,-1.38488e+08,-3.11151e+07,-7.48792e+07,-6.63516e+07,2.13303e+08,1.82669e+07,-1.00482e+08,8.93331e+06,5.98239e+07;
+        setParams(opt);
+    }
+
+    Eigen::VectorXd control(const Eigen::VectorXd& x) {
+        // Fetch the state
+        int n = x.size() / 2;
+        Eigen::VectorXd q = x.head(n);
+        Eigen::VectorXd dq = x.tail(n);
+
+
+        shark::RealVector input(6);
+        input(0) = q(0);
+        input(1) = q(1);
+        input(2) = q(2);
+        input(3) = dq(0);
+        input(4) = dq(1);
+        input(5) = dq(2);
+
+        shark::RealVector output;
+        // cout << "input... " << input << endl;
+        nn->eval(input, output);
+        // } catch (shark::Exception& e) {
+        //     LOG(FATAL) << "exception!! " << e.what() << " " << e.file() << " " << e.line();
+
+        // }
+        // LOG_EVERY_N(INFO, 20) << "predict: " << input << " -> " << output;
+
+        double maxTorq = 200; 
+        double o = 2.0 * (output(0) - 0.5) * maxTorq;
+        Eigen::VectorXd u(4);
+        u << o, o, -o, -o;
+        return u;
+
+    }
+    
+};
 ////////////////////////////////////////////////////////////
+
+// ////////////////////////////////////////////////////////////
+// // struct RLEvolutionImp
+// struct RLEvolutionImp {
+//     sim::Simulation* sim;
+
+//     Eigen::MatrixXd K;
+//     Eigen::MatrixXd F;
+//     Eigen::MatrixXd C;
+
+//     int numParams() const {
+//         return 5;
+//     }
+
+//     void setParams(const Eigen::VectorXd& params) {
+//         for (int i = 0; i < 4; i++) {
+//             for (int j = 0; j < 5; j++) {
+//                 if (i == 0 || i == 1) {
+//                     F(i, j) = params(j);
+//                 } else {
+//                     F(i, j) = -params(j);
+//                 }
+
+//             }
+//         }
+//         this->K = F * C;
+//     }
+
+//     Eigen::VectorXd params() const {
+//         return F.row(0);
+//     }
+
+//     void create() {
+//         int n = 6;
+//         // Parameters
+//         double radius = 0.05;
+//         double rw     = radius;
+//         double lrl1 = 1;
+//         double lrl2 = 0.1;
+//         double lll1 = 1;
+//         double lll2 = 0.1;
+
+
+//         Eigen::MatrixXd C(5, 2 * n);
+//         C << - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0, 0, 0, 0, 0, 0, 0,
+//             0, 0, 0, 0, 0, 0, - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0,
+//             0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
+//             0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,    
+//             1, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0;  
+//         this->C = C;
+        
+//         Eigen::MatrixXd F = Eigen::MatrixXd::Zero(4, 5);
+//         this->F = F;
+//         this->K = F * C;
+
+//         Eigen::VectorXd opt(5);
+//         opt << -8.25341e+07,-1.08371e+07,4.81433e+07,1.273e+07,4.87546e+07;
+//         setParams(opt);
+            
+//     }
+
+//     Eigen::VectorXd control(const Eigen::VectorXd& x) {
+//         // Fetch the state
+//         int n = x.size() / 2;
+//         // Parameters
+//         double maxTorq = 200; 
+
+//         // Equilibrium state
+//         Eigen::VectorXd qEq(n);
+//         qEq << 0.0, 0.0, 0.0, 0.0, PI/2.0, -PI/2.0;
+//         Eigen::VectorXd dqEq(n);
+//         dqEq << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+//         Eigen::VectorXd xEq(n * 2);
+//         xEq.head(n) = qEq;
+//         xEq.tail(n) = dqEq;
+        
+//         // Calculate u
+//         Eigen::VectorXd u = -K * (x - xEq);
+//         for(int i = 0; i < u.size(); i++) {
+//             if (fabs(u(i)) > maxTorq) {
+//                 if (u(i) > 0) {
+//                     u(i) = maxTorq;
+//                 } else {
+//                     u(i) = -maxTorq;
+//                 }
+//             }
+//         }
+//         return u;
+//     }
+    
+// };
+// ////////////////////////////////////////////////////////////
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////
 // Policy Evaluation Function
@@ -68,7 +223,7 @@ struct PolicyEvaluation : public shark::SingleObjectiveFunction {
         { return "PolicyEvaluation"; }
 
     std::size_t numberOfVariables()const{
-        return imp->nn->numberOfParameters();
+        return imp->numParams();
     }
 
     bool hasScalableDimensionality()const{
@@ -89,14 +244,15 @@ struct PolicyEvaluation : public shark::SingleObjectiveFunction {
         Eigen::VectorXd params( p. size() );
         for (int i = 0; i < p.size(); i++) params(i) = p(i);
 
-        imp->setNNParams(params);
+        imp->setParams(params);
 
         imp->sim->reset();
         for (int i = 0; i < 5000; i++) {
             imp->sim->step();
         }
         double value = imp->sim->getCost();
-        LOG(INFO) << "# " << m_evaluationCounter << " : " << value;
+        LOG(INFO) << "# " << m_evaluationCounter << " : " << params.transpose()
+                  << " -> " << value;
         return value;
     }
 private:
@@ -107,70 +263,17 @@ private:
 ////////////////////////////////////////////////////////////
 // class RLEvolution implementation
 RLEvolution::RLEvolution() {
-    // //create network and initialize weights random uniform
-    // unsigned numInput=2;
-    // unsigned numHidden=12;
-    // unsigned numOutput=1;
-    // shark::FFNet<shark::LogisticNeuron,shark::LogisticNeuron> network;
-    // network.setStructure(numInput,numHidden,numOutput, true, false, false, false);
-
-    // cout << network.numberOfParameters() << endl;        
-    // shark::RealVector params(network.numberOfParameters());
-    // network.setParameterVector(params);
-    // cout << "parameter is updated: " << params << endl;
-    // shark::RealVector input(2);
-    // input(0) = 0;
-    // input(1) = 1;
-    // shark::RealVector output;
-    // network.eval(input, output);
-    // cout << "predict: " << input << " -> " << output << endl;
-
-
     imp = new RLEvolutionImp;
-    imp->nn = new shark::FFNet<shark::LogisticNeuron,shark::LogisticNeuron>();
-    LOG(INFO) << "Neural Network";
-    unsigned int numInput  = 6;
-    unsigned int numHidden = 4;
-    unsigned int numOutput = 1;
-
-    bool connectConsecutiveLayers = true;
-    bool connectInputsOutputs     = false;
-    bool connectAll               = false;
-    bool useBiasNeuron            = false;
-
-    // imp->nn->setStructure(numInput, numHidden, numOutput);
-    imp->nn->setStructure(numInput, numHidden, numOutput,
-                          connectConsecutiveLayers, connectInputsOutputs,
-                          connectAll, useBiasNeuron);
-    LOG(INFO) << "Network connected: # parameters = " << imp->nn->numberOfParameters();
-
-
-    shark::RealVector input(numInput);
-    input(0) = 3.0;
-    input(1) = 3.0;
-
-    shark::RealVector output(numOutput);
-    imp->nn->eval(input, output);
-    LOG(INFO) << "Network testing: " << input << " -> " << output;
-
-
-    // CMA cma;
+    imp->create();
 }
 
 RLEvolution::~RLEvolution() {
-    delete imp->nn;
+    // delete imp->nn;
     delete imp;
 }
 
 // For training
 void RLEvolution::train(sim::Simulation* sim) {
-    // Eigen::VectorXd opt(32);
-    // opt << 12.4229,-16.6791,-28.7858,-15.9828,-40.7481,-23.233,10.7884,-17.428,47.411,6.47651,55.07,8.63919,39.1658,15.0118,-60.2714,-5.32964,17.7993,-29.3988,28.0938,40.8798,-2.74794,-13.7966,-41.9069,47.1869,15.139,-33.0323,31.2539,-17.2525,24.8337,8.64727,0.620035,23.617;
-    // // opt << -19.1507,-4.53068,-41.3912,-38.7542,-46.5239,47.4353,16.212,17.8151,-18.6195,7.42489,-61.2971,28.2913,-8.12158,26.8932,0.089589,3.57483,-52.3572,-4.38877,1.14532,-54.8062,-3.37869,-26.4246,-34.4195,11.4461,-36.5377,23.1277,50.1321,-28.0648,-38.6845,14.1859,16.7063,21.3714; 
-    // imp->setNNParams(opt);
-    // save();
-    // exit(0);
-
     shark::Rng::seed( (unsigned int) time (NULL) );
     imp->sim = sim;
 
@@ -179,7 +282,8 @@ void RLEvolution::train(sim::Simulation* sim) {
     // cma.init( prob );
     // cma.setSigma(10.0);
     shark::RealVector starting(prob.numberOfVariables());
-    cma.init( prob, starting, 32, 16, 15.0 );
+    // cma.init( prob, starting, 32, 16, 15.0 );
+    cma.init( prob, starting, 32, 16, 10000000.0 );
 
 
     do {
@@ -188,65 +292,45 @@ void RLEvolution::train(sim::Simulation* sim) {
         // Report information on the optimizer state and the current solution to the console.
 
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
-        imp->nn->setParameterVector( cma.solution().point );
+
+        // Update the params;
+        shark::RealVector parameters = cma.solution().point;
+        Eigen::VectorXd params(parameters.size());
+        for (int i = 0; i < params.size(); i++) {
+            params(i) = parameters(i);
+        }
+        imp->setParams(params);
         save();
-    } while(cma.solution().value > (288.049 * 0.9) );
-    imp->nn->setParameterVector( cma.solution().point );
+    } while(cma.solution().value > (600.0) );
+    // imp->nn->setParameterVector( cma.solution().point );
 
 }
 
 void RLEvolution::save() {
-    std::ofstream fout("balance.nn");
-    boost::archive::polymorphic_text_oarchive oa(fout);
-    imp->nn->write(oa);
-    fout.close();    
-    LOG(INFO) << "save balance.nn OK";
+    // std::ofstream fout("balance.nn");
+    // boost::archive::polymorphic_text_oarchive oa(fout);
+    // imp->nn->write(oa);
+    // fout.close();    
+    // LOG(INFO) << "save balance.nn OK";
 }
 
 void RLEvolution::load(const char* const filename) {
-    std::string str_filename;
-    if (filename == NULL) {
-        str_filename = "balance.nn";
-    } else {
-        str_filename = filename;
-    }
-    std::ifstream fin(str_filename.c_str());
-    boost::archive::polymorphic_text_iarchive ia(fin);
-    imp->nn->read(ia);
-    fin.close();
-    LOG(INFO) << "load " << str_filename << " OK";
+    // std::string str_filename;
+    // if (filename == NULL) {
+    //     str_filename = "balance.nn";
+    // } else {
+    //     str_filename = filename;
+    // }
+    // std::ifstream fin(str_filename.c_str());
+    // boost::archive::polymorphic_text_iarchive ia(fin);
+    // imp->nn->read(ia);
+    // fin.close();
+    // LOG(INFO) << "load " << str_filename << " OK";
 }
 
 // For using
 Eigen::VectorXd RLEvolution::control(const Eigen::VectorXd& x) {
-    // Fetch the state
-    int n = x.size() / 2;
-    Eigen::VectorXd q = x.head(n);
-    Eigen::VectorXd dq = x.tail(n);
-
-
-    shark::RealVector input(6);
-    input(0) = q(0);
-    input(1) = q(1);
-    input(2) = q(2);
-    input(3) = dq(0);
-    input(4) = dq(1);
-    input(5) = dq(2);
-
-    shark::RealVector output;
-    // cout << "input... " << input << endl;
-    imp->nn->eval(input, output);
-    // } catch (shark::Exception& e) {
-    //     LOG(FATAL) << "exception!! " << e.what() << " " << e.file() << " " << e.line();
-
-    // }
-    // LOG_EVERY_N(INFO, 20) << "predict: " << input << " -> " << output;
-
-    double maxTorq = 200; 
-    double o = 2.0 * (output(0) - 0.5) * maxTorq;
-    Eigen::VectorXd u(4);
-    u << o, o, -o, -o;
-    return u;
+    return imp->control(x);
 }
 
 

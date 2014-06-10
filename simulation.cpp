@@ -206,7 +206,9 @@ void Simulation::evaluate() {
 }
 
 void Simulation::step() {
-    control();
+    if ( (mStateHistory.size()) % 10 == 1) {
+        control();
+    }
     integrate();
     evaluate();
 }
@@ -264,6 +266,11 @@ void Simulation::integrate() {
         mState(i) = x;
     }
     mStateHistory.push_back(mState);
+
+    // // Hard coded constraint..
+    mState(3) = mState(2);
+    mState(4) =  0.5 * PI - mState(2);
+    mState(5) = -0.5 * PI - mState(2);
 }
 
 
