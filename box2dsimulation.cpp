@@ -48,6 +48,7 @@ Box2dSimulationImp::Box2dSimulationImp() {
 
 
     const double SKIN = 0.0001; // Default is 0.01;
+    const double MU   = 10.0;
 
     // Wheel
     {
@@ -66,7 +67,7 @@ Box2dSimulationImp::Box2dSimulationImp() {
         // Set the box density to be non-zero, so it will be dynamic.
         fixtureDef.density = 200.0f;
         // Override the default friction.
-        fixtureDef.friction = 1.0f;
+        fixtureDef.friction = MU;
         // Add the shape to the body.
         body->CreateFixture(&fixtureDef);
 
@@ -91,7 +92,7 @@ Box2dSimulationImp::Box2dSimulationImp() {
         // Set the box density to be non-zero, so it will be dynamic.
         fixtureDef.density = 2.0 / (4.0 * 0.3 * 0.005);
         // Override the default friction.
-        fixtureDef.friction = 1.0f;
+        fixtureDef.friction = MU;
         // Add the shape to the body.
         body->CreateFixture(&fixtureDef);
         this->board = body;
@@ -140,7 +141,7 @@ Box2dSimulationImp::Box2dSimulationImp() {
         // Set the box density to be non-zero, so it will be dynamic.
         fixtureDef.density = 15.0 / (4.0 * sx * sy);
         // Override the default friction.
-        fixtureDef.friction = 1.0f;
+        fixtureDef.friction = MU;
         // Add the shape to the body.
         body->CreateFixture(&fixtureDef);
         switch(i) {
@@ -172,6 +173,23 @@ Box2dSimulationImp::Box2dSimulationImp() {
         jointDef.Initialize(r1, r2, anchor);
         b2RevoluteJoint* joint = (b2RevoluteJoint*)world->CreateJoint(&jointDef);
     }
+    {
+        b2RevoluteJointDef jointDef;
+        b2Vec2 anchor;
+        anchor.x = l1->GetPosition().x;
+        anchor.y = board->GetPosition().y;
+        jointDef.Initialize(l1, board, anchor);
+        b2RevoluteJoint* joint = (b2RevoluteJoint*)world->CreateJoint(&jointDef);
+    }
+    {
+        b2RevoluteJointDef jointDef;
+        b2Vec2 anchor;
+        anchor.x = r1->GetPosition().x;
+        anchor.y = board->GetPosition().y;
+        jointDef.Initialize(r1, board, anchor);
+        b2RevoluteJoint* joint = (b2RevoluteJoint*)world->CreateJoint(&jointDef);
+    }
+
 
     bodies.push_back(wheel);
     bodies.push_back(board);
@@ -254,7 +272,85 @@ void Box2dSimulation::init() {
     mStateHistory.push_back( getState() );
 }
 
+void Box2dSimulation::control() {
+    const int n = 6;
+
+    // Parameters
+    double radius = 0.05;
+    double rw     = radius;
+    double lrl1 = 1;
+    double lrl2 = 0.1;
+    double lll1 = 1;
+    double lll2 = 0.1;
+    double maxTorq = 100; 
+
+
+    // Feedback Matrix
+    Eigen::MatrixXd C(5, 2 * n);
+    C << - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, - lll1 - lll2 - 2*rw, - lll1 - lll2, - lll1 - lll2, 0, -lll2, 0,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,    
+        1, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0;  
+
+
+    Eigen::MatrixXd F(4, 5);
+    F << -2716691.61124073, -1189377.26019503, 953603.332318603, 10071.8805576070, 768507.689768547,
+        -2716691.61123261, -1189377.26019358, 953603.332315551, 10071.8805576529, 768507.689765388,
+        2716691.61123813, 1189377.26019453, -953603.332317613, -10071.8805576191, -768507.689767548,
+        2716691.61124318, 1189377.26019541, -953603.332319511, -10071.8805575885, -768507.689769501;
+
+    // F *= 0.01;
+
+    Eigen::MatrixXd K = F * C;
+
+    // State 
+    Eigen::VectorXd x = getControlState();
+    
+    // Equilibrium state
+    Eigen::VectorXd qEq(n);
+    qEq << 0.0, 0.0, 0.0, 0.0, PI/2.0, -PI/2.0;
+    Eigen::VectorXd dqEq(n);
+    dqEq << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    Eigen::VectorXd xEq(n * 2);
+    xEq.head(n) = qEq;
+    xEq.tail(n) = dqEq;
+        
+    // Calculate u
+    Eigen::VectorXd u = -K * (x - xEq);
+    for(int i = 0; i < u.size(); i++) {
+        if (fabs(u(i)) > maxTorq) {
+            if (u(i) > 0) {
+                u(i) = maxTorq;
+            } else {
+                u(i) = -maxTorq;
+            }
+        }
+    }
+
+    LOG(INFO) << "box2d.u = " << u.transpose();
+    
+    for (int i = 2, j = 0; i < imp->bodies.size(); i++, j++) {
+        b2Body* body = imp->bodies[i];
+        b2Body* parent = NULL;
+        switch(i) {
+        case 2: parent = imp->board; break;
+        case 3: parent = imp->board; break;
+        case 4: parent = imp->l1; break;
+        case 5: parent = imp->r1; break;
+        }
+        double tau = -0.5 * u(j);
+        body->ApplyTorque(tau, true);
+        parent->ApplyTorque(-tau, true);
+    }    
+    
+}
+
 void Box2dSimulation::step() {
+    if ( (mStateHistory.size()) % 2 == 1) {
+        control();
+    }
+
     // Prepare for simulation. Typically we use a time step of 1/60 of a
     // second (60Hz) and 10 iterations. This provides a high quality simulation
     // in most game scenarios.
@@ -275,7 +371,7 @@ void Box2dSimulation::step() {
 
     mStateHistory.push_back( getState() );
 
-    LOG_EVERY_N(INFO, 10) << getControlState().head(6).transpose();
+    // LOG_EVERY_N(INFO, 10) << getControlState().head(6).transpose();
 
 }
 

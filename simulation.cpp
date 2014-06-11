@@ -106,7 +106,6 @@ void Simulation::controlFeedback() {
                 u(i) = -maxTorq;
             }
         }
-        u(i) = 0.0;
     }
     
     mTorque = u;
@@ -210,7 +209,7 @@ void Simulation::evaluate() {
 }
 
 void Simulation::step() {
-    if ( (mStateHistory.size()) % 10 == 1) {
+    if ( (mStateHistory.size()) % 2 == 1) {
         control();
     }
     integrate();

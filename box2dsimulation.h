@@ -16,6 +16,7 @@ public:
     virtual ~Box2dSimulation();
 
     void init();
+    void control();
     void step();
     void render();
 
