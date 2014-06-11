@@ -26,6 +26,9 @@ void circle(double cx, double cy, double r) {
 }
 
 void Simulation::render() {
+    glPushMatrix();
+    glTranslated(1.0, 0.0, 0.0);
+
     // glBegin(GL_POLYGON);
     // glVertex2d(0, 0);
     // glVertex2d(0, 0.1);
@@ -149,6 +152,7 @@ void Simulation::render() {
     circle( rightLink2(X), rightLink2(Y), 0.02 );
     circle( cart(X), cart(Y), 0.02 );
 
+    glPopMatrix();
 }
 
 } // namespace sim

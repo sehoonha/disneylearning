@@ -19,8 +19,17 @@ public:
     void step();
     void render();
 
+    Eigen::VectorXd getState();
+    void setState(const Eigen::VectorXd& state);
+    
+    void reset();
+    int nStateHistory() const { return mStateHistory.size(); }
+    void updateToHistory(int index);
+    void updateToLatestHistory() { updateToHistory( nStateHistory() - 1); }
+
 protected:
     Box2dSimulationImp* imp;
+    std::vector<Eigen::VectorXd> mStateHistory;
     
 }; // class Box2dSimulation
 

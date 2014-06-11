@@ -10,13 +10,14 @@ namespace sim {
 // struct Box2dsimulationImp;
 struct Box2dSimulationImp {
     b2World* world;
-    b2Body* groundBody;
+    b2Body* ground;
     b2Body* board;
     b2Body* wheel;
     b2Body* l1;
     b2Body* l2;
     b2Body* r1;
     b2Body* r2;
+    std::vector<b2Body*> bodies;
     
     Box2dSimulationImp();
     ~Box2dSimulationImp();
@@ -33,17 +34,17 @@ Box2dSimulationImp::Box2dSimulationImp() {
 
     // Define the ground body.
     b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(0.0f, -10.0f);
+    groundBodyDef.position.Set(0.0f, -1.0f);
     // Call the body factory which allocates memory for the ground body
     // from a pool and creates the ground box shape (also from a pool).
     // The body is also added to the world.
-    groundBody = world->CreateBody(&groundBodyDef);
+    ground = world->CreateBody(&groundBodyDef);
     // Define the ground box shape.
     b2PolygonShape groundBox;
     // The extents are the half-widths of the box.
-    groundBox.SetAsBox(50.0f, 10.0f);
+    groundBox.SetAsBox(1.0f, 1.0f);
     // Add the ground fixture to the ground body.
-    groundBody->CreateFixture(&groundBox, 0.0f);
+    ground->CreateFixture(&groundBox, 0.0f);
 
     {
         // Define the dynamic body. We set its position and call the body factory.
@@ -152,6 +153,12 @@ Box2dSimulationImp::Box2dSimulationImp() {
         b2RevoluteJoint* joint = (b2RevoluteJoint*)world->CreateJoint(&jointDef);
     }
 
+    bodies.push_back(wheel);
+    bodies.push_back(board);
+    bodies.push_back(l1);
+    bodies.push_back(l2);
+    bodies.push_back(r1);
+    bodies.push_back(r2);
 }
 
 Box2dSimulationImp::~Box2dSimulationImp() {
@@ -204,13 +211,14 @@ Box2dSimulation::~Box2dSimulation() {
 
 void Box2dSimulation::init() {
     imp = new Box2dSimulationImp;
+    mStateHistory.push_back( getState() );
 }
 
 void Box2dSimulation::step() {
     // Prepare for simulation. Typically we use a time step of 1/60 of a
     // second (60Hz) and 10 iterations. This provides a high quality simulation
     // in most game scenarios.
-    float32 timeStep = 1.0f / 100.0f;
+    float32 timeStep = 1.0f / 1000.0f;
     int32 velocityIterations = 6;
     int32 positionIterations = 2;
 
@@ -225,14 +233,19 @@ void Box2dSimulation::step() {
     // // printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
     // LOG(INFO) << position.x << ", " <<  position.y << ", " <<  angle;
 
+    mStateHistory.push_back( getState() );
+
 }
 
 void Box2dSimulation::render() {
+    glPushMatrix();
     {
         double scale = 1.0;
         glTranslated(-1.0, 0.0, 0.0);
         glScaled(scale, scale, scale);
     }
+    glColor3d(0.0, 0.3, 0.5);
+    imp->drawBody(imp->ground);
     glColor3d(1.0, 0.0, 0.0);
     imp->drawBody(imp->wheel);
     glColor3d(0.0, 0.0, 0.0);
@@ -243,7 +256,58 @@ void Box2dSimulation::render() {
     glColor3d(0.0, 0.0, 1.0);
     imp->drawBody(imp->r1);
     imp->drawBody(imp->r2);
+    glPopMatrix();
 }
+
+Eigen::VectorXd Box2dSimulation::getState() {
+    Eigen::VectorXd state(6 * 6);
+    int ptr = 0;
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+
+        b2Vec2  p = body->GetPosition();
+        float32 a = body->GetAngle();
+        b2Vec2  v = body->GetLinearVelocity();
+        float32 w = body->GetAngularVelocity();
+        state(ptr++) = p.x;
+        state(ptr++) = p.y;
+        state(ptr++) = a;
+        state(ptr++) = v.x;
+        state(ptr++) = v.y;
+        state(ptr++) = w;
+    }
+    return state;
+}
+
+void Box2dSimulation::setState(const Eigen::VectorXd& state) {
+    int ptr = 0;
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+
+        double px = state(ptr++);
+        double py = state(ptr++);
+        double a  = state(ptr++);
+        double vx = state(ptr++);
+        double vy = state(ptr++);
+        double w  = state(ptr++);
+
+        body->SetTransform( b2Vec2(px, py), a);
+        body->SetLinearVelocity( b2Vec2(vx, vy) );
+        body->SetAngularVelocity( w );
+    }        
+}
+
+void Box2dSimulation::reset() {
+    updateToHistory(0);
+    mStateHistory.clear();
+    mStateHistory.push_back( getState() );
+}
+
+void Box2dSimulation::updateToHistory(int index) {
+    Eigen::VectorXd state = mStateHistory[index];
+    setState(state);
+}
+
 
 } // namespace sim
 } // namespace disneysimple

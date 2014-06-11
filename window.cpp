@@ -204,16 +204,19 @@ void Window::onTimerIdle() {
 
 void Window::onSliderFrameChanged(int index) {
     sim()->updateToHistory(index);
+    boxsim()->updateToHistory(index);
 }
 
 void Window::onActionReset() {
     sim()->reset();
+    boxsim()->reset();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::onActionPlay() {
     if (actions["Play"]->isChecked()) {
         sim()->updateToLatestHistory();
+        boxsim()->updateToLatestHistory();
         LOG(INFO) << FUNCTION_NAME() << " resumes";
     } else {
         LOG(INFO) << FUNCTION_NAME() << " pauses";
