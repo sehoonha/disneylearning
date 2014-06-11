@@ -7,6 +7,7 @@
 #include "window.h"
 #include "camera.h"
 #include "simulation.h"
+#include "box2dsimulation.h"
 
 namespace disneysimple {
 namespace gui {
@@ -119,6 +120,7 @@ void GLWidget::paintGL() {
     // 2D Stuff
     enable2D();
     window()->sim()->render();
+    window()->boxsim()->render();
     disable2D();
 }
 

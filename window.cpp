@@ -6,6 +6,7 @@
 #include "glwidget.h"
 #include "cppcommon.h"
 #include "simulation.h"
+#include "box2dsimulation.h"
 
 namespace disneysimple {
 namespace gui {
@@ -32,6 +33,7 @@ Window::~Window() {
 
 void Window::initApp() {
     set_sim(new sim::Simulation());
+    set_boxsim(new sim::Box2dSimulation());
     // set_app( new Application() );
     // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
     // // set_commander( new Commander(app()) );
@@ -152,6 +154,7 @@ void Window::onTimerRender() {
 void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         sim()->step();
+        boxsim()->step();
 
         if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
             actions["Play"]->setChecked(false);
@@ -220,6 +223,7 @@ void Window::onActionPlay() {
 void Window::onActionStep() {
     // LOG(INFO) << FUNCTION_NAME() << " OK";
     sim()->step();
+    boxsim()->step();
 }
 
 void Window::onActionLoad() {

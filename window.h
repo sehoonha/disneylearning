@@ -21,6 +21,7 @@ class GLWidget;
 } // namespace gui
 namespace sim {
 class Simulation;
+class Box2dSimulation;
 } // namespace sim
 } // namespace disneysimple
 
@@ -66,6 +67,7 @@ protected:
     void takeScreenshot(const char* const filename);
 protected:
     MEMBER_PTR(sim::Simulation*, sim);
+    MEMBER_PTR(sim::Box2dSimulation*, boxsim);
 
     MEMBER_PTR(GLWidget*, gl);
     MEMBER_PTR(QTimer*, timerRender);

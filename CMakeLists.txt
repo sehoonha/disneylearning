@@ -87,6 +87,7 @@ target_link_libraries(disneysimple ${QT_LIBRARIES})
 target_link_libraries(disneysimple ${Boost_LIBRARIES})
 target_link_libraries(disneysimple glog)
 target_link_libraries(disneysimple shark)
+target_link_libraries(disneysimple Box2D)
 
 set_target_properties(disneysimple PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
