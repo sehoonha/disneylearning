@@ -28,9 +28,11 @@ void Simulation::init() {
     Eigen::VectorXd xEq(m);
     xEq << 0, 0, 0, 0, PI_2, -PI_2
          , 0, 0, 0, 0, 0, 0;
+    // xEq << 0, 0, 0, 0, 0, 0
+    //      , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 0;
+    double angIni = 2;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
         

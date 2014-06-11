@@ -27,6 +27,8 @@ public:
     void updateToHistory(int index);
     void updateToLatestHistory() { updateToHistory( nStateHistory() - 1); }
 
+    Eigen::VectorXd getControlState();
+    void setControlState(const Eigen::VectorXd& state);
 protected:
     Box2dSimulationImp* imp;
     std::vector<Eigen::VectorXd> mStateHistory;

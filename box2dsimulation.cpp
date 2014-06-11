@@ -14,8 +14,8 @@ struct Box2dSimulationImp {
     b2Body* board;
     b2Body* wheel;
     b2Body* l1;
-    b2Body* l2;
     b2Body* r1;
+    b2Body* l2;
     b2Body* r2;
     std::vector<b2Body*> bodies;
     
@@ -46,27 +46,10 @@ Box2dSimulationImp::Box2dSimulationImp() {
     // Add the ground fixture to the ground body.
     ground->CreateFixture(&groundBox, 0.0f);
 
-    {
-        // Define the dynamic body. We set its position and call the body factory.
-        b2BodyDef bodyDef;
-        bodyDef.type = b2_dynamicBody;
-        bodyDef.position.Set(0.0f, 0.12f);
-        b2Body* body = world->CreateBody(&bodyDef);
-        // Define another box shape for our dynamic body.
-        b2PolygonShape shape;
-        shape.SetAsBox(0.3f, 0.005f);
-        // Define the dynamic body fixture.
-        b2FixtureDef fixtureDef;
-        fixtureDef.shape = &shape;
-        // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 1.0f;
-        // Override the default friction.
-        fixtureDef.friction = 0.3f;
-        // Add the shape to the body.
-        body->CreateFixture(&fixtureDef);
-        this->board = body;
-    }
 
+    const double SKIN = 0.0001; // Default is 0.01;
+
+    // Wheel
     {
         // Define the dynamic body. We set its position and call the body factory.
         b2BodyDef bodyDef;
@@ -81,14 +64,39 @@ Box2dSimulationImp::Box2dSimulationImp() {
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
         // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 1.0f;
+        fixtureDef.density = 200.0f;
         // Override the default friction.
-        fixtureDef.friction = 0.3f;
+        fixtureDef.friction = 1.0f;
         // Add the shape to the body.
         body->CreateFixture(&fixtureDef);
 
         this->wheel = body;
     }
+
+    // Board
+    {
+        // Define the dynamic body. We set its position and call the body factory.
+        b2BodyDef bodyDef;
+        bodyDef.type = b2_dynamicBody;
+        bodyDef.position.Set(0.0f, 0.12f);
+        b2Body* body = world->CreateBody(&bodyDef);
+        // Define another box shape for our dynamic body.
+        b2PolygonShape shape;
+        shape.SetAsBox(0.3f, 0.005f);
+        shape.m_radius = SKIN; 
+
+        // Define the dynamic body fixture.
+        b2FixtureDef fixtureDef;
+        fixtureDef.shape = &shape;
+        // Set the box density to be non-zero, so it will be dynamic.
+        fixtureDef.density = 2.0 / (4.0 * 0.3 * 0.005);
+        // Override the default friction.
+        fixtureDef.friction = 1.0f;
+        // Add the shape to the body.
+        body->CreateFixture(&fixtureDef);
+        this->board = body;
+    }
+
 
     const double width  = 0.005;
     const double height = 0.5;
@@ -98,43 +106,55 @@ Box2dSimulationImp::Box2dSimulationImp() {
         bodyDef.type = b2_dynamicBody;
         switch(i) {
         case 0: bodyDef.position.Set(-0.1f, 0.12 + 1.0 * height); break;
-        case 1: bodyDef.position.Set(-0.05f, 0.12 + 2.0 * height); break;
-        case 2: bodyDef.position.Set( 0.1f, 0.12 + 1.0 * height); break;
-        case 3: bodyDef.position.Set(0.05f, 0.12 + 2.0 * height); break;
+        case 1: bodyDef.position.Set( 0.1f, 0.12 + 1.0 * height); break;
+        case 2:
+            bodyDef.position.Set(-0.05f, 0.12 + 2.0 * height);
+            bodyDef.angle = PI / 2.0;
+            break;
+        case 3:
+            bodyDef.position.Set(0.05f, 0.12 + 2.0 * height);
+            bodyDef.angle = -PI / 2.0;
+            break;
         }
         b2Body* body = world->CreateBody(&bodyDef);
         // Define another box shape for our dynamic body.
         b2PolygonShape shape;
+        double sx;
+        double sy;
         switch(i) {
         case 0: 
+        case 1:
+            sx = width; sy = height; break;
+            // shape.SetAsBox(width, height); break;
         case 2:
-            shape.SetAsBox(width, height); break;
-        case 1: 
         case 3: 
-            shape.SetAsBox(0.05, width); break;
+            // shape.SetAsBox(0.05, width); break;
+            // shape.SetAsBox(width, 0.05); break;
+            sx = width; sy = 0.05; break;
         }
+        shape.SetAsBox(sx, sy);
+        shape.m_radius = SKIN; 
         // Define the dynamic body fixture.
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
         // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 1.0f;
+        fixtureDef.density = 15.0 / (4.0 * sx * sy);
         // Override the default friction.
-        fixtureDef.friction = 0.3f;
+        fixtureDef.friction = 1.0f;
         // Add the shape to the body.
         body->CreateFixture(&fixtureDef);
         switch(i) {
         case 0: this->l1 = body; break;
-        case 1: this->l2 = body; break;
-        case 2: this->r1 = body; break;
+        case 1: this->r1 = body; break;
+        case 2: this->l2 = body; break;
         case 3: this->r2 = body; break;
         }
-        
     }
 
     {
-        b2RevoluteJointDef jointDef;
+        b2WeldJointDef jointDef;
         jointDef.Initialize(l2, r2, 0.5 * (l2->GetPosition() + r2->GetPosition()));
-        b2RevoluteJoint* joint = (b2RevoluteJoint*)world->CreateJoint(&jointDef);
+        b2WeldJoint* joint = (b2WeldJoint*)world->CreateJoint(&jointDef);
     }
     {
         b2RevoluteJointDef jointDef;
@@ -156,9 +176,12 @@ Box2dSimulationImp::Box2dSimulationImp() {
     bodies.push_back(wheel);
     bodies.push_back(board);
     bodies.push_back(l1);
-    bodies.push_back(l2);
     bodies.push_back(r1);
+    bodies.push_back(l2);
     bodies.push_back(r2);
+    for (int i = 0; i < bodies.size(); i++) {
+        LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
+    }
 }
 
 Box2dSimulationImp::~Box2dSimulationImp() {
@@ -197,6 +220,7 @@ void Box2dSimulationImp::drawShape(b2Fixture* fixture, const b2Transform& xf) {
         glEnd();
     }
 
+
 }
 //
 ////////////////////////////////////////////////////////////
@@ -204,6 +228,7 @@ void Box2dSimulationImp::drawShape(b2Fixture* fixture, const b2Transform& xf) {
 
 Box2dSimulation::Box2dSimulation() {
     init();
+
 }
 
 Box2dSimulation::~Box2dSimulation() {
@@ -211,6 +236,21 @@ Box2dSimulation::~Box2dSimulation() {
 
 void Box2dSimulation::init() {
     imp = new Box2dSimulationImp;
+
+    int n = 6;
+    int m = 2 * n;
+    Eigen::VectorXd xEq(m);
+    xEq << 0, 0, 0, 0, PI_2, -PI_2
+         , 0, 0, 0, 0, 0, 0;
+    // xEq << 0, 0, 0, 0, 0, 0
+    //      , 0, 0, 0, 0, 0, 0;
+    Eigen::VectorXd xOffset(m);
+    double angIni = 2;
+    xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
+        , 0, 0, 0, 0, 0, 0;
+    Eigen::VectorXd cState = xEq + xOffset;
+    setControlState(cState);
+
     mStateHistory.push_back( getState() );
 }
 
@@ -234,6 +274,8 @@ void Box2dSimulation::step() {
     // LOG(INFO) << position.x << ", " <<  position.y << ", " <<  angle;
 
     mStateHistory.push_back( getState() );
+
+    LOG_EVERY_N(INFO, 10) << getControlState().head(6).transpose();
 
 }
 
@@ -308,6 +350,129 @@ void Box2dSimulation::updateToHistory(int index) {
     setState(state);
 }
 
+Eigen::VectorXd Box2dSimulation::getControlState() {
+    Eigen::VectorXd state(6 * 2);
+
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+        float32 a = body->GetAngle();
+        float32 w = body->GetAngularVelocity();
+
+        b2Body* parent = NULL;
+        float pa = 0.0;
+        float pw = 0.0;
+        switch(i) {
+        case 1: parent = imp->wheel; break;
+        case 2: parent = imp->board; break;
+        case 3: parent = imp->board; break;
+        case 4: parent = imp->l1; break;
+        case 5: parent = imp->r1; break;
+        }
+
+        if (parent) {
+            pa = parent->GetAngle();
+            pw = parent->GetAngularVelocity();
+        }
+        
+        state(i + 0) = a - pa;
+        state(i + 6) = w - pw;
+
+        
+    }
+    return state;
+}
+
+void Box2dSimulation::setControlState(const Eigen::VectorXd& state) {
+    // Parameters
+    double offset = 0;
+    double radius = 0.05;
+    double rw     = radius;
+    double aXmin  = -0.6;
+    double aXmax  = 0.6;
+    double aYmin  = 2*rw-0.3;
+    double aYmax  = 2*rw+1.5;
+    double lb     = 0.6;
+
+    double lrl1 = 1;
+    double lrl2 = 0.1;
+    double lll1 = 1;
+    double lll2 = 0.1;
+
+    int n = 6;
+    Eigen::VectorXd q = state.head(n);
+    double alphaw  = q(0);
+    double alphab  = q(1);
+    double al      = 0.0;
+    double ar      = 0.0;
+    double thetal1 = q(2);
+    double thetar1 = q(3);
+    double thetal2 = q(4);
+    double thetar2 = q(5);
+
+    const int X = 1;
+    const int Y = 2;
+    // Set wheel
+    Eigen::Vector3d wheel;
+    wheel << 0,
+        offset-alphaw*rw,
+        rw;
+    imp->wheel->SetTransform(b2Vec2(wheel(X), wheel(Y)), alphaw);
+
+    // Set board
+    Eigen::Vector3d boardRight;
+    boardRight << 0,
+        offset- alphaw*rw - cos(alphab + alphaw)*(lb/2 - alphab*rw) - rw*sin(alphab + alphaw),
+        rw - sin(alphab + alphaw)*(lb/2 - alphab*rw) + rw*cos(alphab + alphaw);
+
+    Eigen::Vector3d boardLeft;
+    boardLeft << 0,
+        offset+cos(alphab + alphaw)*(lb/2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw),
+        rw + sin(alphab + alphaw)*(lb/2 + alphab*rw) + rw*cos(alphab + alphaw);     
+
+    Eigen::Vector3d board = 0.5 * (boardLeft + boardRight);
+    imp->board->SetTransform(b2Vec2(board(X), board(Y)), alphab - imp->wheel->GetAngle());
+
+    // Set right links
+    Eigen::Vector3d rightCart;
+    rightCart << 0,
+        offset+cos(alphab + alphaw)*(al + lll2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw),
+        rw + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw)  ;          
+    Eigen::Vector3d rightLink1;
+    rightLink1 << 0,
+        offset+cos(alphab + alphaw)*(al + lll2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw) - lll1*sin(alphab + alphaw + thetal1),
+        rw + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw) + lll1*cos(alphab + alphaw + thetal1)  ;
+    Eigen::Vector3d rightLink2;
+    rightLink2 << 0,
+        offset+cos(alphab + alphaw)*(al + lll2 + alphab*rw) - alphaw*rw - lll2*sin(alphab + alphaw + thetal1 + thetal2) - rw*sin(alphab + alphaw) - lll1*sin(alphab + alphaw + thetal1),
+        rw + lll2*cos(alphab + alphaw + thetal1 + thetal2) + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw) + lll1*cos(alphab + alphaw + thetal1)  ;
+
+
+    Eigen::Vector3d r1 = 0.5 * (rightCart + rightLink1);
+    imp->r1->SetTransform(b2Vec2(r1(X), r1(Y)), thetar1 + imp->board->GetAngle());
+    Eigen::Vector3d r2 = 0.5 * (rightLink1 + rightLink2);
+    imp->r2->SetTransform(b2Vec2(r2(X), r2(Y)), thetar2 + imp->r1->GetAngle());
+
+    // Set left links
+    Eigen::Vector3d leftCart;
+    leftCart << 0,
+        offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - rw*sin(alphab + alphaw) - alphaw*rw,
+        rw + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw);
+    Eigen::Vector3d leftLink1;
+    leftLink1 << 0,
+        offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - rw*sin(alphab + alphaw) - alphaw*rw - lrl1*sin(alphab + alphaw + thetar1),
+        rw + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw) + lrl1*cos(alphab + alphaw + thetar1)   ;
+    Eigen::Vector3d leftLink2;
+    leftLink2 << 0,
+        offset+cos(alphab + alphaw)*(ar - lrl2 + alphab*rw) - lrl2*sin(alphab + alphaw + thetar1 + thetar2) - rw*sin(alphab + alphaw) - alphaw*rw - lrl1*sin(alphab + alphaw + thetar1),
+        rw + lrl2*cos(alphab + alphaw + thetar1 + thetar2) + rw*cos(alphab + alphaw) + sin(alphab + alphaw)*(ar - lrl2 + alphab*rw) + lrl1*cos(alphab + alphaw + thetar1)  ;
+
+    Eigen::Vector3d l1 = 0.5 * (leftCart + leftLink1);
+    imp->l1->SetTransform(b2Vec2(l1(X), l1(Y)), thetal1 + imp->board->GetAngle());
+    Eigen::Vector3d l2 = 0.5 * (leftLink1 + leftLink2);
+    imp->l2->SetTransform(b2Vec2(l2(X), l2(Y)), thetal2 + imp->l1->GetAngle());
+
+    
+}
 
 } // namespace sim
 } // namespace disneysimple
