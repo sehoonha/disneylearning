@@ -7,6 +7,8 @@
 
 #include "Simulator.h"
 #include "utils/CppCommon.h"
+#include "utils/LoadOpengl.h"
+#include "utils/GLObjects.h"
 
 namespace disney {
 namespace simulation {
@@ -18,6 +20,8 @@ Simulator::Simulator() {
 
 Simulator::Simulator(const char* const _type) 
     : mType(_type)
+    , mTimestep(0.001)
+    , mControlStep(10)
 {
 }
 
@@ -30,17 +34,32 @@ Simulator* Simulator::init() {
 
 void Simulator::step() {
     
-    if ( (numHistories() % mNumControlStep) == 1 ||
-         (mNumControlStep < 2) ) {
+    if ( (mControlStep < 2) ||
+         (numHistories() % mControlStep) == 1
+          ) {
         control();
     }
     integrate();
+    pushHistory();
 }
 
 void Simulator::control() {
 }
 
 void Simulator::integrate() {
+}
+
+void Simulator::reset() {
+    updateToHistory(0);
+    clearHistory();
+}
+
+void Simulator::renderInfo() {
+    glColor3d(0.0, 0.0, 0.0);
+    // utils::renderString(0.1, 0.1, "HAHAHA");
+    std::stringstream sout;
+    sout << "Time: " << time();
+    utils::renderString(0, 0, sout.str().c_str());
 }
 
 // class Simulator ends

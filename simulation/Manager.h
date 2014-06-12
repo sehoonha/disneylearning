@@ -35,6 +35,8 @@ public:
     Simulator* simulator(int index) { return mSimulators[index]; }
     Simulator* availableSimulator(const char* const _type);
     void add(Simulator* _sim) { mSimulators.push_back(_sim); }
+
+    std::vector<Simulator*>& allSimulators() { return mSimulators; }
 protected:
     std::vector<Simulator*> mSimulators;
 }; // class Manager

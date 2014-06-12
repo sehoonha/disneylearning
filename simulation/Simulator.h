@@ -48,6 +48,7 @@ public:
     virtual void step();
     virtual void control();
     virtual void integrate();
+    virtual void reset();
 
     // History functions
     virtual void clearHistory() { mHistory.clear(); pushHistory(); }
@@ -57,11 +58,12 @@ public:
     virtual void updateToLatestHistory() { updateToHistory( numHistories() - 1 ); }
 
     // Visualization functions
+    virtual void renderInfo();
     virtual void render() = 0;
 protected:
     std::string mType;
     double mTimestep;
-    int mNumControlStep;
+    int mControlStep;
 
     std::vector<Eigen::VectorXd> mHistory; // Record in the full state
     // -- removed -- Eigen::VectorXd mState // state is not always a single vector

@@ -153,36 +153,31 @@ void Window::onTimerRender() {
 }
 
 void Window::onTimerIdle() {
-    // if (actions["Play"]->isChecked()) {
-    //     sim()->step();
-    //     boxsim()->step();
+    if (actions["Play"]->isChecked()) {
+        app()->step();
 
-    //     if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
-    //         actions["Play"]->setChecked(false);
-    //         LOG(INFO) << "evaluate = " << sim()->getCost();
-    //     }
+        // if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
+        //     actions["Play"]->setChecked(false);
+        //     // LOG(INFO) << "evaluate = " << sim()->getCost();
+        // }
 
-    //     if (actions["Capture"]->isChecked()) {
-    //         takeCapture();
-    //     }
-    // }
-    // if (actions["Anim"]->isChecked()) {
-    //     int i = sliderFrame()->value();
-    //     int n = sim()->nStateHistory();
-    //     i++;
-    //     if (i >= n) {
-    //         i = 0;
-    //     }
-    //     sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
-    // }
+        if (actions["Capture"]->isChecked()) {
+            takeCapture();
+        }
+    }
+
+    int n = app()->numMaximumHistory();
+
+    if (actions["Anim"]->isChecked()) {
+        int i = sliderFrame()->value();
+        i++;
+        if (i >= n) {
+            i = 0;
+        }
+        sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
+    }
     
-    // // updateInfo
-    // int n = sim()->nStateHistory();
-    // double time = (n - 1) * 0.001; 
-    // labelTime()->setText(
-    //     tr( (boost::format("T : %07.4f") % time).str().c_str() )
-    //     );
-    // sliderFrame()->setRange(0, n - 1);
+    // updateInfo
     // std::stringstream sout;
     // sout << std::fixed << std::setprecision(4);
 
@@ -204,17 +199,22 @@ void Window::onTimerIdle() {
 }
 
 void Window::onSliderFrameChanged(int index) {
+    app()->updateToHistory(index);
     // sim()->updateToHistory(index);
     // boxsim()->updateToHistory(index);
 }
 
 void Window::onActionReset() {
+    app()->reset();
     // sim()->reset();
     // boxsim()->reset();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::onActionPlay() {
+    int n = app()->numMaximumHistory();
+    sliderFrame()->setRange(0, n - 1);
+
     if (actions["Play"]->isChecked()) {
         // sim()->updateToLatestHistory();
         // boxsim()->updateToLatestHistory();

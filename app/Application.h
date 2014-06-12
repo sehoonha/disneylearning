@@ -27,6 +27,10 @@ public:
 
     void init();
     void render();
+    void step();
+    void reset();
+    int numMaximumHistory() const;
+    void updateToHistory(int index) const;
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
 }; // class Application

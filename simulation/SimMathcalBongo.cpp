@@ -37,6 +37,7 @@ Simulator* SimMathcalBongo::init() {
 
     mTorque = Eigen::VectorXd::Zero( numDimTorque() );
 
+    setState(mState);
     clearHistory();
     LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
@@ -67,7 +68,7 @@ void SimMathcalBongo::integrate() {
         if (x >  2.0 * PI) x =  2.0 * PI;
         mState(i) = x;
     }
-    mHistory.push_back(mState);
+    // mHistory.push_back(mState);
 
     // // Hard coded constraint..
     mState(3) = mState(2);

@@ -6,6 +6,8 @@
  */
 
 #include "Application.h"
+
+#include <algorithm>
 #include "utils/CppCommon.h"
 #include "simulation/Simulator.h"
 #include "simulation/Manager.h"
@@ -29,9 +31,41 @@ void Application::init() {
 }
 
 void Application::render() {
-    manager()->simulator(0)->render();
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        sim->render();
+        sim->renderInfo();
+    }
 }
 
+void Application::step() {
+    // for (int i = 0; i < manager()->numSimulators(); i++) {
+    //     simulation::Simulator* sim = manager()->simulator(i);
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        sim->step();
+    }
+}
+
+void Application::reset() {
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        sim->reset();
+    }
+}
+
+int Application::numMaximumHistory() const {
+    int ret = 0;
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        ret = std::max(ret, sim->numHistories());
+    }
+    return ret;
+}
+
+void Application::updateToHistory(int index) const {
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        if (index < sim->numHistories()) {
+            sim->updateToHistory(index);
+        }
+    }
+}
 
 // class Application ends
 ////////////////////////////////////////////////////////////
