@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 
 namespace disney {
-namespace gui {
+namespace app {
 class Camera {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -23,7 +23,7 @@ public:
 
 };
 
-} // namespace gui
+} // namespace app
 } // namespace disney
     
 #endif // #ifndef CAMERA_H

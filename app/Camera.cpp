@@ -361,7 +361,7 @@ build_rotmatrix(float m[4][4], float q[4])
 }
 
 namespace disney {
-namespace gui {
+namespace app {
     Camera::Camera() {
         begin.setZero();
         q = Eigen::VectorXd::Zero(4);
@@ -403,5 +403,5 @@ namespace gui {
     }
 
 
-} // namespace gui
+} // namespace app
 } // namespace disney

@@ -6,11 +6,11 @@
 // Local headers
 #include "Window.h"
 #include "Camera.h"
-// #include "simulation.h"
+#include "Application.h"
 // #include "box2dsimulation.h"
 
 namespace disney {
-namespace gui {
+namespace app {
 
 GLWidget::GLWidget(Window* _parent)
     : QGLWidget(QGLFormat(QGL::SampleBuffers))
@@ -119,7 +119,7 @@ void GLWidget::paintGL() {
 
     // 2D Stuff
     enable2D();
-    // window()->sim()->render();
+    window()->app()->render();
     // window()->boxsim()->render();
     disable2D();
 }
@@ -206,5 +206,5 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event) {
     camera()->begin = Eigen::Vector2d( m1.x(), m1.y() );
 }
 
-} // namespace gui
+} // namespace app
 } // namespace disney

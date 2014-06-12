@@ -16,10 +16,16 @@ namespace simulation {
 Simulator::Simulator() {
 }
 
+Simulator::Simulator(const char* const _type) 
+    : mType(_type)
+{
+}
+
 Simulator::~Simulator() {
 }
 
-void Simulator::init() {
+Simulator* Simulator::init() {
+    return this;
 }
 
 void Simulator::step() {

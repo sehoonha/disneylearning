@@ -29,6 +29,7 @@ void Application::init() {
 }
 
 void Application::render() {
+    manager()->simulator(0)->render();
 }
 
 

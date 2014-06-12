@@ -5,11 +5,11 @@
 
 #include "GLWidget.h"
 #include "utils/CppCommon.h"
-// #include "simulation.h"
+#include "Application.h"
 // #include "box2dsimulation.h"
 
 namespace disney {
-namespace gui {
+namespace app {
 Window::Window()
     : QMainWindow()
     , MEMBER_INIT_NULL(timerRender)
@@ -32,7 +32,8 @@ Window::~Window() {
 }
 
 void Window::initApp() {
-    // set_sim(new sim::Simulation());
+    set_app(new Application());
+    app()->init();
     // set_boxsim(new sim::Box2dSimulation());
     // set_app( new Application() );
     // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
@@ -318,5 +319,5 @@ void Window::takeScreenshot(const char* const filename) {
     LOG(INFO) << FUNCTION_NAME() << " : [" << filename << "]";
 }
 
-} // namespace gui
+} // namespace app
 } // namespace disney

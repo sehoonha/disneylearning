@@ -6,6 +6,9 @@
  */
 
 #include "Manager.h"
+#include "utils/CppCommon.h"
+#include "Simulator.h"
+#include "SimMathcalBongo.h"
 
 namespace disney {
 namespace simulation {
@@ -19,12 +22,15 @@ Manager::~Manager() {
 }
 
 void Manager::init() {
+    add( (new SimMathcalBongo())->init() );
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Manager::load(const char* const filename) {
 }
 
 Simulator* Manager::availableSimulator(const char* const _type) {
+    return simulator(0);
 }
 
 

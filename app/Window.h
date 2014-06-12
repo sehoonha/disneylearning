@@ -15,19 +15,15 @@ class QWidget;
 QT_END_NAMESPACE
 
 namespace disney {
-namespace gui {
+namespace app {
 class GLWidget;
-// class Commander;
-} // namespace gui
-// namespace sim {
-// class Simulation;
-// class Box2dSimulation;
-// } // namespace sim
+class Application;
+} // namespace app
 } // namespace disney
 
 
 namespace disney {
-namespace gui {
+namespace app {
     
 class Window : public QMainWindow {
     Q_OBJECT;
@@ -66,7 +62,7 @@ protected:
     void takeCapture();
     void takeScreenshot(const char* const filename);
 protected:
-    // MEMBER_PTR(sim::Simulation*, sim);
+    MEMBER_PTR(Application*, app);
     // MEMBER_PTR(sim::Box2dSimulation*, boxsim);
 
     MEMBER_PTR(GLWidget*, gl);
@@ -84,7 +80,7 @@ protected:
     MEMBER_VAR(bool, wasRunning);
 };
 
-} // namespace gui
+} // namespace app
 } // namespace disney
 
 #endif // #ifndef GUI_WINDOW_H

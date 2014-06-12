@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     QIcon icon("icon.png");
     app.setWindowIcon(icon);
 
-    disney::gui::Window window;
+    disney::app::Window window;
     window.show();
     window.activateWindow();
     window.raise();

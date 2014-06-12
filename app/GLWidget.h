@@ -8,16 +8,16 @@
 #define GL_WINDOW_HEIGHT 720
 
 namespace disney {
-namespace gui {
+namespace app {
 
 class Window;
 class Camera;
 
-} // namespace gui
+} // namespace app
 } // namespace disneylearning
 
 namespace disney {
-namespace gui {
+namespace app {
     
 class GLWidget : public QGLWidget {
     Q_OBJECT;
@@ -42,7 +42,7 @@ protected:
     MEMBER_PTR(Camera*, camera);
 };
 
-} // namespace gui
+} // namespace app
 } // namespace disney
 
 #endif // #ifndef GUI_GLWIDGET_H

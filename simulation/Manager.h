@@ -30,10 +30,11 @@ public:
     void init();
     void load(const char* const filename);
 
-    // Fetch simulators
+    // Manage simulators
     int numSimulators() const { return mSimulators.size(); }
     Simulator* simulator(int index) { return mSimulators[index]; }
     Simulator* availableSimulator(const char* const _type);
+    void add(Simulator* _sim) { mSimulators.push_back(_sim); }
 protected:
     std::vector<Simulator*> mSimulators;
 }; // class Manager
