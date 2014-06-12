@@ -22,7 +22,7 @@ IF(CMAKE_BUILD_TYPE MATCHES "Release")
   ADD_DEFINITIONS(-DBOOST_UBLAS_NDEBUG )
 ENDIF (CMAKE_BUILD_TYPE MATCHES "Release")
 
-project(disneysimple)
+project(disneylearning)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-compare")
 message(STATUS "CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
@@ -72,22 +72,39 @@ message(STATUS "=====================================================")
 message(STATUS "configuring the project")
 message(STATUS "=====================================================")
 
-file(GLOB disneysimple_srcs "*.cpp")
-file(GLOB disneysimple_hdrs "*.h")
+include_directories(".")
 
-qt4_wrap_cpp(disneysimple_moc_files window.h glwidget.h)
+file(GLOB disneylearning_utl_srcs "utils/*.cpp")
+file(GLOB disneylearning_utl_hdrs "utils/*.h")
+file(GLOB disneylearning_sim_srcs "simulation/*.cpp")
+file(GLOB disneylearning_sim_hdrs "simulation/*.h")
+file(GLOB disneylearning_lrn_srcs "learning/*.cpp")
+file(GLOB disneylearning_lrn_hdrs "learning/*.h")
+file(GLOB disneylearning_app_srcs "app/*.cpp")
+file(GLOB disneylearning_app_hdrs "app/*.h")
 
-add_executable(disneysimple
-  ${disneysimple_srcs} ${disneysimple_hdrs} ${disneysimple_moc_files}
+
+# file(GLOB disneylearning_srcs "*.cpp")
+# file(GLOB disneylearning_hdrs "*.h")
+
+qt4_wrap_cpp(disneylearning_moc_files app/Window.h app/GLWidget.h)
+message(STATUS "qt4_wrap_cpp expands the moc files: ${disneylearning_moc_files}")
+
+add_executable(disneylearning
+  ${disneylearning_utl_srcs} ${disneylearning_utl_hdrs}
+  ${disneylearning_sim_srcs} ${disneylearning_sim_hdrs}
+  ${disneylearning_lrn_srcs} ${disneylearning_lrn_hdrs}
+  ${disneylearning_app_srcs} ${disneylearning_app_hdrs}
+  ${disneylearning_moc_files}
   )
 
-target_link_libraries(disneysimple ${OPENGL_LIBRARIES})
-target_link_libraries(disneysimple ${GLUT_LIBRARIES})
-target_link_libraries(disneysimple ${QT_LIBRARIES})
-target_link_libraries(disneysimple ${Boost_LIBRARIES})
-target_link_libraries(disneysimple glog)
-target_link_libraries(disneysimple shark)
-target_link_libraries(disneysimple Box2D)
+target_link_libraries(disneylearning ${OPENGL_LIBRARIES})
+target_link_libraries(disneylearning ${GLUT_LIBRARIES})
+target_link_libraries(disneylearning ${QT_LIBRARIES})
+target_link_libraries(disneylearning ${Boost_LIBRARIES})
+target_link_libraries(disneylearning glog)
+target_link_libraries(disneylearning shark)
+target_link_libraries(disneylearning Box2D)
 
-set_target_properties(disneysimple PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set_target_properties(disneylearning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

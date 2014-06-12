@@ -1,12 +1,11 @@
 #include <QApplication>
-#include "window.h"
-#include "cppcommon.h"
-#include "LoadOpengl.h"
+#include "Window.h"
+#include "utils/CppCommon.h"
+#include "utils/LoadOpengl.h"
 
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
 
     // Init and launch the application
     QApplication app(argc, argv);
-    disneysimple::gui::Window window;
+    disney::gui::Window window;
     window.show();
     window.activateWindow();
     window.raise();

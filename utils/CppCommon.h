@@ -24,42 +24,8 @@ using google::WARNING;
 using google::ERROR;
 using google::FATAL;
 // #include <gflags/gflags.h>
-// #define CHECK_NOTREACHED() do { LOG(FATAL) << "Should not be reached"; } while (false)
+#define CHECK_NOTREACHED() do { LOG(FATAL) << "Should not be reached"; } while (false)
 // ////////////////////////////////////////////////////////////
-
-
-// ////////////////////////////////////////////////////////////
-// // Boost logging
-// #define LOGGING_BOOST
-// #include <boost/log/trivial.hpp>
-// #include <boost/log/expressions.hpp>
-// #include <boost/log/sources/severity_logger.hpp>
-// #include <boost/log/sources/record_ostream.hpp>
-// #include <boost/log/utility/setup/console.hpp>
-// #include <boost/log/utility/setup/file.hpp>
-// #include <boost/log/utility/setup/common_attributes.hpp>
-// #include <boost/log/support/date_time.hpp>
-
-// #define LOG_INFO BOOST_LOG_TRIVIAL(info)
-// #define LOG_WARNING BOOST_LOG_TRIVIAL(warning)
-// #define LOG_ERROR BOOST_LOG_TRIVIAL(error)
-// #define LOG_FATAL BOOST_LOG_TRIVIAL(fatal)
-// #define CHECK_EQ(lhs, rhs) if ((lhs) != (rhs)) BOOST_LOG_TRIVIAL(fatal)
-// #define CHECK_LT(lhs, rhs) if ((lhs) >= (rhs)) BOOST_LOG_TRIVIAL(fatal)
-// #define CHECK_NOTNULL(ptr) if ((ptr) == NULL) BOOST_LOG_TRIVIAL(fatal)
-// #define VLOG_INFO if (verbose) BOOST_LOG_TRIVIAL(info)
-
-// ////////////////////////////////////////////////////////////
-// // std logging
-// #define LOG_INFO if (false) std::cout
-// #define LOG_WARNING std::cerr
-// #define LOG_ERROR std::cerr
-// #define LOG_FATAL std::cerr
-// #define CHECK_EQ(lhs, rhs) if ((lhs) != (rhs)) std::cerr
-// #define CHECK_LT(lhs, rhs) if ((lhs) >= (rhs)) std::cerr
-// #define CHECK_NOTNULL(ptr) if ((ptr) == NULL) std::cerr
-// #define VLOG_INFO if (verbose) std::cout
-
 
 ////////////////////////////////////////////////////////////
 // Simple Macros

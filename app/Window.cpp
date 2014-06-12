@@ -1,14 +1,14 @@
-#include "window.h"
+#include "Window.h"
 
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
 
-#include "glwidget.h"
-#include "cppcommon.h"
-#include "simulation.h"
-#include "box2dsimulation.h"
+#include "GLWidget.h"
+#include "utils/CppCommon.h"
+// #include "simulation.h"
+// #include "box2dsimulation.h"
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
 Window::Window()
     : QMainWindow()
@@ -32,8 +32,8 @@ Window::~Window() {
 }
 
 void Window::initApp() {
-    set_sim(new sim::Simulation());
-    set_boxsim(new sim::Box2dSimulation());
+    // set_sim(new sim::Simulation());
+    // set_boxsim(new sim::Box2dSimulation());
     // set_app( new Application() );
     // app()->init(GL_WINDOW_WIDTH, GL_WINDOW_HEIGHT);
     // // set_commander( new Commander(app()) );
@@ -152,71 +152,71 @@ void Window::onTimerRender() {
 }
 
 void Window::onTimerIdle() {
-    if (actions["Play"]->isChecked()) {
-        sim()->step();
-        boxsim()->step();
+    // if (actions["Play"]->isChecked()) {
+    //     sim()->step();
+    //     boxsim()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
-            actions["Play"]->setChecked(false);
-            LOG(INFO) << "evaluate = " << sim()->getCost();
-        }
+    //     if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
+    //         actions["Play"]->setChecked(false);
+    //         LOG(INFO) << "evaluate = " << sim()->getCost();
+    //     }
 
-        if (actions["Capture"]->isChecked()) {
-            takeCapture();
-        }
-    }
-    if (actions["Anim"]->isChecked()) {
-        int i = sliderFrame()->value();
-        int n = sim()->nStateHistory();
-        i++;
-        if (i >= n) {
-            i = 0;
-        }
-        sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
-    }
+    //     if (actions["Capture"]->isChecked()) {
+    //         takeCapture();
+    //     }
+    // }
+    // if (actions["Anim"]->isChecked()) {
+    //     int i = sliderFrame()->value();
+    //     int n = sim()->nStateHistory();
+    //     i++;
+    //     if (i >= n) {
+    //         i = 0;
+    //     }
+    //     sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
+    // }
     
-    // updateInfo
-    int n = sim()->nStateHistory();
-    double time = (n - 1) * 0.001; 
-    labelTime()->setText(
-        tr( (boost::format("T : %07.4f") % time).str().c_str() )
-        );
-    sliderFrame()->setRange(0, n - 1);
-    std::stringstream sout;
-    sout << std::fixed << std::setprecision(4);
+    // // updateInfo
+    // int n = sim()->nStateHistory();
+    // double time = (n - 1) * 0.001; 
+    // labelTime()->setText(
+    //     tr( (boost::format("T : %07.4f") % time).str().c_str() )
+    //     );
+    // sliderFrame()->setRange(0, n - 1);
+    // std::stringstream sout;
+    // sout << std::fixed << std::setprecision(4);
 
-    sout << "State = ";
-    Eigen::VectorXd state = sim()->getState();
-    for (int i = 0; i < state.size(); i++) {
-        if (i != 0) sout << ", ";
-        sout << state(i);
-    }
-    sout << " Torque = ";
-    Eigen::VectorXd torque = sim()->getTorque();
-    for (int i = 0; i < torque.size(); i++) {
-        if (i != 0) sout << ", ";
-        sout << torque(i);
-    }
-    sout << " Result = " << sim()->getCost();
+    // sout << "State = ";
+    // Eigen::VectorXd state = sim()->getState();
+    // for (int i = 0; i < state.size(); i++) {
+    //     if (i != 0) sout << ", ";
+    //     sout << state(i);
+    // }
+    // sout << " Torque = ";
+    // Eigen::VectorXd torque = sim()->getTorque();
+    // for (int i = 0; i < torque.size(); i++) {
+    //     if (i != 0) sout << ", ";
+    //     sout << torque(i);
+    // }
+    // sout << " Result = " << sim()->getCost();
     
-    statusbar()->showMessage(sout.str().c_str());
+    // statusbar()->showMessage(sout.str().c_str());
 }
 
 void Window::onSliderFrameChanged(int index) {
-    sim()->updateToHistory(index);
-    boxsim()->updateToHistory(index);
+    // sim()->updateToHistory(index);
+    // boxsim()->updateToHistory(index);
 }
 
 void Window::onActionReset() {
-    sim()->reset();
-    boxsim()->reset();
+    // sim()->reset();
+    // boxsim()->reset();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::onActionPlay() {
     if (actions["Play"]->isChecked()) {
-        sim()->updateToLatestHistory();
-        boxsim()->updateToLatestHistory();
+        // sim()->updateToLatestHistory();
+        // boxsim()->updateToLatestHistory();
         LOG(INFO) << FUNCTION_NAME() << " resumes";
     } else {
         LOG(INFO) << FUNCTION_NAME() << " pauses";
@@ -225,8 +225,8 @@ void Window::onActionPlay() {
 
 void Window::onActionStep() {
     // LOG(INFO) << FUNCTION_NAME() << " OK";
-    sim()->step();
-    boxsim()->step();
+    // sim()->step();
+    // boxsim()->step();
 }
 
 void Window::onActionLoad() {
@@ -238,16 +238,16 @@ void Window::onActionLoad() {
         return;
     }
     LOG(INFO) << "Filename = [" << filename << "]";
-    sim()->loadNN(filename.c_str());
+    // sim()->loadNN(filename.c_str());
 }
 
 void Window::onActionNN() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
-    sim()->loadNN();
+    // sim()->loadNN();
 }
 
 void Window::onActionTrain() {
-    sim()->trainNN();
+    // sim()->trainNN();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -319,4 +319,4 @@ void Window::takeScreenshot(const char* const filename) {
 }
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disney

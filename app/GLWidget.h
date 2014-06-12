@@ -2,21 +2,21 @@
 #define GUI_GLWIDGET_H
 
 #include <QGLWidget>
-#include "hppcommon.h"
+#include "utils/HppCommon.h"
 
 #define GL_WINDOW_WIDTH  1280
 #define GL_WINDOW_HEIGHT 720
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
 
 class Window;
 class Camera;
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disneylearning
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
     
 class GLWidget : public QGLWidget {
@@ -43,6 +43,6 @@ protected:
 };
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disney
 
 #endif // #ifndef GUI_GLWIDGET_H

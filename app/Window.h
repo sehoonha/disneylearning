@@ -7,26 +7,26 @@
 #include <map>
 #include <string>
 
-#include "hppcommon.h"
+#include "utils/HppCommon.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QWidget;
 QT_END_NAMESPACE
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
 class GLWidget;
 // class Commander;
 } // namespace gui
-namespace sim {
-class Simulation;
-class Box2dSimulation;
-} // namespace sim
-} // namespace disneysimple
+// namespace sim {
+// class Simulation;
+// class Box2dSimulation;
+// } // namespace sim
+} // namespace disney
 
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
     
 class Window : public QMainWindow {
@@ -66,8 +66,8 @@ protected:
     void takeCapture();
     void takeScreenshot(const char* const filename);
 protected:
-    MEMBER_PTR(sim::Simulation*, sim);
-    MEMBER_PTR(sim::Box2dSimulation*, boxsim);
+    // MEMBER_PTR(sim::Simulation*, sim);
+    // MEMBER_PTR(sim::Box2dSimulation*, boxsim);
 
     MEMBER_PTR(GLWidget*, gl);
     MEMBER_PTR(QTimer*, timerRender);
@@ -85,6 +85,6 @@ protected:
 };
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disney
 
 #endif // #ifndef GUI_WINDOW_H

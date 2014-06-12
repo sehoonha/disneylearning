@@ -51,7 +51,7 @@
  */
 #include <math.h>
 #include <cstdio>
-#include "camera.h"
+#include "Camera.h"
 #include "boost/format.hpp"
 
 /*
@@ -360,7 +360,7 @@ build_rotmatrix(float m[4][4], float q[4])
     m[3][3] = 1.0f;
 }
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
     Camera::Camera() {
         begin.setZero();
@@ -404,4 +404,4 @@ namespace gui {
 
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disney

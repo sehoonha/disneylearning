@@ -1,15 +1,15 @@
-#include "glwidget.h"
+#include "GLWidget.h"
 
-#include "LoadOpengl.h"
-#include "cppcommon.h"
+#include "utils/LoadOpengl.h"
+#include "utils/CppCommon.h"
 
 // Local headers
-#include "window.h"
-#include "camera.h"
-#include "simulation.h"
-#include "box2dsimulation.h"
+#include "Window.h"
+#include "Camera.h"
+// #include "simulation.h"
+// #include "box2dsimulation.h"
 
-namespace disneysimple {
+namespace disney {
 namespace gui {
 
 GLWidget::GLWidget(Window* _parent)
@@ -119,8 +119,8 @@ void GLWidget::paintGL() {
 
     // 2D Stuff
     enable2D();
-    window()->sim()->render();
-    window()->boxsim()->render();
+    // window()->sim()->render();
+    // window()->boxsim()->render();
     disable2D();
 }
 
@@ -207,4 +207,4 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 } // namespace gui
-} // namespace disneysimple
+} // namespace disney
