@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QIcon>
 #include "Window.h"
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
@@ -21,6 +22,9 @@ int main(int argc, char *argv[])
 
     // Init and launch the application
     QApplication app(argc, argv);
+    QIcon icon("icon.png");
+    app.setWindowIcon(icon);
+
     disney::gui::Window window;
     window.show();
     window.activateWindow();
