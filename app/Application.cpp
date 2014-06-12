@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include "utils/CppCommon.h"
+#include "utils/LoadOpengl.h"
 #include "simulation/Simulator.h"
 #include "simulation/Manager.h"
 
@@ -31,9 +32,19 @@ void Application::init() {
 }
 
 void Application::render() {
+    int count = 0;
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        glPushMatrix();
+        if (count == 0) {
+            glTranslated(-1.0, 0.0, 0.0);
+        } else {
+            glTranslated(1.0, 0.0, 0.0);
+        }
         sim->render();
         sim->renderInfo();
+        glPopMatrix();
+
+        count++;
     }
 }
 

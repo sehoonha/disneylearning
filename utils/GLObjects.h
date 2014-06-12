@@ -211,15 +211,15 @@ static void renderString(float x, float y, const char* const s)  {
 
     glMatrixMode( GL_MODELVIEW );
     glPushMatrix();
-    glLoadIdentity();
+    // glLoadIdentity();
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glRasterPos2f(x, y); 
     unsigned int length = strlen(s);
     for (unsigned int i = 0; i < length; i++) {
         // glutBitmapCharacter(GLUT_BITMAP_9_BY_15, s[i]);
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i] );
-        // glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, s[i] );
+        // glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, s[i] );
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, s[i] );
         // glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, s[i] );
     }
     glEnable(GL_DEPTH_TEST);

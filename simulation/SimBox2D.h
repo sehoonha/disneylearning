@@ -28,11 +28,16 @@ public:
     virtual int numDimState() const { return 6 * 2; }
     virtual void setState(const Eigen::VectorXd& _state);
     virtual Eigen::VectorXd state() const;
-
     virtual int numDimTorque() const { return 4; }
+
+    // Full State functions -- for maximal simulators. In default, state == full state
+    virtual void setFullState(const Eigen::VectorXd& _fullState);
+    virtual Eigen::VectorXd fullState() const;
+
 
     // Simulation functions
     virtual void integrate();
+    virtual void reset();
 
     // Visualization functions
     virtual void render();

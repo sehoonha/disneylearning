@@ -37,7 +37,7 @@ public:
     virtual void setTorque(const Eigen::VectorXd& _torque) { mTorque = _torque; }
     virtual Eigen::VectorXd torque() const { return mTorque; }
     
-    virtual double time() const { return (timeStep() * (double)numHistories()); }
+    virtual double time() const { return (timeStep() * (double)(numHistories() - 1)); }
     virtual double timeStep() const { return mTimestep; }
 
     // Full State functions -- for maximal simulators. In default, state == full state

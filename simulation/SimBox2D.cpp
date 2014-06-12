@@ -286,6 +286,47 @@ Simulator* SimBox2D::init() {
     return this;
 }
 
+// Full State functions -- for maximal simulators. In default, state == full state
+void SimBox2D::setFullState(const Eigen::VectorXd& _fullState) {
+    const Eigen::VectorXd& state = _fullState;
+    int ptr = 0;
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+
+        double px = state(ptr++);
+        double py = state(ptr++);
+        double a  = state(ptr++);
+        double vx = state(ptr++);
+        double vy = state(ptr++);
+        double w  = state(ptr++);
+
+        body->SetTransform( b2Vec2(px, py), a);
+        body->SetLinearVelocity( b2Vec2(vx, vy) );
+        body->SetAngularVelocity( w );
+    }        
+}
+
+Eigen::VectorXd SimBox2D::fullState() const {
+    Eigen::VectorXd state(6 * 6);
+    int ptr = 0;
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+
+        b2Vec2  p = body->GetPosition();
+        float32 a = body->GetAngle();
+        b2Vec2  v = body->GetLinearVelocity();
+        float32 w = body->GetAngularVelocity();
+        state(ptr++) = p.x;
+        state(ptr++) = p.y;
+        state(ptr++) = a;
+        state(ptr++) = v.x;
+        state(ptr++) = v.y;
+        state(ptr++) = w;
+    }
+    return state;
+}
+
+
 void SimBox2D::integrate() {
     // Prepare for simulation. Typically we use a time step of 1/60 of a
     // second (60Hz) and 10 iterations. This provides a high quality simulation
@@ -299,13 +340,21 @@ void SimBox2D::integrate() {
     imp->world->Step(timeStep, velocityIterations, positionIterations);
 }
 
+void SimBox2D::reset() {
+    Simulator::reset();
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+        body->SetAwake(true);
+    }    
+}
+
 void SimBox2D::render() {
     glPushMatrix();
-    {
-        double scale = 1.0;
-        glTranslated(-1.0, 0.0, 0.0);
-        glScaled(scale, scale, scale);
-    }
+    // {
+    //     double scale = 1.0;
+    //     glTranslated(-1.0, 0.0, 0.0);
+    //     glScaled(scale, scale, scale);
+    // }
     glColor3d(0.0, 0.3, 0.5);
     imp->drawBody(imp->ground);
     glColor3d(1.0, 0.0, 0.0);

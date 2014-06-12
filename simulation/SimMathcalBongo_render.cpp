@@ -34,7 +34,7 @@ void circle(double cx, double cy, double r) {
 
 void SimMathcalBongo::render() {
     glPushMatrix();
-    glTranslated(1.0, 0.0, 0.0);
+    // glTranslated(1.0, 0.0, 0.0);
 
     // glBegin(GL_POLYGON);
     // glVertex2d(0, 0);
