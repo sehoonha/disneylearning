@@ -35,7 +35,7 @@ struct SimBox2DImp {
 
 SimBox2DImp::SimBox2DImp() {
     // Define the gravity vector.
-    b2Vec2 gravity(0.0f, -10.0f);
+    b2Vec2 gravity(0.0f, -9.81f);
     // Construct a world object, which will hold and simulate the rigid bodies.
     world = new b2World(gravity);
 
@@ -49,7 +49,7 @@ SimBox2DImp::SimBox2DImp() {
     // Define the ground box shape.
     b2PolygonShape groundBox;
     // The extents are the half-widths of the box.
-    groundBox.SetAsBox(1.0f, 1.0f);
+    groundBox.SetAsBox(0.14f, 1.0f);
     // Add the ground fixture to the ground body.
     ground->CreateFixture(&groundBox, 0.0f);
 

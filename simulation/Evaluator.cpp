@@ -30,6 +30,7 @@ double Evaluator::eval(Simulator* _sim) {
     double offset = 0;
     double radius = 0.05;
     double rw     = radius;
+    double lb     = 0.6;
 
     double lrl1 = 1;
     double lrl2 = 0.1;
@@ -74,15 +75,38 @@ double Evaluator::eval(Simulator* _sim) {
         rw + sin(alphab + alphaw)*(al + lll2 + alphab*rw) + rw*cos(alphab + alphaw)  ;          
     Eigen::Vector3d cart = 0.5 * (leftCart + rightCart);
 
+    Eigen::Vector3d boardRight;
+    boardRight << 0,
+        offset- alphaw*rw - cos(alphab + alphaw)*(lb/2 - alphab*rw) - rw*sin(alphab + alphaw),
+        rw - sin(alphab + alphaw)*(lb/2 - alphab*rw) + rw*cos(alphab + alphaw);
+
+    Eigen::Vector3d boardLeft;
+    boardLeft << 0,
+        offset+cos(alphab + alphaw)*(lb/2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw),
+        rw + sin(alphab + alphaw)*(lb/2 + alphab*rw) + rw*cos(alphab + alphaw);     
+
+
     // Define axes
     const int X = 1;
     const int Y = 2;
 
-    // CHeck the fail
+    // Check the fail
     const double COST_FAIL = 1000.0;
-    if (top(Y) < 0.0 || cart(Y) < 0.0) {
+    bool failed = false;
+    if (top(Y) < 0.2 || cart(Y) < 0.0) {
+        failed = true;
+    }
+    const double BOX2D_TOUCH_HEIGHT = 0.014;
+    if (boardLeft(Y) < BOX2D_TOUCH_HEIGHT || boardRight(Y) < BOX2D_TOUCH_HEIGHT) {
+        failed = true;
+    }
+    if (wheel(Y) < 0.01 || fabs(wheel(X)) > 0.15) {
+        failed = true;
+    }
+    if (failed) {
         mCost += COST_FAIL;
     }
+
     
     // From now, ignore the Y offset
     top(Y) = wheel(Y) = cart(Y) = 0.0;

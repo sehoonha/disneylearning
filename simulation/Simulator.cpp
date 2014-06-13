@@ -6,6 +6,7 @@
  */
 
 #include "Simulator.h"
+#include <iomanip>
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
 #include "utils/GLObjects.h"
@@ -75,6 +76,7 @@ void Simulator::renderInfo() {
     glColor3d(0.0, 0.0, 0.0);
     // utils::renderString(0.1, 0.1, "HAHAHA");
     std::stringstream sout;
+    sout << std::setprecision(4) << std::fixed;
     sout << "[" << type() << "] ";
     sout << " at " << time();
     utils::renderString(-0.3, 1.8, sout.str().c_str());

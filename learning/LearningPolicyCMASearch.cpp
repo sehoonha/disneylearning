@@ -6,6 +6,7 @@
  */
 
 #include "LearningPolicyCMASearch.h"
+#include <iomanip>
 #include "utils/CppCommon.h"
 #include "simulation/Simulator.h"
 #include "simulation/Evaluator.h"
@@ -72,7 +73,7 @@ struct PolicyEvaluation : public shark::SingleObjectiveFunction {
         mPolicy->setParams(params);
 
         mSim->reset();
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 3000; i++) {
             mSim->step();
         }
         double value = mSim->eval()->cost();
@@ -114,7 +115,8 @@ void LearningPolicyCMASearch::train(learning::Policy* _policy,
     // cma.setSigma(10.0);
     shark::RealVector starting(prob.numberOfVariables());
     // cma.init( prob, starting, 32, 16, 15.0 );
-    cma.init( prob, starting, 32, 16, 1.0 );
+    // cma.init( prob, starting, 32, 16, 10.0 );
+    cma.init( prob, starting, 64, 32, 1000.0 );
 
 
     int loopCount = 0;
@@ -135,7 +137,7 @@ void LearningPolicyCMASearch::train(learning::Policy* _policy,
         }
         _policy->setParams(params);
         loopCount++;
-    } while(cma.solution().value > (600.0) && loopCount < 1000);
+    } while(cma.solution().value > (0.0) && loopCount < 1000);
 
 }
 

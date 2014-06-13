@@ -156,8 +156,9 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         app()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 2000 + 1) {
+        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 3000 + 1) {
             actions["Play"]->setChecked(false);
+            onActionPlay();
             // LOG(INFO) << "evaluate = " << sim()->getCost();
         }
 

@@ -70,7 +70,7 @@ Eigen::VectorXd PolicyFeedback::control(const Eigen::VectorXd& _state) {
     const Eigen::VectorXd& x = _state;
     int n = x.size() / 2;
     // Parameters
-    double maxTorq = 0.95; 
+    double maxTorq = 20.0;
 
     // Equilibrium state
     Eigen::VectorXd qEq(n);
