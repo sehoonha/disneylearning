@@ -45,7 +45,9 @@ Policy* PolicyFeedback::init() {
     this->K = F * C;
 
     Eigen::VectorXd init(numDimParams());
-    init << -2716691.61124318, -1189377.26019541, 953603.332319511, 10071.8805575885, 768507.689769501;
+    // init << -2716691.61124318, -1189377.26019541, 953603.332319511, 10071.8805575885, 768507.689769501;
+    // init << 18324,-33046,12511.1,16938,25786.9;
+    init << 9400.85,-19467.2,9782.43,13117.1,20555.5;
     setParams(init);
     LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
@@ -92,6 +94,7 @@ Eigen::VectorXd PolicyFeedback::control(const Eigen::VectorXd& _state) {
             }
         }
     }
+    // LOG_EVERY_N(INFO, 20) << u.transpose();
     return u;
 }
 

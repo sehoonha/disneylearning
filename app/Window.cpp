@@ -95,7 +95,7 @@ void Window::createActions() {
     createAction("Capture")->setCheckable(true);
     createAction("Step");
     createAction("StopAtEnd")->setCheckable(true);
-
+    actions["StopAtEnd"]->setChecked(true);
 
     createAction("NN");
     createAction("Train");

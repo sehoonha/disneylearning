@@ -273,7 +273,7 @@ Simulator* SimBox2D::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2
          , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd xOffset(m);
-    double angIni = 2;
+    double angIni = 0.3;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
     // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
@@ -337,8 +337,10 @@ void SimBox2D::integrate() {
     // second (60Hz) and 10 iterations. This provides a high quality simulation
     // in most game scenarios.
     float32 timeStep = mTimestep;
-    int32 velocityIterations = 6;
-    int32 positionIterations = 2;
+    // int32 velocityIterations = 6;
+    // int32 positionIterations = 2;
+    int32 velocityIterations = 750;
+    int32 positionIterations = 20;
 
     // Instruct the world to perform a single step of simulation.
     // It is generally best to keep the time step and iterations fixed.
@@ -428,6 +430,7 @@ Eigen::VectorXd SimBox2D::state() const {
 
 
 void SimBox2D::setState(const Eigen::VectorXd& _state) {
+    const double SKIN = 0.003;
     // Parameters
     double offset = 0;
     double radius = 0.05;
@@ -460,7 +463,7 @@ void SimBox2D::setState(const Eigen::VectorXd& _state) {
     Eigen::Vector3d wheel;
     wheel << 0,
         offset-alphaw*rw,
-        rw;
+        rw + SKIN;
     imp->wheel->SetTransform(b2Vec2(wheel(X), wheel(Y)), alphaw);
 
     // Set board
@@ -475,6 +478,7 @@ void SimBox2D::setState(const Eigen::VectorXd& _state) {
         rw + sin(alphab + alphaw)*(lb/2 + alphab*rw) + rw*cos(alphab + alphaw);     
 
     Eigen::Vector3d board = 0.5 * (boardLeft + boardRight);
+    board(Y) += SKIN * 2;
     imp->board->SetTransform(b2Vec2(board(X), board(Y)), alphab + imp->wheel->GetAngle());
 
     // Set right links

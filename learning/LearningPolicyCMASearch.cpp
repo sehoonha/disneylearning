@@ -116,7 +116,7 @@ void LearningPolicyCMASearch::train(learning::Policy* _policy,
     shark::RealVector starting(prob.numberOfVariables());
     // cma.init( prob, starting, 32, 16, 15.0 );
     // cma.init( prob, starting, 32, 16, 10.0 );
-    cma.init( prob, starting, 64, 32, 1000.0 );
+    cma.init( prob, starting, 32, 16, 1000.0 );
 
 
     int loopCount = 0;

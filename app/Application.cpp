@@ -84,7 +84,7 @@ void Application::reset() {
 }
 
 void Application::train() {
-    learning()->train(policy(), manager()->simulator(1));
+    learning()->train(policy(), manager()->simulator(0));
 }
 
 int Application::numMaximumHistory() const {

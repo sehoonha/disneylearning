@@ -23,7 +23,7 @@ Manager::~Manager() {
 }
 
 void Manager::init() {
-    add( (new SimMathcalBongo())->init() );
+    // add( (new SimMathcalBongo())->init() );
     add( (new SimBox2D())->init() );
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }

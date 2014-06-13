@@ -30,7 +30,7 @@ Simulator* SimMathcalBongo::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2        , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 2;
+    double angIni = 0.0;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
     // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
     //     , 0, 0, 0, 0, 0, 0;
