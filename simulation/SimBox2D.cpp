@@ -274,7 +274,9 @@ Simulator* SimBox2D::init() {
          , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd xOffset(m);
     double angIni = 2;
-    xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
+    // xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
+    //     , 0, 0, 0, 0, 0, 0;
+    xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
         , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd cState = xEq + xOffset;
     setState(cState);
@@ -449,7 +451,7 @@ void SimBox2D::setState(const Eigen::VectorXd& _state) {
         rw + sin(alphab + alphaw)*(lb/2 + alphab*rw) + rw*cos(alphab + alphaw);     
 
     Eigen::Vector3d board = 0.5 * (boardLeft + boardRight);
-    imp->board->SetTransform(b2Vec2(board(X), board(Y)), alphab - imp->wheel->GetAngle());
+    imp->board->SetTransform(b2Vec2(board(X), board(Y)), alphab + imp->wheel->GetAngle());
 
     // Set right links
     Eigen::Vector3d rightCart;

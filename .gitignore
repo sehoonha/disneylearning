@@ -4,6 +4,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 *.cxx
+moc_*
 disneylearning
 glog
 captures
