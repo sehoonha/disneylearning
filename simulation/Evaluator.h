@@ -25,8 +25,11 @@ public:
     Evaluator();
     virtual ~Evaluator();
 
-    virtual double eval(Simulator* _sim) = 0;
+    double cost() const { return mCost; }
+    virtual void reset();
+    virtual double eval(Simulator* _sim);
 protected:
+    double mCost;
 }; // class Evaluator
 
 } // namespace simulation

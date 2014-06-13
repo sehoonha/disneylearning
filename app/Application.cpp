@@ -12,6 +12,7 @@
 #include "utils/LoadOpengl.h"
 #include "simulation/Simulator.h"
 #include "simulation/Manager.h"
+#include "simulation/Evaluator.h"
 #include "learning/Policy.h"
 #include "learning/PolicyFeedback.h"
 
@@ -21,6 +22,7 @@ namespace app {
 // class Application implementation
 Application::Application()
     : MEMBER_INIT_NULL(manager)
+    // , MEMBER_INIT_NULL(eval)
     , MEMBER_INIT_NULL(policy)
 {
 }
@@ -32,10 +34,13 @@ void Application::init() {
     set_manager( new simulation::Manager() );
     manager()->init();
 
+    // set_eval( new simulation::Evaluator() );
+    
     set_policy ( new learning::PolicyFeedback() );
     policy()->init();
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->set_policy( policy() );
+        sim->set_eval( new simulation::Evaluator() );
     }
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }

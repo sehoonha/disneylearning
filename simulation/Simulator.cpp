@@ -10,6 +10,7 @@
 #include "utils/LoadOpengl.h"
 #include "utils/GLObjects.h"
 #include "learning/Policy.h"
+#include "Evaluator.h"
 
 namespace disney {
 namespace simulation {
@@ -18,6 +19,7 @@ namespace simulation {
 // class Simulator implementation
 Simulator::Simulator()
     : MEMBER_INIT_NULL(policy)
+    , MEMBER_INIT_NULL(eval)
 {
 }
 
@@ -25,6 +27,8 @@ Simulator::Simulator(const char* const _type)
     : mType(_type)
     , mTimestep(0.001)
     , mControlStep(2)
+    , MEMBER_INIT_NULL(policy)
+    , MEMBER_INIT_NULL(eval)
 {
 
 }
@@ -44,6 +48,10 @@ void Simulator::step() {
         control();
     }
     integrate();
+    if (eval()) {
+        eval()->eval(this);
+    }
+    
     pushHistory();
 }
 
@@ -58,6 +66,9 @@ void Simulator::integrate() {
 void Simulator::reset() {
     updateToHistory(0);
     clearHistory();
+    if (eval()) {
+        eval()->reset();
+    }
 }
 
 void Simulator::renderInfo() {
@@ -67,6 +78,15 @@ void Simulator::renderInfo() {
     sout << "[" << type() << "] ";
     sout << " at " << time();
     utils::renderString(-0.3, 1.8, sout.str().c_str());
+
+    sout.str("");
+    if (eval()) {
+        sout << "cost: " << eval()->cost();
+    } else {
+        sout << "no cost";
+    }
+    utils::renderString(-0.3, 1.7, sout.str().c_str());
+    
 }
 
 // class Simulator ends

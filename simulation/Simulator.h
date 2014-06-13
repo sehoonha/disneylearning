@@ -17,6 +17,9 @@ namespace disney {
 namespace learning {
 class Policy;
 } // namespace learning
+namespace simulation {
+class Evaluator;
+} // namespace simulation
 } // namespace disney
 
 
@@ -70,13 +73,16 @@ public:
 protected:
     std::string mType;
     double mTimestep;
+    std::vector<Eigen::VectorXd> mHistory; // Record in the full state
+    // -- removed -- Eigen::VectorXd mState // state is not always a single vector
 
     int mControlStep;
     MEMBER_PTR(learning::Policy*, policy);
     Eigen::VectorXd mTorque;
 
-    std::vector<Eigen::VectorXd> mHistory; // Record in the full state
-    // -- removed -- Eigen::VectorXd mState // state is not always a single vector
+
+    MEMBER_PTR(Evaluator*, eval);
+
 }; // class Simulator
 
 } // namespace simulation

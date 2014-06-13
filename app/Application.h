@@ -14,6 +14,7 @@ namespace disney {
 namespace simulation {
 class Simulator;
 class Manager;
+// class Evaluator;
 } // namespace simulation
 namespace learning {
 class Policy;
@@ -36,6 +37,7 @@ public:
     void updateToHistory(int index) const;
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
+    // MEMBER_PTR(simulation::Evaluator*, eval);
     MEMBER_PTR(learning::Policy*, policy);
 
 }; // class Application
