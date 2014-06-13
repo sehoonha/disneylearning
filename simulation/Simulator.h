@@ -14,6 +14,13 @@
 #include "utils/HppCommon.h"
 
 namespace disney {
+namespace learning {
+class Policy;
+} // namespace learning
+} // namespace disney
+
+
+namespace disney {
 namespace simulation {
 
 class Simulator {
@@ -63,11 +70,13 @@ public:
 protected:
     std::string mType;
     double mTimestep;
+
     int mControlStep;
+    MEMBER_PTR(learning::Policy*, policy);
+    Eigen::VectorXd mTorque;
 
     std::vector<Eigen::VectorXd> mHistory; // Record in the full state
     // -- removed -- Eigen::VectorXd mState // state is not always a single vector
-    Eigen::VectorXd mTorque;
 }; // class Simulator
 
 } // namespace simulation

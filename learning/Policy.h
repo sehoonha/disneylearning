@@ -16,15 +16,19 @@ namespace learning {
 
 class Policy {
 public:
-    Policy();
+    Policy(int _dim);
     virtual ~Policy();
+    virtual Policy* init();
 
-    virtual void setParams(const Eigen::VectorXd& _params) = 0;
-    virtual Eigen::VectorXd params() const = 0;
+    virtual int numDimParams() { return mDim; }
+    virtual void setParams(const Eigen::VectorXd& _params) { mParams = _params; }
+    virtual Eigen::VectorXd params() const { return mParams; }
 
     virtual Eigen::VectorXd control(const Eigen::VectorXd& _state) = 0;
 
 protected:
+    int mDim;
+    Eigen::VectorXd mParams;
 }; // class Policy
 
 } // namespace learning

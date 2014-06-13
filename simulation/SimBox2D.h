@@ -37,6 +37,7 @@ public:
 
     // Simulation functions
     virtual void integrate();
+    void applyTorque();
     virtual void reset();
 
     // Visualization functions

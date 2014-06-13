@@ -31,9 +31,9 @@ Simulator* SimMathcalBongo::init() {
 
     Eigen::VectorXd xOffset(m);
     double angIni = 2;
-    // xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
-    xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
-        , 0, 0, 0, 0, 0, 0;
+    xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
+    // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
+    //     , 0, 0, 0, 0, 0, 0;
         
     mState = xEq + xOffset;
 
@@ -52,8 +52,8 @@ void SimMathcalBongo::integrate() {
     Eigen::VectorXd x = mState;
     Eigen::VectorXd u = mTorque;
 
-    // LOG(INFO) << "x = " << x.transpose();
-    // LOG(INFO) << "u = " << u.transpose();
+    // LOG(INFO) << "math.x = " << x.transpose();
+    // LOG(INFO) << "math.u = " << u.transpose();
 
     Eigen::VectorXd k1 = deriv(x, u);
     Eigen::VectorXd k2 = deriv(x + h_2 * k1, u);

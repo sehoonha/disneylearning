@@ -15,6 +15,9 @@ namespace simulation {
 class Simulator;
 class Manager;
 } // namespace simulation
+namespace learning {
+class Policy;
+} // namespace learning
 } // namespace disney
 
 namespace disney {
@@ -33,6 +36,8 @@ public:
     void updateToHistory(int index) const;
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
+    MEMBER_PTR(learning::Policy*, policy);
+
 }; // class Application
 
 } // namespace app

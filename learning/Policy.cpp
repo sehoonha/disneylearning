@@ -13,11 +13,18 @@ namespace learning {
 
 ////////////////////////////////////////////////////////////
 // class Policy implementation
-Policy::Policy() {
+Policy::Policy(int _dim)
+    : mDim(_dim)
+{
 }
 
 Policy::~Policy() {
 }
+
+Policy* Policy::init() {
+    return this;
+}
+
 // class Policy ends
 ////////////////////////////////////////////////////////////
 

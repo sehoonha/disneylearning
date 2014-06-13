@@ -9,20 +9,24 @@
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
 #include "utils/GLObjects.h"
+#include "learning/Policy.h"
 
 namespace disney {
 namespace simulation {
 
 ////////////////////////////////////////////////////////////
 // class Simulator implementation
-Simulator::Simulator() {
+Simulator::Simulator()
+    : MEMBER_INIT_NULL(policy)
+{
 }
 
 Simulator::Simulator(const char* const _type) 
     : mType(_type)
     , mTimestep(0.001)
-    , mControlStep(10)
+    , mControlStep(2)
 {
+
 }
 
 Simulator::~Simulator() {
@@ -44,6 +48,8 @@ void Simulator::step() {
 }
 
 void Simulator::control() {
+    Eigen::VectorXd x = state();
+    mTorque = policy()->control(x);
 }
 
 void Simulator::integrate() {

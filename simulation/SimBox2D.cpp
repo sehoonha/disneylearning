@@ -274,10 +274,10 @@ Simulator* SimBox2D::init() {
          , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd xOffset(m);
     double angIni = 2;
-    // xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
-    //     , 0, 0, 0, 0, 0, 0;
-    xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
+    xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
+    // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
+    //     , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd cState = xEq + xOffset;
     setState(cState);
 
@@ -330,6 +330,9 @@ Eigen::VectorXd SimBox2D::fullState() const {
 
 
 void SimBox2D::integrate() {
+    // Apply Torque first
+    applyTorque();
+    
     // Prepare for simulation. Typically we use a time step of 1/60 of a
     // second (60Hz) and 10 iterations. This provides a high quality simulation
     // in most game scenarios.
@@ -340,6 +343,27 @@ void SimBox2D::integrate() {
     // Instruct the world to perform a single step of simulation.
     // It is generally best to keep the time step and iterations fixed.
     imp->world->Step(timeStep, velocityIterations, positionIterations);
+}
+
+void SimBox2D::applyTorque() {
+    // LOG(INFO) << "box2d.x = " << state().transpose();
+    // LOG(INFO) << "box2d.u = " << mTorque.transpose();
+
+    const Eigen::VectorXd& u = mTorque;
+
+    for (int i = 2, j = 0; i < imp->bodies.size(); i++, j++) {
+        b2Body* body = imp->bodies[i];
+        b2Body* parent = NULL;
+        switch(i) {
+        case 2: parent = imp->board; break;
+        case 3: parent = imp->board; break;
+        case 4: parent = imp->l1; break;
+        case 5: parent = imp->r1; break;
+        }
+        double tau = 0.5 * u(j);
+        body->ApplyTorque(tau, true);
+        parent->ApplyTorque(-tau, true);
+    }    
 }
 
 void SimBox2D::reset() {

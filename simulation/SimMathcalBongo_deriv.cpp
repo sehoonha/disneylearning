@@ -229,7 +229,7 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     // // Equilibrium state
 
     // // Calculate u
-    Eigen::VectorXd torque_noise = 40.0 * Eigen::VectorXd::Random(4);
+    Eigen::VectorXd torque_noise = 10.0 * Eigen::VectorXd::Random(4);
     torque_noise(1) = torque_noise(0);
     torque_noise(2) = -torque_noise(0);
     torque_noise(3) = -torque_noise(0);
@@ -255,7 +255,7 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
 
     // Derivatives
     Eigen::VectorXd ddq = invM * ( U + D - G - C*dq + PsiT * lagMult);
-    Eigen::VectorXd noise = 2 * Eigen::VectorXd::Random(3);
+    Eigen::VectorXd noise = 1.0 * Eigen::VectorXd::Random(3);
     ddq(0) += noise(0);
     ddq(1) += noise(1);
     ddq(2) += noise(2);
