@@ -156,7 +156,7 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         app()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 3000 + 1) {
+        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 5000 + 1) {
             actions["Play"]->setChecked(false);
             onActionPlay();
             // LOG(INFO) << "evaluate = " << sim()->getCost();
@@ -173,9 +173,12 @@ void Window::onTimerIdle() {
         int i = sliderFrame()->value();
         i++;
         if (i >= n) {
-            i = 0;
+            actions["Anim"]->setChecked(false);
         }
         sliderFrame()->setValue(i); // will invoke onSliderFrameChanged()
+        if (actions["Capture"]->isChecked()) {
+            takeCapture();
+        }
     }
     
     // updateInfo
