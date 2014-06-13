@@ -15,6 +15,8 @@
 #include "simulation/Evaluator.h"
 #include "learning/Policy.h"
 #include "learning/PolicyFeedback.h"
+#include "learning/LearningAlgorithm.h"
+#include "learning/LearningPolicyCMASearch.h"
 
 namespace disney {
 namespace app {
@@ -24,6 +26,7 @@ Application::Application()
     : MEMBER_INIT_NULL(manager)
     // , MEMBER_INIT_NULL(eval)
     , MEMBER_INIT_NULL(policy)
+    , MEMBER_INIT_NULL(learning)
 {
 }
 
@@ -42,6 +45,10 @@ void Application::init() {
         sim->set_policy( policy() );
         sim->set_eval( new simulation::Evaluator() );
     }
+
+    set_learning( new learning::LearningPolicyCMASearch() );
+    learning()->init();
+
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -74,6 +81,10 @@ void Application::reset() {
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->reset();
     }
+}
+
+void Application::train() {
+    learning()->train(policy(), manager()->simulator(1));
 }
 
 int Application::numMaximumHistory() const {

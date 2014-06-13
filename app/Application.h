@@ -18,6 +18,7 @@ class Manager;
 } // namespace simulation
 namespace learning {
 class Policy;
+class LearningAlgorithm;
 } // namespace learning
 } // namespace disney
 
@@ -33,12 +34,14 @@ public:
     void render();
     void step();
     void reset();
+    void train();
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);
     MEMBER_PTR(learning::Policy*, policy);
+    MEMBER_PTR(learning::LearningAlgorithm*, learning);
 
 }; // class Application
 

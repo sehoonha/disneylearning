@@ -30,9 +30,11 @@ public:
     LearningAlgorithm();
     virtual ~LearningAlgorithm();
 
+    virtual void init();
+
     virtual void train(learning::Policy* _policy,
-                       simulation::Simulator* _sim,
-                       simulation::Evaluator* _eval) = 0;
+                       simulation::Simulator* _sim) = 0;
+
 protected:
 }; // class LearningAlgorithm
 

@@ -18,6 +18,11 @@ LearningAlgorithm::LearningAlgorithm() {
 
 LearningAlgorithm::~LearningAlgorithm() {
 }
+
+void LearningAlgorithm::init() {
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 // class LearningAlgorithm ends
 ////////////////////////////////////////////////////////////
 

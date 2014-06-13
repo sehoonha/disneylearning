@@ -156,10 +156,10 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         app()->step();
 
-        // if (actions["StopAtEnd"]->isChecked() && sim()->getTime() >= 4.99999) {
-        //     actions["Play"]->setChecked(false);
-        //     // LOG(INFO) << "evaluate = " << sim()->getCost();
-        // }
+        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 2000 + 1) {
+            actions["Play"]->setChecked(false);
+            // LOG(INFO) << "evaluate = " << sim()->getCost();
+        }
 
         if (actions["Capture"]->isChecked()) {
             takeCapture();
@@ -248,7 +248,7 @@ void Window::onActionNN() {
 }
 
 void Window::onActionTrain() {
-    // sim()->trainNN();
+    app()->train();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
