@@ -72,6 +72,23 @@ void Simulator::reset() {
     }
 }
 
+void Simulator::pushHistory() {
+    SimulatorHistory sh;
+    sh.fullstate = fullState();
+    sh.torque = mTorque;
+    sh.cost = (eval() != NULL) ? eval()->cost() : 0.0;
+    mHistory.push_back(sh);
+}
+
+void Simulator::updateToHistory(int index) {
+    SimulatorHistory& sh = mHistory[index];
+    setFullState(sh.fullstate);
+    mTorque = sh.torque;
+    if (eval()) {
+        eval()->setCost(sh.cost);
+    }
+}
+
 void Simulator::renderInfo() {
     glColor3d(0.0, 0.0, 0.0);
     // utils::renderString(0.1, 0.1, "HAHAHA");
@@ -88,6 +105,11 @@ void Simulator::renderInfo() {
         sout << "no cost";
     }
     utils::renderString(-0.3, 1.7, sout.str().c_str());
+
+    sout.str("");
+    sout << "Torque: " << mTorque.transpose();
+    utils::renderString(-0.3, 1.6, sout.str().c_str());
+
     
 }
 

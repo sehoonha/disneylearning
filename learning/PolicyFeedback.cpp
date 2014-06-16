@@ -94,7 +94,25 @@ Eigen::VectorXd PolicyFeedback::control(const Eigen::VectorXd& _state) {
             }
         }
     }
-    // LOG_EVERY_N(INFO, 20) << u.transpose();
+
+
+    // // Calculate u -- pose tracker
+    // Eigen::VectorXd dq_bar = -K * (x - xEq);
+    // Eigen::VectorXd qdot = _state.tail(4);
+    // double KS = 20.0;
+    // double KD = sqrt(KS);
+    // // -KS * ( q - qbar) - KD * xdot (where qbar = q + dq_bar) 
+    // Eigen::VectorXd u = -KS * (-dq_bar) - KD * qdot;
+
+    // for(int i = 0; i < u.size(); i++) {
+    //     if (fabs(u(i)) > maxTorq) {
+    //         if (u(i) > 0) {
+    //             u(i) = maxTorq;
+    //         } else {
+    //             u(i) = -maxTorq;
+    //         }
+    //     }
+    // }
     return u;
 }
 

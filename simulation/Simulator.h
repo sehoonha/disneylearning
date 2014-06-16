@@ -26,6 +26,17 @@ class Evaluator;
 namespace disney {
 namespace simulation {
 
+struct SimulatorHistory;
+class Simulator;
+
+struct SimulatorHistory {
+private:
+    friend class Simulator;
+    Eigen::VectorXd fullstate;
+    Eigen::VectorXd torque;
+    double cost;
+};
+
 class Simulator {
 public:
     // Constructor and destructor 
@@ -63,8 +74,10 @@ public:
     // History functions
     virtual void clearHistory() { mHistory.clear(); pushHistory(); }
     virtual int numHistories() const { return mHistory.size(); }
-    virtual void pushHistory() { mHistory.push_back( fullState() ); }
-    virtual void updateToHistory(int index) { setFullState( mHistory[index] ); }
+    // virtual void pushHistory() { mHistory.push_back( fullState() ); }
+    // virtual void updateToHistory(int index) { setFullState( mHistory[index] ); }
+    virtual void pushHistory();
+    virtual void updateToHistory(int index);
     virtual void updateToLatestHistory() { updateToHistory( numHistories() - 1 ); }
 
     // Visualization functions
@@ -73,7 +86,8 @@ public:
 protected:
     std::string mType;
     double mTimestep;
-    std::vector<Eigen::VectorXd> mHistory; // Record in the full state
+    std::vector<SimulatorHistory> mHistory;
+    // std::vector<Eigen::VectorXd> mHistory; // Record in the full state
     // -- removed -- Eigen::VectorXd mState // state is not always a single vector
 
     int mControlStep;

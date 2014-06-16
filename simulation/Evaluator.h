@@ -26,6 +26,7 @@ public:
     virtual ~Evaluator();
 
     double cost() const { return mCost; }
+    void setCost(double _cost) { mCost = _cost; }
     virtual void reset();
     virtual double eval(Simulator* _sim);
 protected:
