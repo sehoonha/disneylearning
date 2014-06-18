@@ -50,6 +50,7 @@ void GLWidget::initializeGL() {
     // cout << "Version = " << version << endl;
     // cout << "Extensions = " << extensions << endl;
 
+
     /* remove back faces */
     glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);

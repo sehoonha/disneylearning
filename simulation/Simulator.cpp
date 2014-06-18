@@ -77,6 +77,7 @@ void Simulator::pushHistory() {
     sh.fullstate = fullState();
     sh.torque = mTorque;
     sh.cost = (eval() != NULL) ? eval()->cost() : 0.0;
+    sh.contacts = mContacts;
     mHistory.push_back(sh);
 }
 
@@ -87,6 +88,7 @@ void Simulator::updateToHistory(int index) {
     if (eval()) {
         eval()->setCost(sh.cost);
     }
+    mContacts = sh.contacts;
 }
 
 void Simulator::renderInfo() {

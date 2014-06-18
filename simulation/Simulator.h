@@ -35,6 +35,7 @@ private:
     Eigen::VectorXd fullstate;
     Eigen::VectorXd torque;
     double cost;
+    Eigen::VectorXd contacts;
 };
 
 class Simulator {
@@ -93,7 +94,7 @@ protected:
     int mControlStep;
     MEMBER_PTR(learning::Policy*, policy);
     Eigen::VectorXd mTorque;
-
+    Eigen::VectorXd mContacts;
 
     MEMBER_PTR(Evaluator*, eval);
 

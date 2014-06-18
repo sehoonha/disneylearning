@@ -31,6 +31,9 @@ struct SimBox2DImp {
 
     void drawBody(b2Body* body);
     void drawShape(b2Fixture* fixture, const b2Transform& xf);
+    Eigen::VectorXd toWorldPosList(const b2Contact* c);
+    void drawContact(const b2Contact* c);
+    void drawContact(const Eigen::Vector2d& c);
 };
 
 SimBox2DImp::SimBox2DImp() {
@@ -55,7 +58,7 @@ SimBox2DImp::SimBox2DImp() {
 
 
     const double SKIN = 0.0001; // Default is 0.01;
-    const double MU   = 10.0;
+    const double MU   = 100.0;
 
     // Wheel
     {
@@ -237,17 +240,71 @@ void SimBox2DImp::drawShape(b2Fixture* fixture, const b2Transform& xf) {
 
         b2Vec2  c = b2Mul(xf, circle->m_p);
         float32 r = circle->m_radius;
-        glBegin(GL_POLYGON);
-        for (double th = 0.0; th < 2 * PI; th += (PI / 10.0) ) {
-            double x = c.x + r * cos(th);
-            double y = c.y + r * sin(th);
-            glVertex2d(x, y);
+        glBegin(GL_LINE_LOOP);
+
+        glVertex2d(c.x, c.y);
+        for (double th = 0.0; th <= 2 * PI + 0.0001; th += (PI / 10.0) ) {
+            b2Vec2 v = b2Mul(xf, b2Vec2(r * cos(th), r * sin(th)));
+            glVertex2d(v.x, v.y);
         }
         glEnd();
     }
 
 
 }
+Eigen::VectorXd SimBox2DImp::toWorldPosList(const b2Contact* c) {
+    const b2Manifold* m = c->GetManifold();
+    Eigen::VectorXd ret(m->pointCount * 2);
+
+    b2WorldManifold wm;
+    c->GetWorldManifold(&wm);
+    int ptr = 0;
+    for (int i = 0; i < m->pointCount; i++) {
+        b2Vec2 p = wm.points[i];
+        ret(ptr++) = p.x;
+        ret(ptr++) = p.y;
+    }
+    return ret;
+}
+
+void SimBox2DImp::drawContact(const b2Contact* c) {
+    const b2Manifold* m = c->GetManifold();
+    b2WorldManifold wm;
+    c->GetWorldManifold(&wm);
+    for (int i = 0; i < m->pointCount; i++) {
+        glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
+        glPushMatrix();
+        b2Vec2 p = wm.points[i];
+        glTranslatef(p.x, p.y, 0.0);
+
+        glBegin(GL_TRIANGLE_FAN);
+        const float r = 0.01;
+        for (unsigned int a = 0; a < 64; ++a) {
+            float ang = (a / 64.0f) * 2.0f * float(M_PI);
+            glVertex2f(cosf(ang) * r, sinf(ang) * r);
+        }
+        glEnd();
+        glPopMatrix();
+    }
+}
+
+void SimBox2DImp::drawContact(const Eigen::Vector2d& c) {
+    glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
+    glPushMatrix();
+    b2Vec2 p(c(0), c(1));
+    glTranslatef(p.x, p.y, 0.0);
+
+    glBegin(GL_TRIANGLE_FAN);
+    const float r = 0.01;
+    for (unsigned int a = 0; a < 64; ++a) {
+        float ang = (a / 64.0f) * 2.0f * float(M_PI);
+        glVertex2f(cosf(ang) * r, sinf(ang) * r);
+    }
+    glEnd();
+    glPopMatrix();
+}
+
+
 //
 ////////////////////////////////////////////////////////////
 
@@ -345,6 +402,21 @@ void SimBox2D::integrate() {
     // Instruct the world to perform a single step of simulation.
     // It is generally best to keep the time step and iterations fixed.
     imp->world->Step(timeStep, velocityIterations, positionIterations);
+    // imp->world->Step(timeStep, velocityIterations, positionIterations);
+
+    std::vector<Eigen::Vector2d> contacts;
+    for (b2Contact* c = imp->world->GetContactList(); c; c = c->GetNext()) { 
+        Eigen::VectorXd p_list = imp->toWorldPosList(c);
+        for (int i = 0; i < p_list.size(); i += 2) {
+            Eigen::Vector2d p = p_list.segment(i, 2);
+            contacts.push_back(p);
+        }
+    }
+    mContacts = Eigen::VectorXd::Zero( contacts.size() * 2 );
+    for (int i = 0; i < contacts.size(); i++) {
+        mContacts(2 * i + 0) = contacts[i](0);
+        mContacts(2 * i + 1) = contacts[i](1);
+    }
 }
 
 void SimBox2D::applyTorque() {
@@ -396,6 +468,15 @@ void SimBox2D::render() {
     imp->drawBody(imp->r1);
     imp->drawBody(imp->r2);
     glPopMatrix();
+
+    for (int i = 0; i < mContacts.size(); i += 2) {
+        Eigen::Vector2d c = mContacts.segment<2>(i);
+        imp->drawContact( c );
+    }
+    // for (b2Contact* c = imp->world->GetContactList(); c; c = c->GetNext()) { 
+    //     imp->drawContact(c);
+    // }
+
 }
 
 Eigen::VectorXd SimBox2D::state() const {
@@ -430,7 +511,7 @@ Eigen::VectorXd SimBox2D::state() const {
 
 
 void SimBox2D::setState(const Eigen::VectorXd& _state) {
-    const double SKIN = 0.003;
+    const double SKIN = 0.0001;
     // Parameters
     double offset = 0;
     double radius = 0.05;

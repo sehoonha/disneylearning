@@ -22,7 +22,18 @@ void line(double x1, double x2, double y1, double y2) {
 }
 
 
-void circle(double cx, double cy, double r) {
+void circle(double cx, double cy, double r, double theta) {
+    glBegin(GL_LINE_LOOP);
+    glVertex2d(cx, cy);
+    for (double th = 0.0; th <= 2 * PI + 0.0001; th += (PI / 10.0) ) {
+        double x = cx + r * cos(th + theta);
+        double y = cy + r * sin(th + theta);
+        glVertex2d(x, y);
+    }
+    glEnd();
+}
+
+void disk(double cx, double cy, double r) {
     glBegin(GL_POLYGON);
     for (double th = 0.0; th < 2 * PI; th += (PI / 10.0) ) {
         double x = cx + r * cos(th);
@@ -31,6 +42,7 @@ void circle(double cx, double cy, double r) {
     }
     glEnd();
 }
+
 
 void SimMathcalBongo::render() {
     glPushMatrix();
@@ -143,7 +155,7 @@ void SimMathcalBongo::render() {
     const int X = 1;
     const int Y = 2;
     glColor3d(1, 0, 0);
-    circle( wheel(X), wheel(Y), rw);
+    circle( wheel(X), wheel(Y), rw, alphaw);
     glColor3d(1, 1, 0);
     line(boardLeft(X), boardRight(X), boardLeft(Y), boardRight(Y));
     glColor3d(0, 1, 0);
@@ -156,8 +168,8 @@ void SimMathcalBongo::render() {
     line(-3, 3, 0, 0);
 
     glColor3d(0, 1, 1);
-    circle( rightLink2(X), rightLink2(Y), 0.02 );
-    circle( cart(X), cart(Y), 0.02 );
+    disk( rightLink2(X), rightLink2(Y), 0.02 );
+    disk( cart(X), cart(Y), 0.02 );
 
     glPopMatrix();
 }
