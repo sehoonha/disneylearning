@@ -32,7 +32,6 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     double Ib   = 0.1067; 
     double lb   = 0.8; 
 
-
     double mrl1 = 15;
     double Irl1 = 1;
     double lrl1 = 1;

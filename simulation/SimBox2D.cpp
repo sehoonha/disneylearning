@@ -37,6 +37,10 @@ struct SimBox2DImp {
 };
 
 SimBox2DImp::SimBox2DImp() {
+    const double SKIN = 0.001; // Default is 0.01;
+    const double MU   = 1.0;
+    const double WIDTH  = 0.005;
+
     // Define the gravity vector.
     b2Vec2 gravity(0.0f, -9.81f);
     // Construct a world object, which will hold and simulate the rigid bodies.
@@ -52,13 +56,11 @@ SimBox2DImp::SimBox2DImp() {
     // Define the ground box shape.
     b2PolygonShape groundBox;
     // The extents are the half-widths of the box.
-    groundBox.SetAsBox(0.14f, 1.0f);
+    groundBox.SetAsBox(0.14f, 1.0f - SKIN);
     // Add the ground fixture to the ground body.
     ground->CreateFixture(&groundBox, 0.0f);
 
 
-    const double SKIN = 0.0001; // Default is 0.01;
-    const double MU   = 100.0;
 
     // Wheel
     {
@@ -93,7 +95,7 @@ SimBox2DImp::SimBox2DImp() {
         b2Body* body = world->CreateBody(&bodyDef);
         // Define another box shape for our dynamic body.
         b2PolygonShape shape;
-        shape.SetAsBox(0.3f, 0.005f);
+        shape.SetAsBox(0.3f, WIDTH);
         shape.m_radius = SKIN; 
 
         // Define the dynamic body fixture.
@@ -109,7 +111,6 @@ SimBox2DImp::SimBox2DImp() {
     }
 
 
-    const double width  = 0.005;
     const double height = 0.5;
     for (int i = 0; i < 4; i++) {
         // Define the dynamic body. We set its position and call the body factory.
@@ -135,13 +136,13 @@ SimBox2DImp::SimBox2DImp() {
         switch(i) {
         case 0: 
         case 1:
-            sx = width; sy = height; break;
+            sx = WIDTH; sy = height; break;
             // shape.SetAsBox(width, height); break;
         case 2:
         case 3: 
             // shape.SetAsBox(0.05, width); break;
             // shape.SetAsBox(width, 0.05); break;
-            sx = width; sy = 0.05; break;
+            sx = WIDTH; sy = 0.05; break;
         }
         shape.SetAsBox(sx, sy);
         shape.m_radius = SKIN; 
@@ -330,7 +331,7 @@ Simulator* SimBox2D::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2
          , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.3;
+    double angIni = 2.0;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
     // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2

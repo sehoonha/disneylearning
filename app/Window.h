@@ -39,8 +39,10 @@ public:
 
     void createActions();
     QAction* createAction(const char* _name);
+    bool isActionChecked(const char* const _name) { return actions[_name]->isChecked(); }
     void createToolbars();
     void createMenus();
+                      
 
 public slots:
     void onTimerRender();

@@ -32,6 +32,7 @@ public:
 
     // Simulation functions
     virtual void integrate();
+    void myintegrate();
     Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
 
     // Visualization functions

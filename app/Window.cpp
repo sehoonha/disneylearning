@@ -97,6 +97,9 @@ void Window::createActions() {
     createAction("StopAtEnd")->setCheckable(true);
     actions["StopAtEnd"]->setChecked(true);
 
+    createAction("Overlay")->setCheckable(true);
+    actions["Overlay"]->setChecked(false);
+    
     createAction("NN");
     createAction("Train");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
@@ -131,6 +134,7 @@ void Window::createToolbars() {
     connect( sliderFrame(), SIGNAL(valueChanged(int)),
              this, SLOT(onSliderFrameChanged(int)) );
 
+    toolbar->addAction( actions["Overlay"] );
     toolbar->addAction( actions["NN"] );
     toolbar->addAction( actions["Load"] );
     toolbar->addAction( actions["Train"] );

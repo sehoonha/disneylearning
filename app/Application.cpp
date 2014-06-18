@@ -52,14 +52,16 @@ void Application::init() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
-void Application::render() {
+void Application::render(bool overlay) {
     int count = 0;
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         glPushMatrix();
-        if (count == 0) {
-            glTranslated(-1.0, 0.0, 0.0);
-        } else {
-            glTranslated(1.0, 0.0, 0.0);
+        if (overlay == false) {
+            if (count == 0) {
+                glTranslated(-1.0, 0.0, 0.0);
+            } else {
+                glTranslated(1.0, 0.0, 0.0);
+            }
         }
         sim->render();
         sim->renderInfo();

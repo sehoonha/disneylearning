@@ -120,7 +120,7 @@ void GLWidget::paintGL() {
 
     // 2D Stuff
     enable2D();
-    window()->app()->render();
+    window()->app()->render( window()->isActionChecked("Overlay"));
     // window()->boxsim()->render();
     disable2D();
 }

@@ -31,7 +31,7 @@ public:
     virtual ~Application();
 
     void init();
-    void render();
+    void render(bool overlay = false);
     void step();
     void reset();
     void train();

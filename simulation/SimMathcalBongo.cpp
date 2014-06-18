@@ -30,7 +30,7 @@ Simulator* SimMathcalBongo::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2        , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.3;
+    double angIni = 2.0;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
     // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2
     //     , 0, 0, 0, 0, 0, 0;
@@ -46,7 +46,14 @@ Simulator* SimMathcalBongo::init() {
 }
 
 void SimMathcalBongo::integrate() {
-    double h = mTimestep;
+    myintegrate();
+    // myintegrate();
+    // myintegrate();
+    // myintegrate();
+}
+
+void SimMathcalBongo::myintegrate() {
+    double h = 1.0 * mTimestep;
     double h_2 = 0.5 * h;
 
     Eigen::VectorXd x = mState;
