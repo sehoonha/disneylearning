@@ -95,6 +95,10 @@ Eigen::VectorXd PolicyFeedback::control(const Eigen::VectorXd& _state) {
         }
     }
 
+    // u = (Eigen::VectorXd(4) << 0.0, 0.0, 0.0, 0.0).finished();
+    // u = (Eigen::VectorXd(4) << -20.0, -20.0, 20.0, 20.0).finished();
+    // u = (Eigen::VectorXd(4) << -20.0, -20.0, 20.0, 20.0).finished();
+
 
     // // Calculate u -- pose tracker
     // Eigen::VectorXd dq_bar = -K * (x - xEq);

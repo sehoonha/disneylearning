@@ -107,8 +107,17 @@ void Simulator::renderInfo() {
     utils::renderString(-0.3, 1.7, sout.str().c_str());
 
     sout.str("");
+    sout << "q: " << state().head(numDimConfig()).transpose();
+    utils::renderString(-0.8, 1.6, sout.str().c_str());
+
+    sout.str("");
+    sout << "dq: " << state().tail(numDimConfig()).transpose();
+    utils::renderString(-0.8, 1.5, sout.str().c_str());
+
+
+    sout.str("");
     sout << "Torque: " << mTorque.transpose();
-    utils::renderString(-0.3, 1.6, sout.str().c_str());
+    utils::renderString(-0.8, 1.4, sout.str().c_str());
 
     
 }
