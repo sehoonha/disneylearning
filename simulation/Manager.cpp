@@ -10,6 +10,7 @@
 #include "Simulator.h"
 #include "SimMathcalBongo.h"
 #include "SimBox2D.h"
+#include "SimGaussianProcess.h"
 
 namespace disney {
 namespace simulation {
@@ -24,7 +25,8 @@ Manager::~Manager() {
 
 void Manager::init() {
     add( (new SimBox2D())->init() );
-    add( (new SimMathcalBongo())->init() );
+    // add( (new SimMathcalBongo())->init() );
+    add( (new SimGaussianProcess())->init() );
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

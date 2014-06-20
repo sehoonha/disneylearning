@@ -91,7 +91,7 @@ Application::Application()
     , MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(learning)
 {
-    test();
+    // test();
 }
 
 Application::~Application() {
