@@ -108,6 +108,8 @@ target_link_libraries(disneylearning ${Boost_LIBRARIES})
 target_link_libraries(disneylearning glog)
 target_link_libraries(disneylearning shark)
 target_link_libraries(disneylearning Box2D)
+target_link_libraries(disneylearning GPc gfortran blas lapack)
+
 
 set_target_properties(disneylearning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
