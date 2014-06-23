@@ -81,8 +81,8 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     }
 
     LOG(INFO) << "data is copied";
-    cout << *(imp->X) << endl;
-    cout << *(imp->Y) << endl;
+    // cout << *(imp->X) << endl;
+    // cout << *(imp->Y) << endl;
 
     // Create kernel and noise
     imp->kern = new CCmpndKern(X);
@@ -102,7 +102,7 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
 
     try {
         cout <<  imp->noise->getNumData() << " vs. " <<  imp->X->getRows() << endl;
-        imp->gp = new CGp(imp->kern, imp->noise, imp->X, CGp::DTC, 2, 3);
+        imp->gp = new CGp(imp->kern, imp->noise, imp->X, CGp::FTC, 1, 3);
         imp->gp->setDefaultOptimiser(CGp::BFGS);
     } catch (ndlexceptions::Error& e) {
         LOG(FATAL) << "ndlexceptions:: " << e.getMessage();

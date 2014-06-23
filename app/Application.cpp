@@ -115,10 +115,11 @@ void Application::updateToHistory(int index) const {
 }
 
 void Application::collectData() {
-    simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_BOX2D);
+    // simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_BOX2D);
+    simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
-    std::string filename = "data_realsim.txt";
+    std::string filename = "data_gp.csv";
     LOG(INFO) << "collect data into file " << filename;
 
     std::ofstream fout(filename.c_str(), std::ios::app);

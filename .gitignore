@@ -9,4 +9,6 @@ disneylearning
 glog
 captures
 build/icon.png
+build/*.txt
+build/*.txt~
 *.nn

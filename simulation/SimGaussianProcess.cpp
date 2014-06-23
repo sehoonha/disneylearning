@@ -56,7 +56,7 @@ void SimGaussianProcess::train() {
     int n = numDimState();
     int m = numDimTorque();
     LOG(INFO) << FUNCTION_NAME() << " : " << n << ", " << m;
-    std::string filename = "data_realsim.txt";
+    std::string filename = "data_realsim.csv";
     std::ifstream fin(filename.c_str());
 
     Eigen::VectorXd prevState;
@@ -66,7 +66,7 @@ void SimGaussianProcess::train() {
 
     std::vector<Eigen::VectorXd> inputs;
     std::vector<Eigen::VectorXd> outputs;
-    for (int loop = 0; loop < 100; loop++) {
+    for (int loop = 0; ; loop++) {
         currState  = Eigen::VectorXd::Zero(n);
         currTorque = Eigen::VectorXd::Zero(m);
 
@@ -92,27 +92,37 @@ void SimGaussianProcess::train() {
             // Eigen::VectorXd input(n + m);
             // input.head(n) = prevState;
             // input.tail(m) = prevTorque;
-            Eigen::VectorXd input(7);
+            Eigen::VectorXd input(3);
             input(0) = prevState(0);
             input(1) = prevState(1);
             input(2) = prevState(2);
-            input(3) = prevState(6 + 0);
-            input(4) = prevState(6 + 1);
-            input(5) = prevState(6 + 2);
-            input(6) = prevTorque(0);
+            // input(3) = prevState(6 + 0);
+            // input(4) = prevState(6 + 1);
+            // input(5) = prevState(6 + 2);
+            // input(6) = prevTorque(0);
 
 
             // Eigen::VectorXd output(n);
             // output = currState - currSimState;
-            Eigen::VectorXd output(6);
+            Eigen::VectorXd output = Eigen::VectorXd::Zero(3);
             Eigen::VectorXd diff = currState - currSimState;
+            // diff = -diff;
             for (int i = 0; i < 3; i++) {
                 output(i) = diff(i);
-                output(i + 3) = diff(i + 6);
+                // output(i + 3) = diff(i + 6);
             }
 
             inputs.push_back(input);
             outputs.push_back(output);
+
+            if (loop < 10000) {
+                cout << "== " << loop << " ==" << endl;
+                cout << input.transpose() << endl;
+                cout << output.transpose() << endl;
+                cout << currState.transpose() << endl << currSimState.transpose() << endl;
+                cout << endl;
+            }
+
         }
 
         prevState  = currState;
@@ -121,18 +131,16 @@ void SimGaussianProcess::train() {
     fin.close();
 
     int N = inputs.size();
-    Eigen::MatrixXd X(N, 7);
-    Eigen::MatrixXd Y(N, 6);
+    Eigen::MatrixXd X(N, 3);
+    Eigen::MatrixXd Y(N, 3);
     for (int i = 0; i < N; i++) {
         X.row(i) = inputs[i];
         Y.row(i) = outputs[i];
     }
-    // cout << X << endl;
-    // cout << Y << endl;
     LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
-    // gp->optimize();
+    gp->optimize();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -146,27 +154,30 @@ void SimGaussianProcess::integrate() {
     Eigen::VectorXd dx = model->state() - x_prev;
 
     // 2. Correct the dynamics
-    Eigen::VectorXd input( 7 );
+    Eigen::VectorXd input( 3 );
     input(0) = x_prev(0);
     input(1) = x_prev(1);
     input(2) = x_prev(2);
-    input(3) = x_prev(6 + 0);
-    input(4) = x_prev(6 + 1);
-    input(5) = x_prev(6 + 2);
-    input(6) = mTorque(0);
+    // input(3) = x_prev(6 + 0);
+    // input(4) = x_prev(6 + 1);
+    // input(5) = x_prev(6 + 2);
+    // input(3) = mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
     if (gp) {
-        cout << "input = " << input.transpose() << endl;
+        // cout << endl;
+        // cout << "input = " << input.transpose() << endl;
         Eigen::VectorXd output = gp->predict( input );
-        cout << "output = " << output.transpose() << endl;
+        // cout << "output = " << output.transpose() << endl;
         // dx_delta = output;
         // output = [dq0, dq1, dq2, ddq0, ddq1, ddq2]'
         for (int i = 0; i < 3; i++) {
             dx_delta(i) = output(i);
-            dx_delta(i + 6) = output(i + 3);
+            // dx_delta(i + 6) = output(i + 3);
         }
-        cout << ">> " << dx_delta.transpose() << endl;
+        // dx_delta = -dx_delta;
+        LOG_EVERY_N(INFO, 30) << ">> " << dx_delta.transpose();
+        // cout << "model->state = " << model->state().transpose() << endl;
     }
 
     // 3. To the next state
@@ -183,12 +194,20 @@ void SimGaussianProcess::integrate() {
     mState(10) = -mState(8);
     mState(11) = -mState(8);
 
+    // cout << "final state = " << mState.transpose() << endl;
+
     model->setState( mState );
 }
 
 Eigen::VectorXd
 SimGaussianProcess::deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control) {
     return model->deriv(state, control);
+}
+
+void SimGaussianProcess::updateToHistory(int index) {
+    Simulator::updateToHistory(index);
+    model->setState( mState );
+    model->setTorque( mTorque );
 }
 
 void SimGaussianProcess::render() {

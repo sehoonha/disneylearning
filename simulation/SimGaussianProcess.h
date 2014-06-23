@@ -45,6 +45,9 @@ public:
     virtual void integrate();
     Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
 
+    // 
+    virtual void updateToHistory(int index);
+
     // Visualization functions
     virtual void render();
 
