@@ -73,7 +73,7 @@ struct PolicyEvaluation : public shark::SingleObjectiveFunction {
         mPolicy->setParams(params);
 
         mSim->reset();
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 3000; i++) {
             mSim->step();
         }
         double value = mSim->eval()->cost();

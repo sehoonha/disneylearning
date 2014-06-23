@@ -81,6 +81,8 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     }
 
     LOG(INFO) << "data is copied";
+    cout << *(imp->X) << endl;
+    cout << *(imp->Y) << endl;
 
     // Create kernel and noise
     imp->kern = new CCmpndKern(X);
@@ -92,13 +94,19 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     imp->kern->addKern(whiteKern);
 
     imp->noise = new CGaussianNoise(imp->Y);
-    CMatrix noiseBias(1, Y.getCols(), 0.0);
-    imp->noise->setBias(noiseBias);
+    CMatrix* noiseBias = new CMatrix(1, Y.getCols(), 0.0);
+    imp->noise->setBias(*noiseBias);
 
+    LOG(INFO) << "noiseBias = " << *noiseBias;
     LOG(INFO) << "kernel and noise are initialized";
 
-    imp->gp = new CGp(imp->kern, imp->noise, imp->X, CGp::FTC, 0, 3);
-    imp->gp->setDefaultOptimiser(CGp::BFGS);
+    try {
+        cout <<  imp->noise->getNumData() << " vs. " <<  imp->X->getRows() << endl;
+        imp->gp = new CGp(imp->kern, imp->noise, imp->X, CGp::DTC, 2, 3);
+        imp->gp->setDefaultOptimiser(CGp::BFGS);
+    } catch (ndlexceptions::Error& e) {
+        LOG(FATAL) << "ndlexceptions:: " << e.getMessage();
+    }
     LOG(INFO) << "gp class is initialized";
 
     LOG(INFO) << FUNCTION_NAME() << " OK: " << n << " " << dim_input << " " << dim_output;
@@ -134,7 +142,12 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd& _x) {
     CMatrix PP(1, dim_output);
     CMatrix PY(1, dim_output);
 
-    imp->gp->out(PY, PP, PX);
+    try {
+        imp->gp->out(PY, PX);
+    } catch (ndlexceptions::Error& e) {
+        LOG(FATAL) << "ndlexceptions:: " << e.getMessage();
+    }
+
 
     Eigen::VectorXd ret(dim_output);
     for (int i = 0; i < dim_output; i++) {

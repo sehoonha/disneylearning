@@ -102,6 +102,8 @@ void Window::createActions() {
     
     createAction("NN");
     createAction("Train");
+    createAction("Collect");
+    createAction("Consume");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
 
@@ -139,6 +141,10 @@ void Window::createToolbars() {
     toolbar->addAction( actions["Load"] );
     toolbar->addAction( actions["Train"] );
 
+    toolbar->addSeparator();
+    toolbar->addAction( actions["Collect"] );
+    toolbar->addAction( actions["Consume"] );
+
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
 }
@@ -160,7 +166,7 @@ void Window::onTimerIdle() {
     if (actions["Play"]->isChecked()) {
         app()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 5000 + 1) {
+        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 3000 + 1) {
             actions["Play"]->setChecked(false);
             onActionPlay();
             // LOG(INFO) << "evaluate = " << sim()->getCost();
@@ -257,6 +263,16 @@ void Window::onActionNN() {
 
 void Window::onActionTrain() {
     app()->train();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionCollect() {
+    app()->collectData();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionConsume() {
+    app()->consumeData();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

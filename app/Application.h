@@ -37,6 +37,9 @@ public:
     void train();
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
+
+    void collectData();
+    void consumeData();
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);

@@ -34,7 +34,14 @@ void Manager::load(const char* const filename) {
 }
 
 Simulator* Manager::availableSimulator(const char* const _type) {
-    return simulator(0);
+    std::string querytype(_type);
+    FOREACH(Simulator* sim, allSimulators()) {
+        if (sim->type() ==  querytype) {
+            return sim;
+        }
+    }
+    return NULL;
+    // return simulator(0);
 }
 
 

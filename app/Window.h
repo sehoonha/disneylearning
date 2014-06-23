@@ -55,6 +55,8 @@ public slots:
 
     void onActionNN();
     void onActionTrain();
+    void onActionCollect();
+    void onActionConsume();
 
 
 protected:

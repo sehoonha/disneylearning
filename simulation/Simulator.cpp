@@ -75,6 +75,7 @@ void Simulator::reset() {
 void Simulator::pushHistory() {
     SimulatorHistory sh;
     sh.fullstate = fullState();
+    sh.state = state();
     sh.torque = mTorque;
     sh.cost = (eval() != NULL) ? eval()->cost() : 0.0;
     sh.contacts = mContacts;

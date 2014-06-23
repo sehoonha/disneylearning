@@ -30,9 +30,10 @@ struct SimulatorHistory;
 class Simulator;
 
 struct SimulatorHistory {
-private:
-    friend class Simulator;
+// private:
+//     friend class Simulator;
     Eigen::VectorXd fullstate;
+    Eigen::VectorXd state;
     Eigen::VectorXd torque;
     double cost;
     Eigen::VectorXd contacts;
@@ -75,6 +76,7 @@ public:
     // History functions
     virtual void clearHistory() { mHistory.clear(); pushHistory(); }
     virtual int numHistories() const { return mHistory.size(); }
+    virtual SimulatorHistory& history(int index) { return mHistory[index]; }
     // virtual void pushHistory() { mHistory.push_back( fullState() ); }
     // virtual void updateToHistory(int index) { setFullState( mHistory[index] ); }
     virtual void pushHistory();
