@@ -8,7 +8,7 @@
  * https://github.com/SheffieldML/GPc
  * - changes: update Makefile to create libGpc.a
  * Library removed and changed to libgp
-
+ * https://github.com/mblum/libgp
  */
 
 #include "GaussianProcess.h"
@@ -16,6 +16,7 @@
 #include "gp.h"
 #include "gp_utils.h"
 #include "cg.h"
+#include <cstdio>
 
 #include "utils/CppCommon.h"
 
@@ -99,10 +100,38 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
               << imp->numDimInput() << " " << imp->numDimOutput();
 }
 
-void GaussianProcess::loadModel(const char* const filename) {
+void GaussianProcess::loadAll() {
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+    int NOUTPUT = imp->numDimOutput();
+    const int MAX_FILENAME = 256;
+    for (int i = 0; i < NOUTPUT; i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        char filename[MAX_FILENAME];
+        sprintf(filename, "gpmodel%d.gp", i);
+        FILE* fp = fopen(filename, "r");
+        if (fp != NULL) {
+            delete gp;
+            gp = new libgp::GaussianProcess(filename);
+            imp->gp_array[i] = gp;
+            LOG(INFO) << "loading GP " << i << " from " << filename;
+        } else {
+            LOG(INFO) << "cannot load GP " << i << " from " << filename;
+        }
+    }
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
-void GaussianProcess::saveModel(const char* const filename) {
+void GaussianProcess::saveAll() {
+    int NOUTPUT = imp->numDimOutput();
+    const int MAX_FILENAME = 256;
+    for (int i = 0; i < NOUTPUT; i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        char filename[MAX_FILENAME];
+        sprintf(filename, "gpmodel%d.gp", i);
+        LOG(INFO) << "writing GP " << i << " to " << filename;
+        gp->write(filename);
+    }
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 
@@ -119,6 +148,13 @@ void GaussianProcess::optimize() {
         cg.maximize(gp, 1000, VERBOSE);
         LOG(INFO) << "optimizing " << i << "th GP OK";
     }
+
+    // Eigen::VectorXd params = imp->gp_array[0]->covf().get_loghyper();
+    // for (int i = 0; i < imp->gp_array.size(); i++) {
+    //     libgp::GaussianProcess* gp = imp->gp_array[i];
+    //     gp->covf().set_loghyper(params);
+    //     LOG(INFO) << "logliklihood of GP " << i << " : " << gp->log_likelihood();
+    // }
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

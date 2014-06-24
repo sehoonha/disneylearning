@@ -40,6 +40,7 @@ public:
 
     void collectData();
     void consumeData();
+    void optimizeGP();
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);

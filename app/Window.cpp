@@ -104,6 +104,7 @@ void Window::createActions() {
     createAction("Train");
     createAction("Collect");
     createAction("Consume");
+    createAction("Optimize");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
 }
 
@@ -144,6 +145,7 @@ void Window::createToolbars() {
     toolbar->addSeparator();
     toolbar->addAction( actions["Collect"] );
     toolbar->addAction( actions["Consume"] );
+    toolbar->addAction( actions["Optimize"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
@@ -273,6 +275,11 @@ void Window::onActionCollect() {
 
 void Window::onActionConsume() {
     app()->consumeData();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionOptimize() {
+    app()->optimizeGP();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

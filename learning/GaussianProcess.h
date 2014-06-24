@@ -23,8 +23,8 @@ public:
 
     void init();
     void createModel(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y);
-    void loadModel(const char* const filename);
-    void saveModel(const char* const filename);
+    void loadAll();
+    void saveAll();
 
     void setTrainingData(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y);
     void optimize();

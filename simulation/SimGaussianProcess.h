@@ -33,6 +33,7 @@ public:
 
     // Training functions
     void train();
+    void optimize();
 
     // State functions
     virtual int numDimState() const { return 6 * 2; }

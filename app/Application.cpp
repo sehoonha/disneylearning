@@ -119,6 +119,7 @@ void Application::collectData() {
     simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
+    // std::string filename = "data_realsim.csv";
     std::string filename = "data_gp.csv";
     LOG(INFO) << "collect data into file " << filename;
 
@@ -144,6 +145,13 @@ void Application::consumeData() {
     simulation::SimGaussianProcess* simgp = dynamic_cast<simulation::SimGaussianProcess*>(sim);
     CHECK_NOTNULL(simgp);
     simgp->train();
+}
+void Application::optimizeGP() {
+    simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS);
+    CHECK_NOTNULL(sim);
+    simulation::SimGaussianProcess* simgp = dynamic_cast<simulation::SimGaussianProcess*>(sim);
+    CHECK_NOTNULL(simgp);
+    simgp->optimize();
 }
 
 

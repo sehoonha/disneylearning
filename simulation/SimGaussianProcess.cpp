@@ -96,9 +96,9 @@ void SimGaussianProcess::train() {
             input(0) = prevState(0);
             input(1) = prevState(1);
             input(2) = prevState(2);
-            input(3) = prevState(6 + 0);
-            input(4) = prevState(6 + 1);
-            input(5) = prevState(6 + 2);
+            input(3) = 0.1 * prevState(6 + 0);
+            input(4) = 0.1 * prevState(6 + 1);
+            input(5) = 0.1 * prevState(6 + 2);
             // input(6) = prevTorque(0);
 
 
@@ -109,7 +109,7 @@ void SimGaussianProcess::train() {
             // diff = -diff;
             for (int i = 0; i < 3; i++) {
                 output(i) = diff(i);
-                output(i + 3) = diff(i + 6);
+                output(i + 3) = 0.1 * diff(i + 6);
             }
 
             inputs.push_back(input);
@@ -137,10 +137,10 @@ void SimGaussianProcess::train() {
     for (int i = 0; i < N; i++) {
         X.row(i) = inputs[i];
         Y.row(i) = outputs[i];
-        for (int j = 0; j < 6; j++) {
+        for (int j = 0; j < X.cols(); j++) {
             fout << X(i, j) << " ";
         }
-        for (int j = 0; j < 6; j++) {
+        for (int j = 0; j < Y.cols(); j++) {
             fout << Y(i, j) << " ";
         }
         fout << endl;
@@ -149,7 +149,19 @@ void SimGaussianProcess::train() {
     LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
+    gp->loadAll();
+    // gp->optimize();
+
+    // Finally, reset the used model...
+    model->setState( mState );
+    model->setTorque( mTorque );
+
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void SimGaussianProcess::optimize() {
     gp->optimize();
+    gp->saveAll();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -167,9 +179,9 @@ void SimGaussianProcess::integrate() {
     input(0) = x_prev(0);
     input(1) = x_prev(1);
     input(2) = x_prev(2);
-    input(3) = x_prev(6 + 0);
-    input(4) = x_prev(6 + 1);
-    input(5) = x_prev(6 + 2);
+    input(3) = 0.1 * x_prev(6 + 0);
+    input(4) = 0.1 * x_prev(6 + 1);
+    input(5) = 0.1 * x_prev(6 + 2);
     // input(3) = mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
@@ -178,14 +190,18 @@ void SimGaussianProcess::integrate() {
         // cout << "input = " << input.transpose() << endl;
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
-        if (var.norm() < 0.01) {
+        if (var.norm() < 10.0) {
             for (int i = 0; i < 3; i++) {
-                dx_delta(i) = output(i);
-                // dx_delta(i + 6) = output(i + 3);
+                if (var(i) < 0.0001) {
+                    dx_delta(i) = output(i);
+                }
+                if (var(i + 3) < 0.0001) {
+                    dx_delta(i + 6) = output(i + 3);
+                }
             }
             LOG(INFO) << ">> "
                       << "(" << var.norm() << " / " << var.transpose() << ") "
-                      << dx_delta.transpose();
+                      << endl << dx_delta.transpose();
         } else {
             LOG_EVERY_N(INFO, 30)
                 << "reject due to high variance: "  
