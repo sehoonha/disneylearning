@@ -3,40 +3,37 @@
  *
  * Author(s): Sehoon Ha <sehoon.ha@disneyresearch.com>
  * Disney Research Pittsburgh
+
  * Implementation use the modified version of the following library
  * https://github.com/SheffieldML/GPc
  * - changes: update Makefile to create libGpc.a
+ * Library removed and changed to libgp
+
  */
 
 #include "GaussianProcess.h"
-#include "GPc/GPc.h" // Gaussian Process c library
+// #include "GPc/GPc.h" // Gaussian Process c library
+#include "gp.h"
+#include "gp_utils.h"
+#include "cg.h"
+
 #include "utils/CppCommon.h"
 
 namespace disney {
 namespace learning {
 
 struct GaussianProcessImp {
-    CGp* gp;
-    CMatrix* X;
-    CMatrix* Y;
-    CCmpndKern* kern;
-    CGaussianNoise* noise;
+    // One GP for one dimension
+    std::vector<libgp::GaussianProcess*> gp_array;
+    Eigen::MatrixXd X;
+    Eigen::MatrixXd Y;
 
-    GaussianProcessImp()
-        : gp(NULL), X(NULL), Y(NULL), kern(NULL), noise(NULL)
-        {}
+    GaussianProcessImp() {}
+    ~GaussianProcessImp() {}
 
-    ~GaussianProcessImp() {
-        if (noise) { delete noise; noise = NULL; }
-        if (kern) { delete kern; kern = NULL; }
-        if (Y) { delete Y; Y = NULL; }
-        if (X) { delete X; X = NULL; }
-        if (gp) { delete gp; gp = NULL; }
-    };
-    
-    int numData() { if (X) return X->getRows(); else return 0; }
-    int numDimInput() { if (gp) return gp->getInputDim(); else return 0; }
-    int numDimOutput() { if (gp) return gp->getInputDim(); else return 0; }
+    int numData() { return X.rows(); }
+    int numDimInput() { return X.cols(); }
+    int numDimOutput() { return Y.cols(); }
 };
 
 ////////////////////////////////////////////////////////////
@@ -60,56 +57,46 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     CHECK_NOTNULL(imp);
     CHECK_EQ(_X.rows(), _Y.rows());
     // Defines the dimensions
-    int n = _X.rows();
-    int dim_input = _X.cols();
-    int dim_output = _Y.cols();
+    int N = _X.rows();
+    int NINPUT = _X.cols();
+    int NOUTPUT = _Y.cols();
 
-    // Copy data
-    imp->X = new CMatrix(n, dim_input, 0.0);
-    imp->Y = new CMatrix(n, dim_output, 0.0);
+    imp->X = _X;
+    imp->Y = _Y;
 
-    CMatrix& X = *(imp->X);
-    CMatrix& Y = *(imp->Y);
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < dim_input; j++) {
-            X.setVal( _X(i, j), i, j);
-        }
-        for (int j = 0; j < dim_output; j++) {
-            Y.setVal( _Y(i, j), i, j);
-        }
-    }
-
+    // cout << imp->X << endl;
     LOG(INFO) << "data is copied";
-    // cout << *(imp->X) << endl;
-    // cout << *(imp->Y) << endl;
-
-    // Create kernel and noise
-    imp->kern = new CCmpndKern(X);
-    CKern* defaultKern = new CRbfKern(X);
-    CKern* biasKern = new CBiasKern(X);
-    CKern* whiteKern = new CWhiteKern(X);
-    imp->kern->addKern(defaultKern);
-    imp->kern->addKern(biasKern);
-    imp->kern->addKern(whiteKern);
-
-    imp->noise = new CGaussianNoise(imp->Y);
-    CMatrix* noiseBias = new CMatrix(1, Y.getCols(), 0.0);
-    imp->noise->setBias(*noiseBias);
-
-    LOG(INFO) << "noiseBias = " << *noiseBias;
-    LOG(INFO) << "kernel and noise are initialized";
-
-    try {
-        cout <<  imp->noise->getNumData() << " vs. " <<  imp->X->getRows() << endl;
-        imp->gp = new CGp(imp->kern, imp->noise, imp->X, CGp::FTC, 1, 3);
-        imp->gp->setDefaultOptimiser(CGp::BFGS);
-    } catch (ndlexceptions::Error& e) {
-        LOG(FATAL) << "ndlexceptions:: " << e.getMessage();
+    
+    for (int i = 0; i < NOUTPUT; i++) {
+        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
+        Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
+        params( params.size() - 1) = -2.0;
+        gp->covf().set_loghyper(params);
+        imp->gp_array.push_back(gp);
+        LOG(INFO) << "GaussianProcess #" << i + 1 << " / " << NOUTPUT << " is initialized";
     }
-    LOG(INFO) << "gp class is initialized";
+    LOG(INFO) << "create all GPs structures";
 
-    LOG(INFO) << FUNCTION_NAME() << " OK: " << n << " " << dim_input << " " << dim_output;
+    double* x = new double[NINPUT + 2];
+    for (int i = 0; i < N; i++) {
+        const Eigen::VectorXd& input = (imp->X).row(i);
+        for (int j = 0; j < NINPUT; j++) {
+            x[j] = input[j];
+        }
+
+        const Eigen::VectorXd& output = (imp->Y).row(i);
+        for (int j = 0; j < NOUTPUT; j++) {
+            double y = output(j);
+            libgp::GaussianProcess* gp = imp->gp_array[j];
+            gp->add_pattern(x, y);
+        }
+        LOG_EVERY_N(INFO, 1000) << i << "/" << N << " pattern is added";
+    }
+    delete[] x;
+
+    
+    LOG(INFO) << FUNCTION_NAME() << " OK: " << N << " "
+              << imp->numDimInput() << " " << imp->numDimOutput();
 }
 
 void GaussianProcess::loadModel(const char* const filename) {
@@ -124,35 +111,35 @@ void GaussianProcess::setTrainingData(const Eigen::MatrixXd& _X, const Eigen::Ma
 
 void GaussianProcess::optimize() {
     LOG(INFO) << FUNCTION_NAME();
-    int iters = 1000;
-    imp->gp->optimise(iters);
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        LOG(INFO) << "optimizing " << i << "th GP..";
+        libgp::CG cg;
+        int VERBOSE = 1;
+        cg.maximize(gp, 1000, VERBOSE);
+        LOG(INFO) << "optimizing " << i << "th GP OK";
+    }
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd& _x) {
-    int dim_input  = imp->numDimInput();
-    int dim_output = imp->numDimOutput();
+    int NINPUT  = imp->numDimInput();
+    int NOUTPUT = imp->numDimOutput();
+    CHECK_EQ( (int)_x.size(), NINPUT );
 
-    CHECK_EQ( (int)_x.size(), dim_input );
-    
-    CMatrix PX(1, dim_input);
-    for (int i = 0; i < dim_input; i++) {
-        PX.setVal( _x(i), 0, i);
-    }
-    CMatrix PP(1, dim_output);
-    CMatrix PY(1, dim_output);
-
-    try {
-        imp->gp->out(PY, PX);
-    } catch (ndlexceptions::Error& e) {
-        LOG(FATAL) << "ndlexceptions:: " << e.getMessage();
+    double* x = new double[NINPUT + 2];
+    for (int j = 0; j < NINPUT; j++) {
+        x[j] = _x(j);
     }
 
-
-    Eigen::VectorXd ret(dim_output);
-    for (int i = 0; i < dim_output; i++) {
-        ret(i) = PY.getVal(0, i);
+    Eigen::VectorXd ret(NOUTPUT);
+    mVariance = Eigen::VectorXd::Zero(NOUTPUT);
+    for (int j = 0; j < NOUTPUT; j++) {
+        libgp::GaussianProcess* gp = imp->gp_array[j];
+        ret(j) = gp->f(x);
+        mVariance(j) = gp->var(x);
     }
+    delete[] x;
     return ret;
 }
 

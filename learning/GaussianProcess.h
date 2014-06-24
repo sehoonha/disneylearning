@@ -30,9 +30,11 @@ public:
     void optimize();
 
     Eigen::VectorXd predict(const Eigen::VectorXd& _x);
+    Eigen::VectorXd varianceOfLastPrediction() const { return mVariance; }
     
 protected:
     GaussianProcessImp* imp;
+    Eigen::VectorXd mVariance;
 }; // class GaussianProcess
 
 } // namespace learning
