@@ -25,6 +25,7 @@ public:
     void createModel(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y);
     void loadAll();
     void saveAll();
+    void test();
 
     void setTrainingData(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y);
     void optimize();

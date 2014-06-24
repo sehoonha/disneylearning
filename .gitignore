@@ -11,4 +11,8 @@ captures
 build/icon.png
 build/*.txt
 build/*.txt~
+build/*.csv
+build/*.csv~
+build/*.gp
+build/*.gp~
 *.nn

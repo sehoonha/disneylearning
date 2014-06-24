@@ -16,6 +16,7 @@
 #include "gp.h"
 #include "gp_utils.h"
 #include "cg.h"
+#include "CGMulti.h"
 #include <cstdio>
 
 #include "utils/CppCommon.h"
@@ -69,7 +70,8 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     LOG(INFO) << "data is copied";
     
     for (int i = 0; i < NOUTPUT; i++) {
-        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
+        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEard, CovNoise)");
         Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
         params( params.size() - 1) = -2.0;
         gp->covf().set_loghyper(params);
@@ -118,6 +120,7 @@ void GaussianProcess::loadAll() {
             LOG(INFO) << "cannot load GP " << i << " from " << filename;
         }
     }
+    // test();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -134,27 +137,44 @@ void GaussianProcess::saveAll() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void GaussianProcess::test() {
+    int N = imp->numData();
+    double sum_error = 0.0;
+    for (int i = 0; i < N; i++) {
+        Eigen::VectorXd x = imp->X.row(i);
+        Eigen::VectorXd y = this->predict(x);
+        Eigen::VectorXd yhat = imp->Y.row(i);
+        double err = (y - yhat).norm();
+        sum_error += err;
+        cout << i << " : "
+             << err << ". " << endl
+             << "x : " << x.transpose() << endl
+             << "y : " << y.transpose() << endl
+             << "f : " << yhat.transpose() << " "
+             << endl;
+    }
+    cout << sum_error << endl;
+}
 
 void GaussianProcess::setTrainingData(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y) {
 }
 
 void GaussianProcess::optimize() {
     LOG(INFO) << FUNCTION_NAME();
-    for (int i = 0; i < imp->gp_array.size(); i++) {
-        libgp::GaussianProcess* gp = imp->gp_array[i];
-        LOG(INFO) << "optimizing " << i << "th GP..";
-        libgp::CG cg;
-        int VERBOSE = 1;
-        cg.maximize(gp, 1000, VERBOSE);
-        LOG(INFO) << "optimizing " << i << "th GP OK";
-    }
+    libgp::CGMulti cg;
+    int VERBOSE = 1;
+    cg.maximize(imp->gp_array, 1000, VERBOSE);
 
-    // Eigen::VectorXd params = imp->gp_array[0]->covf().get_loghyper();
+    // LOG(INFO) << FUNCTION_NAME();
     // for (int i = 0; i < imp->gp_array.size(); i++) {
     //     libgp::GaussianProcess* gp = imp->gp_array[i];
-    //     gp->covf().set_loghyper(params);
-    //     LOG(INFO) << "logliklihood of GP " << i << " : " << gp->log_likelihood();
+    //     LOG(INFO) << "optimizing " << i << "th GP..";
+    //     libgp::CG cg;
+    //     int VERBOSE = 1;
+    //     cg.maximize(gp, 1000, VERBOSE);
+    //     LOG(INFO) << "optimizing " << i << "th GP OK";
     // }
+
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

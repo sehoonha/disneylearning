@@ -89,39 +89,41 @@ void SimGaussianProcess::train() {
             model->integrate();
             Eigen::VectorXd currSimState = model->state();
 
-            // Eigen::VectorXd input(n + m);
-            // input.head(n) = prevState;
-            // input.tail(m) = prevTorque;
-            Eigen::VectorXd input(6);
-            input(0) = prevState(0);
-            input(1) = prevState(1);
-            input(2) = prevState(2);
-            input(3) = 0.1 * prevState(6 + 0);
-            input(4) = 0.1 * prevState(6 + 1);
-            input(5) = 0.1 * prevState(6 + 2);
-            // input(6) = prevTorque(0);
+            double stepLength = (currState - prevState).norm();
+            const double STEP_LENGTH_LIMIT = 1.0;
+            if (stepLength < STEP_LENGTH_LIMIT) {
 
+                Eigen::VectorXd input(6);
+                input(0) = prevState(0);
+                input(1) = prevState(1);
+                input(2) = prevState(2);
+                input(3) = 0.1 * prevState(6 + 0);
+                input(4) = 0.1 * prevState(6 + 1);
+                input(5) = 0.1 * prevState(6 + 2);
 
-            // Eigen::VectorXd output(n);
-            // output = currState - currSimState;
-            Eigen::VectorXd output = Eigen::VectorXd::Zero(6);
-            Eigen::VectorXd diff = currState - currSimState;
-            // diff = -diff;
-            for (int i = 0; i < 3; i++) {
-                output(i) = diff(i);
-                output(i + 3) = 0.1 * diff(i + 6);
-            }
+                Eigen::VectorXd output = Eigen::VectorXd::Zero(6);
+                Eigen::VectorXd diff = currState - currSimState;
+                for (int i = 0; i < 3; i++) {
+                    output(i) = diff(i);
+                    output(i + 3) = 0.1 * diff(i + 6);
+                }
 
-            inputs.push_back(input);
-            outputs.push_back(output);
+                inputs.push_back(input);
+                outputs.push_back(output);
 
-            if (loop < 10000) {
+                // cout << "== " << loop << " ==" << endl;
+                // cout << stepLength << endl;
+                // cout << "input  = " << input.transpose() << endl;
+                // cout << "output = " << output.transpose() << endl;
+                // cout << currState.transpose() << endl << currSimState.transpose() << endl;
+                // cout << endl;
+            } else {
                 cout << "== " << loop << " ==" << endl;
-                cout << input.transpose() << endl;
-                cout << output.transpose() << endl;
+                cout << stepLength << endl;
                 cout << currState.transpose() << endl << currSimState.transpose() << endl;
                 cout << endl;
             }
+                
 
         }
 
@@ -190,14 +192,10 @@ void SimGaussianProcess::integrate() {
         // cout << "input = " << input.transpose() << endl;
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
-        if (var.norm() < 10.0) {
+        if (var.norm() < 1.0) {
             for (int i = 0; i < 3; i++) {
-                if (var(i) < 0.0001) {
-                    dx_delta(i) = output(i);
-                }
-                if (var(i + 3) < 0.0001) {
-                    dx_delta(i + 6) = output(i + 3);
-                }
+                dx_delta(i) = output(i);
+                dx_delta(i + 6) = 10.0 * output(i + 3);
             }
             LOG(INFO) << ">> "
                       << "(" << var.norm() << " / " << var.transpose() << ") "
