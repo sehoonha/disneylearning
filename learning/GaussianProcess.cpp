@@ -163,7 +163,8 @@ void GaussianProcess::optimize() {
     LOG(INFO) << FUNCTION_NAME();
     libgp::CGMulti cg;
     int VERBOSE = 1;
-    cg.maximize(imp->gp_array, 1000, VERBOSE);
+    int MAX_LOOP = 100;
+    cg.maximize(imp->gp_array, MAX_LOOP, VERBOSE);
 
     // LOG(INFO) << FUNCTION_NAME();
     // for (int i = 0; i < imp->gp_array.size(); i++) {

@@ -33,7 +33,7 @@ Simulator* SimGaussianProcess::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2        , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.3;
+    double angIni = 0.25;
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
         
     mState = xEq + xOffset;
@@ -91,15 +91,16 @@ void SimGaussianProcess::train() {
 
             double stepLength = (currState - prevState).norm();
             const double STEP_LENGTH_LIMIT = 1.0;
-            if (stepLength < STEP_LENGTH_LIMIT && (loop % 1 == 0) ) {
+            if (stepLength < STEP_LENGTH_LIMIT && (loop % 3 == 0) ) {
 
-                Eigen::VectorXd input(6);
+                Eigen::VectorXd input(7);
                 input(0) = prevState(0);
                 input(1) = prevState(1);
                 input(2) = prevState(2);
                 input(3) = 0.1 * prevState(6 + 0);
                 input(4) = 0.1 * prevState(6 + 1);
                 input(5) = 0.1 * prevState(6 + 2);
+                input(6) = 0.05 * prevTorque(0);
 
                 Eigen::VectorXd output = Eigen::VectorXd::Zero(6);
                 Eigen::VectorXd diff = currState - currSimState;
@@ -118,10 +119,10 @@ void SimGaussianProcess::train() {
                 // cout << currState.transpose() << endl << currSimState.transpose() << endl;
                 // cout << endl;
             } else {
-                cout << "== " << loop << " ==" << endl;
-                cout << stepLength << endl;
-                cout << currState.transpose() << endl << currSimState.transpose() << endl;
-                cout << endl;
+                // cout << "== " << loop << " ==" << endl;
+                // cout << stepLength << endl;
+                // cout << currState.transpose() << endl << currSimState.transpose() << endl;
+                // cout << endl;
             }
                 
 
@@ -133,8 +134,8 @@ void SimGaussianProcess::train() {
     fin.close();
 
     int N = inputs.size();
-    Eigen::MatrixXd X(N, 6);
-    Eigen::MatrixXd Y(N, 6);
+    Eigen::MatrixXd X(N, inputs[0].size() );
+    Eigen::MatrixXd Y(N, outputs[0].size() );
     std::ofstream fout("training.csv");
     for (int i = 0; i < N; i++) {
         X.row(i) = inputs[i];
@@ -177,14 +178,14 @@ void SimGaussianProcess::integrate() {
     Eigen::VectorXd dx = model->state() - x_prev;
 
     // 2. Correct the dynamics
-    Eigen::VectorXd input( 6 );
+    Eigen::VectorXd input( 7 );
     input(0) = x_prev(0);
     input(1) = x_prev(1);
     input(2) = x_prev(2);
     input(3) = 0.1 * x_prev(6 + 0);
     input(4) = 0.1 * x_prev(6 + 1);
     input(5) = 0.1 * x_prev(6 + 2);
-    // input(3) = mTorque(0);
+    input(6) = 0.05 * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
     if (gp) {
@@ -197,13 +198,13 @@ void SimGaussianProcess::integrate() {
                 dx_delta(i) = output(i);
                 dx_delta(i + 6) = 10.0 * output(i + 3);
             }
-            LOG(INFO) << ">> "
-                      << "(" << var.norm() << " / " << var.transpose() << ") "
-                      << endl << dx_delta.transpose();
+            // LOG(INFO) << ">> "
+            //           << "(" << var.norm() << " / " << var.transpose() << ") "
+            //           << endl << dx_delta.transpose();
         } else {
-            LOG_EVERY_N(INFO, 30)
-                << "reject due to high variance: "  
-                << "(" << var.norm() << " / " << var.transpose() << ") ";
+            // LOG_EVERY_N(INFO, 30)
+            //     << "reject due to high variance: "  
+            //     << "(" << var.norm() << " / " << var.transpose() << ") ";
         }
         
         // cout << "model->state = " << model->state().transpose() << endl;

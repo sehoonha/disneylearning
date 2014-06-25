@@ -95,7 +95,7 @@ void Application::reset() {
 }
 
 void Application::train() {
-    learning()->train(policy(), manager()->simulator(0));
+    learning()->train(policy(), manager()->simulator(1));
 }
 
 int Application::numMaximumHistory() const {
@@ -119,7 +119,7 @@ void Application::collectData() {
     simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
-    // std::string filename = "data_realsim.csv";
+    // std::string filename = "data_math.csv";
     std::string filename = "data_gp.csv";
     LOG(INFO) << "collect data into file " << filename;
 
