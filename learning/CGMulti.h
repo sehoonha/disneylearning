@@ -22,6 +22,7 @@ public:
     void maximize(std::vector<GaussianProcess*>& _gp_array, size_t n=100, bool verbose=1);
 
     double log_likelihood();
+    double log_likelihood2();
     Eigen::VectorXd log_likelihood_gradient();
     Eigen::VectorXd get_loghyper();
     void set_loghyper(const Eigen::VectorXd& x);

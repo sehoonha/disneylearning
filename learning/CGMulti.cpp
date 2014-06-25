@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include <Eigen/Core>
+#include "utils/CppCommon.h"
 
-using namespace std;
 
 namespace libgp
 {
@@ -24,22 +24,29 @@ CGMulti::~CGMulti()
 }
 
 double CGMulti::log_likelihood() {
+    LOG(INFO) << "ll";
     double ret = 0.0;
     for (int i = 0; i < gp_array.size(); i++) {
         ret += gp_array[i]->log_likelihood();
     }
+    LOG(INFO) << "ll.. done";
     return ret;
 }
 
+
 Eigen::VectorXd CGMulti::log_likelihood_gradient() {
+    LOG(INFO) << "G";
     Eigen::VectorXd ret;
     for (int i = 0; i < gp_array.size(); i++) {
+        Eigen::VectorXd g = gp_array[i]->log_likelihood_gradient();
         if (i == 0) {
-            ret = gp_array[i]->log_likelihood_gradient();
+            ret = g;
         } else {
-            ret += gp_array[i]->log_likelihood_gradient();
+            ret += g;
         }
+        cout << i << " : " << g.transpose() << endl;
     }
+    LOG(INFO) << "G.. done";
     return ret;
 }
 
@@ -114,7 +121,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
         Eigen::VectorXd X0 = X;
         double F0 = f0;
         Eigen::VectorXd dF0 = df0;
-        unsigned int M = min(MAX, (int)(n-i));
+        unsigned int M = std::min(MAX, (int)(n-i));
 
         while(1)											//keep extrapolating until necessary
         {

@@ -91,7 +91,7 @@ void SimGaussianProcess::train() {
 
             double stepLength = (currState - prevState).norm();
             const double STEP_LENGTH_LIMIT = 1.0;
-            if (stepLength < STEP_LENGTH_LIMIT) {
+            if (stepLength < STEP_LENGTH_LIMIT && (loop % 1 == 0) ) {
 
                 Eigen::VectorXd input(6);
                 input(0) = prevState(0);
