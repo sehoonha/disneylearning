@@ -71,6 +71,10 @@ find_package(Eigen REQUIRED)
 message(STATUS "Eigen_INCLUDE_DIRS = ${Eigen_INCLUDE_DIRS}")
 include_directories(${Eigen_INCLUDE_DIRS})
 
+find_package(TBB REQUIRED)
+message(STATUS "TBB_INCLUDE_DIRS = ${TBB_INCLUDE_DIRS}")
+message(STATUS "TBB_LIBRARIES = ${TBB_LIBRARIES}")
+
 message(STATUS "=====================================================")
 message(STATUS "configuring the project")
 message(STATUS "=====================================================")
@@ -110,6 +114,7 @@ target_link_libraries(disneylearning shark)
 target_link_libraries(disneylearning Box2D)
 # target_link_libraries(disneylearning GPc gfortran blas lapack)
 target_link_libraries(disneylearning gp)
+target_link_libraries(disneylearning ${TBB_LIBRARIES})
 
 
 set_target_properties(disneylearning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

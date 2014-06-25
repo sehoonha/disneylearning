@@ -11,9 +11,31 @@
 #include <Eigen/Core>
 #include "utils/CppCommon.h"
 
+#include "tbb/parallel_reduce.h"
+#include "tbb/blocked_range.h"
 
 namespace libgp
 {
+
+struct SumGrad {
+    Eigen::VectorXd value;
+    SumGrad(int _dim) : dim(_dim) { value = Eigen::VectorXd::Zero(dim); }
+    SumGrad( SumGrad& s, tbb::split ) { dim = s.dim; value = Eigen::VectorXd::Zero(dim); }
+    
+    void operator()( tbb::blocked_range< std::vector<GaussianProcess*>::iterator >& r) {
+        Eigen::VectorXd temp = value;
+        for( std::vector<GaussianProcess*>::iterator i = r.begin(); i != r.end(); ++i ) {
+            GaussianProcess* gp = (*i);
+            // cout << "@@" << endl;
+            Eigen::VectorXd g = gp->log_likelihood_gradient();
+            temp += g;
+            // cout << "##" << endl;
+        }
+        value = temp;
+    }
+    void join( SumGrad& rhs ) {value += rhs.value;}
+    int dim;
+};
 
 CGMulti::CGMulti()
 {
@@ -24,30 +46,42 @@ CGMulti::~CGMulti()
 }
 
 double CGMulti::log_likelihood() {
-    LOG(INFO) << "ll";
     double ret = 0.0;
     for (int i = 0; i < gp_array.size(); i++) {
         ret += gp_array[i]->log_likelihood();
     }
-    LOG(INFO) << "ll.. done";
     return ret;
 }
 
 
 Eigen::VectorXd CGMulti::log_likelihood_gradient() {
-    LOG(INFO) << "G";
-    Eigen::VectorXd ret;
-    for (int i = 0; i < gp_array.size(); i++) {
-        Eigen::VectorXd g = gp_array[i]->log_likelihood_gradient();
-        if (i == 0) {
-            ret = g;
-        } else {
-            ret += g;
-        }
-        cout << i << " : " << g.transpose() << endl;
-    }
-    LOG(INFO) << "G.. done";
-    return ret;
+    // // Serial version
+    // LOG(INFO) << "G";
+    // Eigen::VectorXd ret;
+    // for (int i = 0; i < gp_array.size(); i++) {
+    //     Eigen::VectorXd g = gp_array[i]->log_likelihood_gradient();
+    //     if (i == 0) {
+    //         ret = g;
+    //     } else {
+    //         ret += g;
+    //     }
+    //     cout << i << " : " << g.transpose() << endl;
+    // }
+    // LOG(INFO) << "G.. done " << ret.transpose();
+
+    // LOG(INFO) << "G parallel";
+    int dim = gp_array[0]->covf().get_param_dim();
+    SumGrad total( dim  );
+    parallel_reduce(
+        tbb::blocked_range< std::vector<GaussianProcess*>::iterator >(
+            gp_array.begin(),
+            gp_array.end()
+            ),
+        total );    
+    // LOG(INFO) << "G parallel.. done " << total.value.transpose();
+
+
+    return total.value;
 }
 
 Eigen::VectorXd CGMulti::get_loghyper() {
