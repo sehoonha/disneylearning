@@ -115,6 +115,7 @@ target_link_libraries(disneylearning Box2D)
 # target_link_libraries(disneylearning GPc gfortran blas lapack)
 target_link_libraries(disneylearning gp)
 target_link_libraries(disneylearning ${TBB_LIBRARIES})
+target_link_libraries(disneylearning tinyxml2)
 
 
 set_target_properties(disneylearning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

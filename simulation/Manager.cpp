@@ -7,6 +7,7 @@
 
 #include "Manager.h"
 #include "utils/CppCommon.h"
+#include "utils/Option.h"
 #include "Simulator.h"
 #include "SimMathcalBongo.h"
 #include "SimBox2D.h"
@@ -24,9 +25,19 @@ Manager::~Manager() {
 }
 
 void Manager::init() {
-    add( (new SimBox2D())->init() );
+    FOREACH(const utils::OptionItem& o, utils::Option::readAll("simulation.sim")) {
+        const std::string type = o.attrString("type");
+        if (type == SIMTYPE_BOX2D) {
+            add( (new SimBox2D())->init() );
+        } else if (type == SIMTYPE_MATHCALBONGO) {
+            add( (new SimMathcalBongo())->init() );
+        } else if (type == SIMTYPE_GAUSSIANPROCESS) {
+            add( (new SimGaussianProcess())->init() );
+        } else {
+            LOG(FATAL) << "Invalid simulation type: " << type << endl;
+        }
+    }
     // add( (new SimMathcalBongo())->init() );
-    add( (new SimGaussianProcess())->init() );
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

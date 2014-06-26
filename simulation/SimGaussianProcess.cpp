@@ -8,6 +8,7 @@
 #include "SimGaussianProcess.h"
 #include <fstream>
 #include "utils/CppCommon.h"
+#include "utils/Option.h"
 #include "SimMathcalBongo.h"
 #include "learning/GaussianProcess.h"
 
@@ -33,7 +34,7 @@ Simulator* SimGaussianProcess::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2        , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.25;
+    double angIni = utils::Option::read("simulation.init.angle").toDouble();
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
         
     mState = xEq + xOffset;

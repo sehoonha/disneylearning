@@ -1,0 +1,6 @@
+<simulation>
+  <sim type="SimBox2D" />
+  <sim type="SimGaussianProcess" />
+  <!-- <sim type="SimMathcalBongo" /> -->
+  <init angle="0.5" />
+</simulation>

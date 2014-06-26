@@ -8,6 +8,7 @@
 #include "SimBox2D.h"
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
+#include "utils/Option.h"
 #include <Box2D/Box2D.h>
 
 namespace disney {
@@ -331,7 +332,7 @@ Simulator* SimBox2D::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2
          , 0, 0, 0, 0, 0, 0;
     Eigen::VectorXd xOffset(m);
-    double angIni = 0.25;
+    double angIni = utils::Option::read("simulation.init.angle").toDouble();
     xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0
         , 0, 0, 0, 0, 0, 0;
     // xOffset << 0.2, 0.3, 0.2, 0.2, -0.2, -0.2

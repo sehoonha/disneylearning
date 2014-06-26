@@ -54,5 +54,6 @@ using google::FATAL;
 #endif
 
 // #include "Paths.h"
+#define DATA_DIR "../data"
 
 #endif // #ifndef APP_CPPCOMMON_H
