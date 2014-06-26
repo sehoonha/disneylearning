@@ -14,6 +14,16 @@
 namespace disney {
 namespace simulation {
 
+void b2_draw_disk(double cx, double cy, double r) {
+    glBegin(GL_POLYGON);
+    for (double th = 0.0; th < 2 * PI; th += (PI / 10.0) ) {
+        double x = cx + r * cos(th);
+        double y = cy + r * sin(th);
+        glVertex2d(x, y);
+    }
+    glEnd();
+}
+
 ////////////////////////////////////////////////////////////
 // struct Box2dsimulationImp;
 struct SimBox2DImp {
@@ -475,6 +485,24 @@ void SimBox2D::render() {
         Eigen::Vector2d c = mContacts.segment<2>(i);
         imp->drawContact( c );
     }
+
+    double sum_mass = 0.0;
+    Eigen::Vector2d sum_com(0.0, 0.0);
+    for (int i = 2; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+
+        double m = body->GetMass();
+        sum_mass += m;
+
+        b2Vec2 p = body->GetPosition();
+        Eigen::Vector2d com(p.x, p.y);
+        sum_com += m * com;
+    }    
+    sum_com /= sum_mass;
+    glColor3d(0.0, 0.0, 0.0);
+    b2_draw_disk(sum_com.x(), sum_com.y(), 0.03);
+    // cout << sum_com.transpose() << endl;
+
     // for (b2Contact* c = imp->world->GetContactList(); c; c = c->GetNext()) { 
     //     imp->drawContact(c);
     // }
