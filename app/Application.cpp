@@ -63,17 +63,46 @@ void Application::init() {
 
 void Application::render(bool overlay) {
     int count = 0;
+    int num   = manager()->allSimulators().size();
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         glPushMatrix();
+        double SCALE_RENDER = 1.0;
+        double SCALE_TEXT   = 1.0;
+        double TRANSLATE_TEXT_Y = 0.0;
         if (overlay == false) {
-            if (count == 0) {
-                glTranslated(-1.0, 0.0, 0.0);
-            } else {
-                glTranslated(1.0, 0.0, 0.0);
+            if (num == 2) {
+                switch(count) {
+                case 0: glTranslated(-1.0, 0.0, 0.0); break;
+                case 1: glTranslated( 1.0, 0.0, 0.0); break;
+                }
+            } else if (num == 3) {
+                switch(count) {
+                case 0: glTranslated(-1.5, 0.0, 0.0); break;
+                case 1: glTranslated( 0.0, 0.0, 0.0); break;
+                case 2: glTranslated( 1.5, 0.0, 0.0); break;
+                }
+                SCALE_RENDER     = 0.9;
+                SCALE_TEXT       = 0.7;
+                TRANSLATE_TEXT_Y = 0.3;
             }
+
+            // if (count == 0) {
+            //     glTranslated(-1.0, 0.0, 0.0);
+            // } else if (count == 1) {
+            //     glTranslated(1.0, 0.0, 0.0);
+            // }
         }
+        glPushMatrix();
+        glScaled(SCALE_RENDER, SCALE_RENDER, SCALE_RENDER);
         sim->render();
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslated(0, TRANSLATE_TEXT_Y, 0);
+        glScaled(SCALE_TEXT, SCALE_TEXT, SCALE_TEXT);
         sim->renderInfo();
+        glPopMatrix();
+
         glPopMatrix();
 
         count++;
@@ -114,13 +143,21 @@ void Application::updateToHistory(int index) const {
     }
 }
 
-void Application::collectData() {
-    // simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_BOX2D);
-    simulation::Simulator* sim = manager()->simulator(1);
+std::vector<std::string> Application::allSimulatorNames() {
+    std::vector<std::string> ret;
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        ret.push_back( sim->type() );
+    }
+    return ret;
+}
+
+void Application::collectData(const char* const _type) {
+    simulation::Simulator* sim = manager()->availableSimulator(_type);
+    // simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
     // std::string filename = "data_math.csv";
-    std::string filename = "data_gp.csv";
+    std::string filename = std::string("data_") + std::string(_type) + ".csv";
     LOG(INFO) << "collect data into file " << filename;
 
     std::ofstream fout(filename.c_str(), std::ios::app);

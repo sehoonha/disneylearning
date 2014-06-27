@@ -194,7 +194,7 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd& _x) {
     for (int j = 0; j < NOUTPUT; j++) {
         libgp::GaussianProcess* gp = imp->gp_array[j];
         ret(j) = gp->f(x);
-        mVariance(j) = gp->var(x);
+        // mVariance(j) = gp->var(x);
     }
     delete[] x;
     return ret;

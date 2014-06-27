@@ -8,6 +8,8 @@
 #ifndef APP_APPLICATION_H
 #define APP_APPLICATION_H
 
+#include <vector>
+#include <string>
 #include "utils/HppCommon.h"
 
 namespace disney {
@@ -38,7 +40,8 @@ public:
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
 
-    void collectData();
+    std::vector<std::string> allSimulatorNames();
+    void collectData(const char* const _type);
     void consumeData();
     void optimizeGP();
 protected:

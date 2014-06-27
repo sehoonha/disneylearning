@@ -170,6 +170,7 @@ void SimGaussianProcess::optimize() {
 }
 
 void SimGaussianProcess::integrate() {
+    // LOG(INFO) << FUNCTION_NAME();
     Eigen::VectorXd x_prev = mState;
 
     // 1. Generate delta from our siimulation model
@@ -228,6 +229,7 @@ void SimGaussianProcess::integrate() {
     // cout << "final state = " << mState.transpose() << endl;
 
     model->setState( mState );
+    // LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 Eigen::VectorXd

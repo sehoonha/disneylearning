@@ -98,7 +98,6 @@ void Simulator::renderInfo() {
     std::stringstream sout;
     sout << std::setprecision(4) << std::fixed;
     sout << "[" << type() << "] ";
-    sout << " at " << time();
     utils::renderString(-0.3, 1.8, sout.str().c_str());
 
     sout.str("");
@@ -107,20 +106,25 @@ void Simulator::renderInfo() {
     } else {
         sout << "no cost";
     }
-    utils::renderString(-0.3, 1.7, sout.str().c_str());
+    sout << " at " << time();
+    utils::renderString(-0.5, 1.7, sout.str().c_str());
+
+    int n = numDimConfig();
+    int m = 3; // To show
+    sout.str("");
+    sout << "q: ";
+    for (int i = 0; i < m; i++) sout << state()(i) << " ";
+    utils::renderString(-0.5, 1.6, sout.str().c_str());
 
     sout.str("");
-    sout << "q: " << state().head(numDimConfig()).transpose();
-    utils::renderString(-0.8, 1.6, sout.str().c_str());
-
-    sout.str("");
-    sout << "dq: " << state().tail(numDimConfig()).transpose();
-    utils::renderString(-0.8, 1.5, sout.str().c_str());
+    sout << "dq: ";
+    for (int i = 0; i < m; i++) sout << state()(i + n) << " ";
+    utils::renderString(-0.5, 1.5, sout.str().c_str());
 
 
     sout.str("");
-    sout << "Torque: " << mTorque.transpose();
-    utils::renderString(-0.8, 1.4, sout.str().c_str());
+    sout << "Torque: " << mTorque(0);
+    utils::renderString(-0.5, 1.4, sout.str().c_str());
 
     
 }

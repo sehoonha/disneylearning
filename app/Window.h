@@ -12,6 +12,7 @@
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QWidget;
+class QComboBox;
 QT_END_NAMESPACE
 
 namespace disney {
@@ -77,6 +78,7 @@ protected:
 
     MEMBER_PTR(QLabel*, labelTime);
     MEMBER_PTR(QSlider*, sliderFrame);
+    MEMBER_PTR(QComboBox*, comboSim);
 
 protected:
     std::map<std::string, QAction*> actions;

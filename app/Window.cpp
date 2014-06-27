@@ -143,6 +143,13 @@ void Window::createToolbars() {
     toolbar->addAction( actions["Train"] );
 
     toolbar->addSeparator();
+
+    set_comboSim( new QComboBox() );
+    FOREACH(const std::string& type, app()->allSimulatorNames()) {
+        comboSim()->addItem(type.c_str());
+    }
+    toolbar->addWidget(comboSim());
+
     toolbar->addAction( actions["Collect"] );
     toolbar->addAction( actions["Consume"] );
     toolbar->addAction( actions["Optimize"] );
@@ -269,7 +276,7 @@ void Window::onActionTrain() {
 }
 
 void Window::onActionCollect() {
-    app()->collectData();
+    app()->collectData(comboSim()->currentText().toStdString().c_str());
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
