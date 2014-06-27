@@ -45,11 +45,12 @@ Policy* PolicyFeedback::init() {
     this->K = F * C;
 
     Eigen::VectorXd init(numDimParams());
+    init.setZero();
     // init << -2716691.61124318, -1189377.26019541, 953603.332319511, 10071.8805575885, 768507.689769501;
     // init << 18324,-33046,12511.1,16938,25786.9;
 
     // init << 9400.85,-19467.2,9782.43,13117.1,20555.5; // Trained in Box 2D
-    init << -719.813, -45.9087, -541.661, 0980.184, -1958.46; // Trained in Math + GP
+    // init << -719.813, -45.9087, -541.661, 0980.184, -1958.46; // Trained in Math + GP
     setParams(init);
     LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
@@ -97,7 +98,7 @@ Eigen::VectorXd PolicyFeedback::control(const Eigen::VectorXd& _state) {
         }
     }
 
-    u = (Eigen::VectorXd(4) << 0.0, 0.0, 0.0, 0.0).finished();
+    // u = (Eigen::VectorXd(4) << 0.0, 0.0, 0.0, 0.0).finished();
     // u = (Eigen::VectorXd(4) << -20.0, -20.0, 20.0, 20.0).finished();
     // u = (Eigen::VectorXd(4) << -20.0, -20.0, 20.0, 20.0).finished();
 

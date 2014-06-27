@@ -10,6 +10,7 @@
 #include <fstream>
 #include <algorithm>
 #include "utils/CppCommon.h"
+#include "utils/Option.h"
 #include "utils/LoadOpengl.h"
 #include "simulation/Simulator.h"
 #include "simulation/SimBox2D.h"
@@ -19,6 +20,7 @@
 #include "simulation/Evaluator.h"
 #include "learning/Policy.h"
 #include "learning/PolicyFeedback.h"
+#include "learning/PolicyPlayback.h"
 #include "learning/LearningAlgorithm.h"
 #include "learning/LearningPolicyCMASearch.h"
 #include "learning/GaussianProcess.h"
@@ -47,9 +49,34 @@ void Application::init() {
     manager()->init();
 
     // set_eval( new simulation::Evaluator() );
+
+    utils::OptionItem opt = utils::Option::read("simulation.policy");
+    std::string policy_type = opt.attrString("type");
+    LOG(INFO) << "policy.type = " << policy_type;
     
-    set_policy ( new learning::PolicyFeedback() );
-    policy()->init();
+    if (policy_type == "Feedback") {
+        set_policy ( new learning::PolicyFeedback() );
+        policy()->init();
+
+        std::vector<double> params_v = opt.attrVectorDouble("params");
+        Eigen::Map<Eigen::VectorXd> params(params_v.data(), params_v.size());
+        LOG(INFO) << "policy.params = " << params.transpose();
+        policy()->setParams(params);
+    } else if (policy_type == "Playback") {
+        learning::PolicyPlayback* p = new learning::PolicyPlayback();
+        p->init();
+
+        std::string filename = opt.attrString("filename");
+        int n = opt.attrDouble("n");
+        int m = opt.attrDouble("m");
+        LOG(INFO) << "policy.filename = " << filename;
+        LOG(INFO) << "policy.dimensions(n, m) = " << n << " " << m;
+        p->load(filename.c_str(), n, m);
+        set_policy( p );
+    } else {
+        LOG(WARNING) << "we do not have a policy... ";
+    }
+
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->set_policy( policy() );
         sim->set_eval( new simulation::Evaluator() );
@@ -112,6 +139,9 @@ void Application::render(bool overlay) {
 void Application::step() {
     // for (int i = 0; i < manager()->numSimulators(); i++) {
     //     simulation::Simulator* sim = manager()->simulator(i);
+    if (policy()) {
+        policy()->step();
+    }
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->step();
     }
@@ -120,6 +150,9 @@ void Application::step() {
 void Application::reset() {
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->reset();
+    }
+    if (policy()) {
+        policy()->reset();
     }
 }
 

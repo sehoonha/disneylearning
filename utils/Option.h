@@ -26,6 +26,7 @@ struct OptionItem {
 
     double attrDouble(const char* const key) const;
     std::string attrString(const char* const key) const;
+    std::vector<double> attrVectorDouble(const char* const key) const;
 };
 
 

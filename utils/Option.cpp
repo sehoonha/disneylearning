@@ -52,6 +52,17 @@ std::string OptionItem::attrString(const char* const key) const {
     return attrs.at(key);
 }
 
+std::vector<double> OptionItem::attrVectorDouble(const char* const key) const {
+    std::vector<std::string> vec_string;
+    boost::split(vec_string, attrs.at(key), boost::is_any_of(", "));
+    std::vector<double> vec_double;
+    FOREACH(const std::string& s, vec_string) {
+        if (s.length() == 0) continue;
+        vec_double.push_back( boost::lexical_cast<double>(s) );
+    }
+    return vec_double;
+}
+
 // struct OptionImp ends
 ////////////////////////////////////////////////////////////
 

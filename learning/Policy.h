@@ -24,6 +24,9 @@ public:
     virtual void setParams(const Eigen::VectorXd& _params) { mParams = _params; }
     virtual Eigen::VectorXd params() const { return mParams; }
 
+    virtual void reset() {}
+    virtual void step() {}
+    
     virtual Eigen::VectorXd control(const Eigen::VectorXd& _state) = 0;
 
 protected:
