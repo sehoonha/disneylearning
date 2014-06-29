@@ -22,7 +22,7 @@ public:
     virtual Policy* init();
     virtual void setParams(const Eigen::VectorXd& _params);
 
-    virtual void reset() { mIndex = 0; }
+    virtual void reset() { mIndex = 1; }
     virtual void step() { mIndex++; }
 
     bool load(const char* const filename, int n, int m);

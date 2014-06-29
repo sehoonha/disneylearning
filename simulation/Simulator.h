@@ -48,6 +48,8 @@ public:
 
     virtual Simulator* init();
     std::string type() const { return mType; }
+    int controlStep() const { return mControlStep; }
+    void setControlStep(int _controlStep) { mControlStep = _controlStep; }
 
     // State functions
     virtual int numDimConfig() const { return numDimState() / 2; }

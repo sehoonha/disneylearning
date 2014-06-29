@@ -24,7 +24,9 @@ struct OptionItem {
     std::map< std::string, std::string > attrs;
     double toDouble() const;
 
+    bool hasAttr(const char* const key) const;
     double attrDouble(const char* const key) const;
+    int attrInt(const char* const key) const;
     std::string attrString(const char* const key) const;
     std::vector<double> attrVectorDouble(const char* const key) const;
 };

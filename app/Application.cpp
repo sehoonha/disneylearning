@@ -53,6 +53,11 @@ void Application::init() {
     utils::OptionItem opt = utils::Option::read("simulation.policy");
     std::string policy_type = opt.attrString("type");
     LOG(INFO) << "policy.type = " << policy_type;
+    int policy_controlStep = -1;
+    if (opt.hasAttr("controlStep")) {
+        policy_controlStep = opt.attrInt("controlStep");
+        LOG(INFO) << "policy.controlStep = " << policy_controlStep;
+    }
     
     if (policy_type == "Feedback") {
         set_policy ( new learning::PolicyFeedback() );
@@ -80,6 +85,9 @@ void Application::init() {
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->set_policy( policy() );
         sim->set_eval( new simulation::Evaluator() );
+        if (policy_controlStep > 0) {
+            sim->setControlStep(policy_controlStep);
+        }
     }
 
     set_learning( new learning::LearningPolicyCMASearch() );
@@ -139,11 +147,11 @@ void Application::render(bool overlay) {
 void Application::step() {
     // for (int i = 0; i < manager()->numSimulators(); i++) {
     //     simulation::Simulator* sim = manager()->simulator(i);
-    if (policy()) {
-        policy()->step();
-    }
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->step();
+    }
+    if (policy()) {
+        policy()->step();
     }
 }
 

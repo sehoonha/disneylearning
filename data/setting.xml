@@ -1,13 +1,13 @@
 <simulation>
   <sim type="SimBox2D" />
-  <sim type="SimMathcalBongo" />
-  <sim type="SimGaussianProcess" />
+  <!-- <sim type="SimMathcalBongo" /> -->
+  <!-- <sim type="SimGaussianProcess" /> -->
   <init angle="0.25" />
 
   <!-- <policy type="Feedback" params="-719.813, -45.9087, -541.661, 0980.184, -1958.46" /> -->
   <!-- <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/> -->
   <!-- <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" /> -->
-  <policy type="Playback" filename="data_SimBox2D.csv" n="12" m="4" />
+  <policy type="Playback" filename="data_torque.csv" n="12" m="4" controlStep="1" />
 </simulation>
 
 

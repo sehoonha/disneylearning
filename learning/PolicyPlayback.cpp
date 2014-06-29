@@ -23,7 +23,7 @@ PolicyPlayback::~PolicyPlayback() {
 }
 
 Policy* PolicyPlayback::init() {
-    mIndex = 0;
+    reset();
     return this;
 }
 
@@ -50,9 +50,8 @@ bool PolicyPlayback::load(const char* const filename, int n, int m) {
             LOG(INFO) << "end of data at loop = " << loop;
             break;
         }
-        if (loop % 2 == 1) {
-            mTorques.push_back( currTorque );
-        }
+        mTorques.push_back( currTorque );
+
     }
     LOG(INFO) << FUNCTION_NAME() << " OK. mTorques.size() = " << mTorques.size();
     return true;

@@ -43,11 +43,19 @@ double OptionItem::toDouble() const {
     return boost::lexical_cast<double>(value);
 }
 
+bool OptionItem::hasAttr(const char* const key) const {
+    return (attrs.find(key) != attrs.end());
+}
+
 double OptionItem::attrDouble(const char* const key) const {
     // return boost::lexical_cast<double>(attrs[key]);
     return boost::lexical_cast<double>(attrs.at(key));
 }
 
+int OptionItem::attrInt(const char* const key) const {
+    return boost::lexical_cast<int>(attrs.at(key));
+}
+    
 std::string OptionItem::attrString(const char* const key) const {
     return attrs.at(key);
 }
