@@ -20,6 +20,7 @@
 #include <cstdio>
 
 #include "utils/CppCommon.h"
+#include "utils/Option.h"
 
 namespace disney {
 namespace learning {
@@ -71,7 +72,10 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     
     for (int i = 0; i < NOUTPUT; i++) {
         // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
-        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEard, CovNoise)");
+        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum (CovSEard, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSum (CovLinearone, CovSEard ), CovNoise)");
+
+
         Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
         params( params.size() - 1) = -2.0;
         gp->covf().set_loghyper(params);
@@ -161,20 +165,12 @@ void GaussianProcess::setTrainingData(const Eigen::MatrixXd& _X, const Eigen::Ma
 
 void GaussianProcess::optimize() {
     LOG(INFO) << FUNCTION_NAME();
+
     libgp::CGMulti cg;
     int VERBOSE = 1;
-    int MAX_LOOP = 100;
-    cg.maximize(imp->gp_array, MAX_LOOP, VERBOSE);
-
-    // LOG(INFO) << FUNCTION_NAME();
-    // for (int i = 0; i < imp->gp_array.size(); i++) {
-    //     libgp::GaussianProcess* gp = imp->gp_array[i];
-    //     LOG(INFO) << "optimizing " << i << "th GP..";
-    //     libgp::CG cg;
-    //     int VERBOSE = 1;
-    //     cg.maximize(gp, 1000, VERBOSE);
-    //     LOG(INFO) << "optimizing " << i << "th GP OK";
-    // }
+    int MAX_OPT_LOOP = utils::Option::read("simulation.gp.maxOptLoop").toInt();
+    LOG(INFO) << "MAX_OPT_LOOP = " << MAX_OPT_LOOP;
+    cg.maximize(imp->gp_array, MAX_OPT_LOOP, VERBOSE);
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }

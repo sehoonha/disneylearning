@@ -12,6 +12,9 @@
 #include "SimMathcalBongo.h"
 #include "learning/GaussianProcess.h"
 
+#define W_VEL 0.1
+#define W_TOR 0.05
+
 namespace disney {
 namespace simulation {
 
@@ -57,13 +60,18 @@ void SimGaussianProcess::train() {
     int n = numDimState();
     int m = numDimTorque();
     LOG(INFO) << FUNCTION_NAME() << " : " << n << ", " << m;
-    std::string filename = "data_realsim.csv";
+    // std::string filename = "data_realsim.csv";
+    std::string filename = utils::Option::read("simulation.gp.filename").toString();
+    LOG(INFO) << "filename = " << filename;
     std::ifstream fin(filename.c_str());
 
     Eigen::VectorXd prevState;
     Eigen::VectorXd prevTorque;
     Eigen::VectorXd currState;
     Eigen::VectorXd currTorque;
+
+    int dataRate = utils::Option::read("simulation.gp.dataRate").toInt();
+    LOG(INFO) << "Data rate = " << dataRate;
 
     std::vector<Eigen::VectorXd> inputs;
     std::vector<Eigen::VectorXd> outputs;
@@ -92,22 +100,22 @@ void SimGaussianProcess::train() {
 
             double stepLength = (currState - prevState).norm();
             const double STEP_LENGTH_LIMIT = 1.0;
-            if (stepLength < STEP_LENGTH_LIMIT && (loop % 3 == 0) ) {
+            if (stepLength < STEP_LENGTH_LIMIT && (loop % dataRate == 0) ) {
 
                 Eigen::VectorXd input(7);
                 input(0) = prevState(0);
                 input(1) = prevState(1);
                 input(2) = prevState(2);
-                input(3) = 0.1 * prevState(6 + 0);
-                input(4) = 0.1 * prevState(6 + 1);
-                input(5) = 0.1 * prevState(6 + 2);
-                input(6) = 0.05 * prevTorque(0);
+                input(3) = W_VEL * prevState(6 + 0);
+                input(4) = W_VEL * prevState(6 + 1);
+                input(5) = W_VEL * prevState(6 + 2);
+                input(6) = W_TOR * prevTorque(0);
 
                 Eigen::VectorXd output = Eigen::VectorXd::Zero(6);
                 Eigen::VectorXd diff = currState - currSimState;
                 for (int i = 0; i < 3; i++) {
                     output(i) = diff(i);
-                    output(i + 3) = 0.1 * diff(i + 6);
+                    output(i + 3) = W_VEL * diff(i + 6);
                 }
 
                 inputs.push_back(input);
@@ -184,10 +192,10 @@ void SimGaussianProcess::integrate() {
     input(0) = x_prev(0);
     input(1) = x_prev(1);
     input(2) = x_prev(2);
-    input(3) = 0.1 * x_prev(6 + 0);
-    input(4) = 0.1 * x_prev(6 + 1);
-    input(5) = 0.1 * x_prev(6 + 2);
-    input(6) = 0.05 * mTorque(0);
+    input(3) = W_VEL * x_prev(6 + 0);
+    input(4) = W_VEL * x_prev(6 + 1);
+    input(5) = W_VEL * x_prev(6 + 2);
+    input(6) = W_TOR * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
     if (gp) {
@@ -198,7 +206,7 @@ void SimGaussianProcess::integrate() {
         if (var.norm() < 1.0) {
             for (int i = 0; i < 3; i++) {
                 dx_delta(i) = output(i);
-                dx_delta(i + 6) = 10.0 * output(i + 3);
+                dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
             }
             // LOG(INFO) << ">> "
             //           << "(" << var.norm() << " / " << var.transpose() << ") "

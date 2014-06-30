@@ -43,6 +43,10 @@ double OptionItem::toDouble() const {
     return boost::lexical_cast<double>(value);
 }
 
+int OptionItem::toInt() const {
+    return boost::lexical_cast<int>(value);
+}
+
 bool OptionItem::hasAttr(const char* const key) const {
     return (attrs.find(key) != attrs.end());
 }

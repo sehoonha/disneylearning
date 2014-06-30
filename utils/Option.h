@@ -22,7 +22,11 @@ struct OptionImp;
 struct OptionItem {
     std::string value;
     std::map< std::string, std::string > attrs;
+
+
+    std::string toString() const { return value; }
     double toDouble() const;
+    int toInt() const;
 
     bool hasAttr(const char* const key) const;
     double attrDouble(const char* const key) const;
