@@ -78,6 +78,15 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
 
         Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
         params( params.size() - 1) = -2.0;
+
+        utils::OptionItem opt = utils::Option::read("simulation.gp");
+        if (opt.hasAttr("initParams")) {
+            std::vector<double> vparams = opt.attrVectorDouble("initParams");
+            Eigen::Map<Eigen::VectorXd> mparams( vparams.data(), vparams.size());
+            params = mparams;
+            LOG(INFO) << "Initial params = " << params.transpose();
+        }
+
         gp->covf().set_loghyper(params);
         imp->gp_array.push_back(gp);
         LOG(INFO) << "GaussianProcess #" << i + 1 << " / " << NOUTPUT << " is initialized";

@@ -12,6 +12,9 @@
 #include "SimMathcalBongo.h"
 #include "learning/GaussianProcess.h"
 
+
+#define D_INPUT 7
+#define D_OUTPUT 6
 #define W_VEL 0.1
 #define W_TOR 0.05
 
@@ -102,16 +105,17 @@ void SimGaussianProcess::train() {
             const double STEP_LENGTH_LIMIT = 1.0;
             if (stepLength < STEP_LENGTH_LIMIT && (loop % dataRate == 0) ) {
 
-                Eigen::VectorXd input(7);
-                input(0) = prevState(0);
-                input(1) = prevState(1);
-                input(2) = prevState(2);
-                input(3) = W_VEL * prevState(6 + 0);
-                input(4) = W_VEL * prevState(6 + 1);
-                input(5) = W_VEL * prevState(6 + 2);
+                Eigen::VectorXd input(D_INPUT);
+                input(0) = currSimState(0);
+                input(1) = currSimState(1);
+                input(2) = currSimState(2);
+                input(3) = W_VEL * currSimState(6 + 0);
+                input(4) = W_VEL * currSimState(6 + 1);
+                input(5) = W_VEL * currSimState(6 + 2);
                 input(6) = W_TOR * prevTorque(0);
 
-                Eigen::VectorXd output = Eigen::VectorXd::Zero(6);
+                Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
+                // Eigen::VectorXd diff = currState;
                 Eigen::VectorXd diff = currState - currSimState;
                 for (int i = 0; i < 3; i++) {
                     output(i) = diff(i);
@@ -143,12 +147,17 @@ void SimGaussianProcess::train() {
     fin.close();
 
     int N = inputs.size();
-    Eigen::MatrixXd X(N, inputs[0].size() );
-    Eigen::MatrixXd Y(N, outputs[0].size() );
+    Eigen::MatrixXd X(N, D_INPUT );
+    Eigen::MatrixXd Y(N, D_OUTPUT );
+
+// #define EXPORT_THE_TRAINING_SET 1
+#ifdef EXPORT_THE_TRAINING_SET
     std::ofstream fout("training.csv");
+#endif
     for (int i = 0; i < N; i++) {
         X.row(i) = inputs[i];
         Y.row(i) = outputs[i];
+#ifdef EXPORT_THE_TRAINING_SET
         for (int j = 0; j < X.cols(); j++) {
             fout << X(i, j) << " ";
         }
@@ -156,8 +165,11 @@ void SimGaussianProcess::train() {
             fout << Y(i, j) << " ";
         }
         fout << endl;
+#endif
     }
+#ifdef EXPORT_THE_TRAINING_SET
     fout.close();
+#endif
     LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
@@ -185,16 +197,17 @@ void SimGaussianProcess::integrate() {
     model->setState( mState );
     model->setTorque( mTorque );
     model->integrate();
+    Eigen::VectorXd x_sim = model->state();
     Eigen::VectorXd dx = model->state() - x_prev;
 
     // 2. Correct the dynamics
-    Eigen::VectorXd input( 7 );
-    input(0) = x_prev(0);
-    input(1) = x_prev(1);
-    input(2) = x_prev(2);
-    input(3) = W_VEL * x_prev(6 + 0);
-    input(4) = W_VEL * x_prev(6 + 1);
-    input(5) = W_VEL * x_prev(6 + 2);
+    Eigen::VectorXd input( D_INPUT );
+    input(0) = x_sim(0);
+    input(1) = x_sim(1);
+    input(2) = x_sim(2);
+    input(3) = W_VEL * x_sim(6 + 0);
+    input(4) = W_VEL * x_sim(6 + 1);
+    input(5) = W_VEL * x_sim(6 + 2);
     input(6) = W_TOR * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
@@ -223,6 +236,10 @@ void SimGaussianProcess::integrate() {
     // 3. To the next state
     Eigen::VectorXd x_curr = mState + dx + dx_delta;
     mState = x_curr;
+
+    // Eigen::VectorXd x_curr = mState + dx;
+    // mState = dx_delta;
+    
 
     // 4. Finalize the state by maintaining the constraints
     // // Hard coded constraint..
