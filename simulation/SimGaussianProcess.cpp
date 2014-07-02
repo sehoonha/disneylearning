@@ -13,7 +13,7 @@
 #include "learning/GaussianProcess.h"
 
 
-#define D_INPUT 7
+#define D_INPUT 6
 #define D_OUTPUT 6
 #define W_VEL 0.1
 #define W_TOR 0.05
@@ -112,11 +112,11 @@ void SimGaussianProcess::train() {
                 input(3) = W_VEL * currSimState(6 + 0);
                 input(4) = W_VEL * currSimState(6 + 1);
                 input(5) = W_VEL * currSimState(6 + 2);
-                input(6) = W_TOR * prevTorque(0);
+                // input(6) = W_TOR * prevTorque(0);
 
                 Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
-                // Eigen::VectorXd diff = currState;
-                Eigen::VectorXd diff = currState - currSimState;
+                Eigen::VectorXd diff = currState;
+                // Eigen::VectorXd diff = currState - currSimState;
                 for (int i = 0; i < 3; i++) {
                     output(i) = diff(i);
                     output(i + 3) = W_VEL * diff(i + 6);
@@ -150,7 +150,7 @@ void SimGaussianProcess::train() {
     Eigen::MatrixXd X(N, D_INPUT );
     Eigen::MatrixXd Y(N, D_OUTPUT );
 
-// #define EXPORT_THE_TRAINING_SET 1
+#define EXPORT_THE_TRAINING_SET
 #ifdef EXPORT_THE_TRAINING_SET
     std::ofstream fout("training.csv");
 #endif
@@ -208,7 +208,7 @@ void SimGaussianProcess::integrate() {
     input(3) = W_VEL * x_sim(6 + 0);
     input(4) = W_VEL * x_sim(6 + 1);
     input(5) = W_VEL * x_sim(6 + 2);
-    input(6) = W_TOR * mTorque(0);
+    // input(6) = W_TOR * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
     if (gp) {
@@ -233,12 +233,11 @@ void SimGaussianProcess::integrate() {
         // cout << "model->state = " << model->state().transpose() << endl;
     }
 
-    // 3. To the next state
-    Eigen::VectorXd x_curr = mState + dx + dx_delta;
-    mState = x_curr;
+    // // 3. To the next state
+    // Eigen::VectorXd x_curr = mState + dx + dx_delta;
+    // mState = x_curr;
 
-    // Eigen::VectorXd x_curr = mState + dx;
-    // mState = dx_delta;
+    mState = dx_delta;
     
 
     // 4. Finalize the state by maintaining the constraints
