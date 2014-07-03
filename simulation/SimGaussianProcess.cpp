@@ -106,12 +106,18 @@ void SimGaussianProcess::train() {
             if (stepLength < STEP_LENGTH_LIMIT && (loop % dataRate == 0) ) {
 
                 Eigen::VectorXd input(D_INPUT);
-                input(0) = currSimState(0);
-                input(1) = currSimState(1);
-                input(2) = currSimState(2);
-                input(3) = W_VEL * currSimState(6 + 0);
-                input(4) = W_VEL * currSimState(6 + 1);
-                input(5) = W_VEL * currSimState(6 + 2);
+                // input(0) = currSimState(0);
+                // input(1) = currSimState(1);
+                // input(2) = currSimState(2);
+                // input(3) = W_VEL * currSimState(6 + 0);
+                // input(4) = W_VEL * currSimState(6 + 1);
+                // input(5) = W_VEL * currSimState(6 + 2);
+                input(0) = prevState(0);
+                input(1) = prevState(1);
+                input(2) = prevState(2);
+                input(3) = W_VEL * prevState(6 + 0);
+                input(4) = W_VEL * prevState(6 + 1);
+                input(5) = W_VEL * prevState(6 + 2);
                 // input(6) = W_TOR * prevTorque(0);
 
                 Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
@@ -202,12 +208,12 @@ void SimGaussianProcess::integrate() {
 
     // 2. Correct the dynamics
     Eigen::VectorXd input( D_INPUT );
-    input(0) = x_sim(0);
-    input(1) = x_sim(1);
-    input(2) = x_sim(2);
-    input(3) = W_VEL * x_sim(6 + 0);
-    input(4) = W_VEL * x_sim(6 + 1);
-    input(5) = W_VEL * x_sim(6 + 2);
+    input(0) = x_prev(0);
+    input(1) = x_prev(1);
+    input(2) = x_prev(2);
+    input(3) = W_VEL * x_prev(6 + 0);
+    input(4) = W_VEL * x_prev(6 + 1);
+    input(5) = W_VEL * x_prev(6 + 2);
     // input(6) = W_TOR * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
