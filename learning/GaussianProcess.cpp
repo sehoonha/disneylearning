@@ -71,9 +71,15 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
     LOG(INFO) << "data is copied";
     
     for (int i = 0; i < NOUTPUT; i++) {
-        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
         libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum (CovSEard, CovNoise)");
-        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSum (CovLinearone, CovSEard ), CovNoise)");
+
+
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEard, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovLinearard, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovMatern5iso, CovNoise)");
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovRQiso, CovNoise)");
+
 
 
         Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
@@ -83,6 +89,7 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
         if (opt.hasAttr("initParams")) {
             std::vector<double> vparams = opt.attrVectorDouble("initParams");
             Eigen::Map<Eigen::VectorXd> mparams( vparams.data(), vparams.size());
+            CHECK_EQ( (int)mparams.size(), (int)gp->covf().get_param_dim() );
             params = mparams;
             LOG(INFO) << "Initial params = " << params.transpose();
         }

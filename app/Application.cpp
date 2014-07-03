@@ -7,6 +7,7 @@
 
 #include "Application.h"
 
+#include <iomanip>
 #include <fstream>
 #include <algorithm>
 #include "utils/CppCommon.h"
@@ -202,6 +203,7 @@ void Application::collectData(const char* const _type) {
     LOG(INFO) << "collect data into file " << filename;
 
     std::ofstream fout(filename.c_str(), std::ios::app);
+    fout << std::setprecision(12) << std::fixed;
     for (int i = 0; i < sim->numHistories(); i++) {
         const simulation::SimulatorHistory& h = sim->history(i);
         for (int j = 0; j < h.state.size(); j++) {

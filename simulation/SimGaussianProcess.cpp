@@ -150,7 +150,7 @@ void SimGaussianProcess::train() {
     Eigen::MatrixXd X(N, D_INPUT );
     Eigen::MatrixXd Y(N, D_OUTPUT );
 
-#define EXPORT_THE_TRAINING_SET
+// #define EXPORT_THE_TRAINING_SET
 #ifdef EXPORT_THE_TRAINING_SET
     std::ofstream fout("training.csv");
 #endif
