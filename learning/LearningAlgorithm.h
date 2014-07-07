@@ -33,7 +33,11 @@ public:
     virtual void init();
 
     virtual void train(learning::Policy* _policy,
-                       simulation::Simulator* _sim) = 0;
+                       simulation::Simulator* _sim);
+
+    virtual void train(learning::Policy* _policy,
+                       simulation::Simulator* _sim0,
+                       simulation::Simulator* _sim1);
 
 protected:
 }; // class LearningAlgorithm

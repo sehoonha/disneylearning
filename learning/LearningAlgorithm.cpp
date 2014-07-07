@@ -23,6 +23,15 @@ void LearningAlgorithm::init() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void LearningAlgorithm::train(learning::Policy* _policy,
+                              simulation::Simulator* _sim) {
+}
+
+void LearningAlgorithm::train(learning::Policy* _policy,
+                              simulation::Simulator* _sim0,
+                              simulation::Simulator* _sim1) {
+}
+
 // class LearningAlgorithm ends
 ////////////////////////////////////////////////////////////
 

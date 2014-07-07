@@ -46,11 +46,11 @@ Application::~Application() {
 
 
 void Application::init() {
+    // Initialize all simulators
     set_manager( new simulation::Manager() );
     manager()->init();
 
-    // set_eval( new simulation::Evaluator() );
-
+    // Initialize a policy
     utils::OptionItem opt = utils::Option::read("simulation.policy");
     std::string policy_type = opt.attrString("type");
     LOG(INFO) << "policy.type = " << policy_type;
@@ -59,8 +59,9 @@ void Application::init() {
         policy_controlStep = opt.attrInt("controlStep");
         LOG(INFO) << "policy.controlStep = " << policy_controlStep;
     }
-    
-    if (policy_type == "Feedback") {
+
+    // Case 1. Feedback policy
+    if (policy_type == "Feedback") { 
         set_policy ( new learning::PolicyFeedback() );
         policy()->init();
 
@@ -68,7 +69,9 @@ void Application::init() {
         Eigen::Map<Eigen::VectorXd> params(params_v.data(), params_v.size());
         LOG(INFO) << "policy.params = " << params.transpose();
         policy()->setParams(params);
-    } else if (policy_type == "Playback") {
+    }
+    // Case 2. Playback policy
+    else if (policy_type == "Playback") { 
         learning::PolicyPlayback* p = new learning::PolicyPlayback();
         p->init();
 
@@ -83,6 +86,7 @@ void Application::init() {
         LOG(WARNING) << "we do not have a policy... ";
     }
 
+    // Initialize evaluators to all simulators
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->set_policy( policy() );
         sim->set_eval( new simulation::Evaluator() );
@@ -91,6 +95,7 @@ void Application::init() {
         }
     }
 
+    // Initialize learning policy
     set_learning( new learning::LearningPolicyCMASearch() );
     learning()->init();
 
