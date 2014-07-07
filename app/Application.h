@@ -37,6 +37,8 @@ public:
     void step();
     void reset();
     void train();
+    void togglePause();
+    
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
 

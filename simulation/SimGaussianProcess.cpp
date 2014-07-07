@@ -68,16 +68,14 @@ void SimGaussianProcess::train() {
     LOG(INFO) << "filename = " << filename;
     std::ifstream fin(filename.c_str());
 
-    Eigen::VectorXd prevState;
-    Eigen::VectorXd prevTorque;
     Eigen::VectorXd currState;
     Eigen::VectorXd currTorque;
 
     int dataRate = utils::Option::read("simulation.gp.dataRate").toInt();
     LOG(INFO) << "Data rate = " << dataRate;
 
-    std::vector<Eigen::VectorXd> inputs;
-    std::vector<Eigen::VectorXd> outputs;
+    std::vector<Eigen::VectorXd> states;
+    std::vector<Eigen::VectorXd> torques;
     for (int loop = 0; ; loop++) {
         currState  = Eigen::VectorXd::Zero(n);
         currTorque = Eigen::VectorXd::Zero(m);
@@ -92,101 +90,12 @@ void SimGaussianProcess::train() {
             LOG(INFO) << "end of data at loop = " << loop;
             break;
         }
-
-        // Now we have all prev/curr state/torques. ready for generating data.
-        if (loop > 0) {
-            // 1. Generate delta from our siimulation model
-            model->setState( prevState );
-            model->setTorque( prevTorque );
-            model->integrate();
-            Eigen::VectorXd currSimState = model->state();
-
-            double stepLength = (currState - prevState).norm();
-            const double STEP_LENGTH_LIMIT = 1.0;
-            if (stepLength < STEP_LENGTH_LIMIT && (loop % dataRate == 0) ) {
-
-                Eigen::VectorXd input(D_INPUT);
-                // input(0) = currSimState(0);
-                // input(1) = currSimState(1);
-                // input(2) = currSimState(2);
-                // input(3) = W_VEL * currSimState(6 + 0);
-                // input(4) = W_VEL * currSimState(6 + 1);
-                // input(5) = W_VEL * currSimState(6 + 2);
-                input(0) = prevState(0);
-                input(1) = prevState(1);
-                input(2) = prevState(2);
-                input(3) = W_VEL * prevState(6 + 0);
-                input(4) = W_VEL * prevState(6 + 1);
-                input(5) = W_VEL * prevState(6 + 2);
-                // input(6) = W_TOR * prevTorque(0);
-
-                Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
-                Eigen::VectorXd diff = currState;
-                // Eigen::VectorXd diff = currState - currSimState;
-                for (int i = 0; i < 3; i++) {
-                    output(i) = diff(i);
-                    output(i + 3) = W_VEL * diff(i + 6);
-                }
-
-                inputs.push_back(input);
-                outputs.push_back(output);
-
-                // cout << "== " << loop << " ==" << endl;
-                // cout << stepLength << endl;
-                // cout << "input  = " << input.transpose() << endl;
-                // cout << "output = " << output.transpose() << endl;
-                // cout << currState.transpose() << endl << currSimState.transpose() << endl;
-                // cout << endl;
-            } else {
-                // cout << "== " << loop << " ==" << endl;
-                // cout << stepLength << endl;
-                // cout << currState.transpose() << endl << currSimState.transpose() << endl;
-                // cout << endl;
-            }
-                
-
-        }
-
-        prevState  = currState;
-        prevTorque = currTorque;
+        states.push_back(currState);
+        torques.push_back(currTorque);
     }
     fin.close();
-
-    int N = inputs.size();
-    Eigen::MatrixXd X(N, D_INPUT );
-    Eigen::MatrixXd Y(N, D_OUTPUT );
-
-// #define EXPORT_THE_TRAINING_SET
-#ifdef EXPORT_THE_TRAINING_SET
-    std::ofstream fout("training.csv");
-#endif
-    for (int i = 0; i < N; i++) {
-        X.row(i) = inputs[i];
-        Y.row(i) = outputs[i];
-#ifdef EXPORT_THE_TRAINING_SET
-        for (int j = 0; j < X.cols(); j++) {
-            fout << X(i, j) << " ";
-        }
-        for (int j = 0; j < Y.cols(); j++) {
-            fout << Y(i, j) << " ";
-        }
-        fout << endl;
-#endif
-    }
-#ifdef EXPORT_THE_TRAINING_SET
-    fout.close();
-#endif
-    LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
-    gp = (new learning::GaussianProcess());
-    gp->createModel(X, Y);
-    gp->loadAll();
-    // gp->optimize();
-
-    // Finally, reset the used model...
-    model->setState( mState );
-    model->setTorque( mTorque );
-
     LOG(INFO) << FUNCTION_NAME() << " OK";
+    train(states, torques);
 }
 
 void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
@@ -264,12 +173,12 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             inputs.push_back(input);
             outputs.push_back(output);
 
-            // cout << "== " << loop << " ==" << endl;
-            // cout << stepLength << endl;
-            // cout << "input  = " << input.transpose() << endl;
-            // cout << "output = " << output.transpose() << endl;
-            // cout << currState.transpose() << endl << currSimState.transpose() << endl;
-            // cout << endl;
+            cout << "== " << loop << " ==" << endl;
+            cout << stepLength << endl;
+            cout << "input  = " << input.transpose() << endl;
+            cout << "output = " << output.transpose() << endl;
+            cout << currState.transpose() << endl << currSimState.transpose() << endl;
+            cout << endl;
         } else {
             // cout << "== " << loop << " ==" << endl;
             // cout << stepLength << endl;
@@ -302,7 +211,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
-    gp->loadAll();
+    LOG(INFO) << FUNCTION_NAME() << " : creating model... NUM DATA = " << N;
+    // gp->loadAll();
 
     // Finally, reset the used model...
     model->setState( mState );
@@ -329,12 +239,18 @@ void SimGaussianProcess::integrate() {
 
     // 2. Correct the dynamics
     Eigen::VectorXd input( D_INPUT );
-    input(0) = x_prev(0);
-    input(1) = x_prev(1);
-    input(2) = x_prev(2);
-    input(3) = W_VEL * x_prev(6 + 0);
-    input(4) = W_VEL * x_prev(6 + 1);
-    input(5) = W_VEL * x_prev(6 + 2);
+    input(0) = x_sim(0);
+    input(1) = x_sim(1);
+    input(2) = x_sim(2);
+    input(3) = W_VEL * x_sim(6 + 0);
+    input(4) = W_VEL * x_sim(6 + 1);
+    input(5) = W_VEL * x_sim(6 + 2);
+    // input(0) = x_prev(0);
+    // input(1) = x_prev(1);
+    // input(2) = x_prev(2);
+    // input(3) = W_VEL * x_prev(6 + 0);
+    // input(4) = W_VEL * x_prev(6 + 1);
+    // input(5) = W_VEL * x_prev(6 + 2);
     // input(6) = W_TOR * mTorque(0);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );

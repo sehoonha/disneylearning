@@ -185,6 +185,10 @@ void Application::train() {
         );
 }
 
+void Application::togglePause() {
+    learning()->togglePause();
+}
+
 int Application::numMaximumHistory() const {
     int ret = 0;
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {

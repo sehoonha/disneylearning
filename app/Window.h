@@ -55,6 +55,7 @@ public slots:
     void onActionLoad();
 
     void onActionTrain();
+    void onActionPause();
     void onActionCollect();
     void onActionConsume();
     void onActionOptimize();

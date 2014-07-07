@@ -102,6 +102,8 @@ void Window::createActions() {
     
     createAction("NN");
     createAction("Train");
+    createAction("Pause")->setCheckable(true);
+    actions["Pause"]->setChecked(false);
     createAction("Collect");
     createAction("Consume");
     createAction("Optimize");
@@ -140,6 +142,7 @@ void Window::createToolbars() {
     toolbar->addAction( actions["Overlay"] );
     toolbar->addAction( actions["Load"] );
     toolbar->addAction( actions["Train"] );
+    toolbar->addAction( actions["Pause"] );
 
     toolbar->addSeparator();
 
@@ -270,6 +273,15 @@ void Window::onActionLoad() {
 void Window::onActionTrain() {
     app()->train();
     LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionPause() {
+    int n = app()->numMaximumHistory();
+    sliderFrame()->setRange(0, n - 1);
+
+
+    app()->togglePause();
+    LOG(INFO) << FUNCTION_NAME() << " OK : pause = " << pause;
 }
 
 void Window::onActionCollect() {

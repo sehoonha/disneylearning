@@ -7,7 +7,10 @@
 
 #include "LearningGPSimSearch.h"
 
+
 #include <iomanip>
+#include <boost/thread.hpp>
+
 #include "utils/Option.h"
 #include "utils/CppCommon.h"
 #include "simulation/Simulator.h"
@@ -45,6 +48,7 @@ struct LearningGPSimSearchImp {
 
     int maxSimLoop;
     int maxInnerLoop;
+    int maxInnerNoUpdateLoop;
     int maxOuterLoop;
     double goodValue;
 
@@ -56,6 +60,7 @@ struct LearningGPSimSearchImp {
     void learnDynamicsInSim1();
     void optimizePolicyInSim1(); // CMA Optimization
 
+    bool flagPause;
 private:
     double evaluate(simulation::Simulator* s);
 };
@@ -66,15 +71,18 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
     , s1(NULL)
     , evalCnt0(0)
     , evalCnt1(0)
+    , flagPause(false)
 {
     data.clear();
     this->maxSimLoop   = utils::Option::read("simulation.eval.maxSimLoop").toInt();
     this->maxInnerLoop = utils::Option::read("simulation.eval.maxInnerLoop").toInt();
+    this->maxInnerNoUpdateLoop = utils::Option::read("simulation.eval.maxInnerNoUpdateLoop").toInt();
     this->maxOuterLoop = utils::Option::read("simulation.eval.maxOuterLoop").toInt();
     this->goodValue    = utils::Option::read("simulation.eval.goodValue").toDouble();
 
     LOG(INFO) << "LearningGPSimSearchImp.maxSimLoop = " << maxSimLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxInnerLoop = " << maxInnerLoop;
+    LOG(INFO) << "LearningGPSimSearchImp.maxInnerNoUpdateLoop = " << maxInnerNoUpdateLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxOuterLoop = " << maxOuterLoop;
 
 }
@@ -84,6 +92,7 @@ void LearningGPSimSearchImp::collectSim0Data() {
         simulation::SimulatorHistory h = s0->history(i);
         data.push_back(h);
     }
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 double LearningGPSimSearchImp::evaluate(simulation::Simulator* s) {
@@ -116,6 +125,9 @@ void LearningGPSimSearchImp::learnDynamicsInSim1() {
         torques.push_back(h.torque);
     }
     s1->train(states, torques);
+    s1->optimize();
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+
 }
 
 
@@ -184,11 +196,33 @@ void LearningGPSimSearchImp::optimizePolicyInSim1() {
     shark::CMA cma;
     shark::RealVector starting(prob.numberOfVariables());
     cma.init( prob, starting, 32, 16, 1000.0 );
+
+
+    double bestValue = 10e10;
     int loopCount = 0;
+    int noUpdateCount = 0;
+
+    
     do {
         LOG(INFO) << "==== Loop " << loopCount << " ====";
         cma.step( prob );
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
+
+        // Am I improving?
+        double v = cma.solution().value;
+        if (v < bestValue) {
+            noUpdateCount = 0;
+            bestValue = v;
+        } else {
+            noUpdateCount++;
+        }
+        LOG(INFO) << "Best value = " << bestValue << " (noUpdateCount : "<< noUpdateCount << " / "
+                  << maxInnerNoUpdateLoop << ")";
+        if (noUpdateCount >= maxInnerNoUpdateLoop) {
+            LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
+            break;
+        }
+
 
         // Update the params;
         shark::RealVector parameters = cma.solution().point;
@@ -198,11 +232,48 @@ void LearningGPSimSearchImp::optimizePolicyInSim1() {
         }
         policy->setParams(params);
         loopCount++;
+
+        while (flagPause ) {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+            LOG_EVERY_N(INFO, 100)<< "sleeping... ";
+        };
+
     } while(cma.solution().value > this->goodValue && loopCount < this->maxInnerLoop);
     
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
+
+////////////////////////////////////////////////////////////
+// thread worker function implementation
+void worker(LearningGPSimSearchImp* imp) {
+    LOG(INFO) << FUNCTION_NAME() << " begins";
+
+    for (int loop = 0; loop < imp->maxOuterLoop; loop++) {
+        LOG(INFO) << "================== Outer Loop " << loop << " =====================";
+        LOG(INFO) << endl;
+        LOG(INFO) << "... start to evaluate in the real world";
+        double v = imp->evaluateSim0();
+        LOG(INFO) << "... finished to evaluate in the real world";
+        LOG(INFO) << "result: " << v;
+
+        if (v < imp->goodValue) {
+            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+            break;
+        }
+        imp->collectSim0Data();
+        imp->learnDynamicsInSim1();
+        imp->optimizePolicyInSim1();
+    }
+
+    
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+
+}
+
+// thread worker function ends
+////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////
@@ -242,24 +313,21 @@ void LearningGPSimSearch::train(learning::Policy* _policy,
     imp->policy = _policy;
     LOG(INFO) << "Implementation structure is initialized OK";
 
-    for (int loop = 0; loop < imp->maxOuterLoop; loop++) {
-        LOG(INFO) << endl;
-        LOG(INFO) << "... start to evaluate in the real world";
-        double v = imp->evaluateSim0();
-        LOG(INFO) << "... finished to evaluate in the real world";
-        LOG(INFO) << "result: " << v;
-
-        if (v < imp->goodValue) {
-            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-            break;
-        }
-        imp->collectSim0Data();
-        imp->learnDynamicsInSim1();
-        imp->optimizePolicyInSim1();
-    }
+    LOG(INFO) << "launch the new worker thread...";
+    boost::thread t(&worker, imp);
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
+void LearningGPSimSearch::togglePause() {
+    if (imp) {
+        imp->flagPause = !(imp->flagPause);
+        LOG(INFO) << FUNCTION_NAME() << " : set the pause flag as " << imp->flagPause;
+    } else {
+        LOG(INFO) << FUNCTION_NAME() << " : no running polich search..";
+    }
+}
+
 
 // class LearningGPSimSearch ends
 ////////////////////////////////////////////////////////////

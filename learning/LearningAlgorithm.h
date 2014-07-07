@@ -39,6 +39,8 @@ public:
                        simulation::Simulator* _sim0,
                        simulation::Simulator* _sim1);
 
+    virtual void togglePause() {}
+
 protected:
 }; // class LearningAlgorithm
 
