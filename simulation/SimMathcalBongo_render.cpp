@@ -177,12 +177,13 @@ void SimMathcalBongo::render() {
     Eigen::Vector3d C3 = 0.5 * (rightCart + rightLink1);
     Eigen::Vector3d C4 = 0.5 * (rightLink1 + rightLink2);
     Eigen::Vector3d C = 0.25 * (C1 + C2 + C3 + C4);
-    glColor3d(0, 0, 1);
+
+    glColor3d(0, 1, 1);
     disk( C1(X), C1(Y), 0.02 );
     disk( C2(X), C2(Y), 0.02 );
     disk( C3(X), C3(Y), 0.02 );
     disk( C4(X), C4(Y), 0.02 );
-    glColor3d(0, 0, 0);
+    glColor3d(1, 0, 0);
     disk( C(X), C(Y), 0.03 );
     
     glPopMatrix();

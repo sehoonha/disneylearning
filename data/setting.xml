@@ -2,10 +2,12 @@
   <sim type="SimBox2D" />
   <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
-  <init angle="0.30" />
 
-  <gp filename="data_real3.csv" dataRate="160" maxOptLoop="5000" 
-      />
+
+  <init angle="0.30" />
+  <eval maxSimLoop="3000" maxInnerLoop="200" maxOuterLoop="20" goodValue="30.0" />
+  <gp filename="data_real3.csv" dataRate="160" maxOptLoop="5000" />
+
 
   <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/>
   <!-- <policy type="Feedback" params="-719.813, -45.9087, -541.661, 0980.184, -1958.46" /> -->

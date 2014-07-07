@@ -49,7 +49,7 @@ protected:
     // MEMBER_PTR(simulation::Evaluator*, eval);
     MEMBER_PTR(learning::Policy*, policy);
     MEMBER_PTR(learning::LearningAlgorithm*, learning);
-
+    MEMBER_VAR(int, maxSimLoop);
 }; // class Application
 
 } // namespace app

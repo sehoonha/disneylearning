@@ -8,6 +8,7 @@
 #include "LearningGPSimSearch.h"
 
 #include <iomanip>
+#include "utils/Option.h"
 #include "utils/CppCommon.h"
 #include "simulation/Simulator.h"
 #include "simulation/SimGaussianProcess.h"
@@ -42,12 +43,17 @@ struct LearningGPSimSearchImp {
     int evalCnt0;
     int evalCnt1;
 
+    int maxSimLoop;
+    int maxInnerLoop;
+    int maxOuterLoop;
+    double goodValue;
+
     LearningGPSimSearchImp();
     
-    void collect();
+    void collectSim0Data();
     double evaluateSim0();
     double evaluateSim1();
-    void learnDynamics();
+    void learnDynamicsInSim1();
     void optimizePolicyInSim1(); // CMA Optimization
 
 private:
@@ -61,12 +67,32 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
     , evalCnt0(0)
     , evalCnt1(0)
 {
+    data.clear();
+    this->maxSimLoop   = utils::Option::read("simulation.eval.maxSimLoop").toInt();
+    this->maxInnerLoop = utils::Option::read("simulation.eval.maxInnerLoop").toInt();
+    this->maxOuterLoop = utils::Option::read("simulation.eval.maxOuterLoop").toInt();
+    this->goodValue    = utils::Option::read("simulation.eval.goodValue").toDouble();
+
+    LOG(INFO) << "LearningGPSimSearchImp.maxSimLoop = " << maxSimLoop;
+    LOG(INFO) << "LearningGPSimSearchImp.maxInnerLoop = " << maxInnerLoop;
+    LOG(INFO) << "LearningGPSimSearchImp.maxOuterLoop = " << maxOuterLoop;
+
 }
 
-void LearningGPSimSearchImp::collect() {
+void LearningGPSimSearchImp::collectSim0Data() {
+    for (int i = 0; i < s0->numHistories(); i++) {
+        simulation::SimulatorHistory h = s0->history(i);
+        data.push_back(h);
+    }
 }
 
 double LearningGPSimSearchImp::evaluate(simulation::Simulator* s) {
+    s->reset();
+    for (int i = 0; i < maxSimLoop; i++) {
+        s->step();
+    }
+    double value = s->eval()->cost();
+    return value;
 }
 
 double LearningGPSimSearchImp::evaluateSim0() {
@@ -81,11 +107,15 @@ double LearningGPSimSearchImp::evaluateSim1() {
     return evaluate(s1);
 }
 
-void LearningGPSimSearchImp::learnDynamics() {
-}
-
-// CMA Optimization
-void LearningGPSimSearchImp::optimizePolicyInSim1() {
+void LearningGPSimSearchImp::learnDynamicsInSim1() {
+    std::vector<Eigen::VectorXd> states;
+    std::vector<Eigen::VectorXd> torques;
+    for (int i = 0; i < data.size(); i++) {
+        simulation::SimulatorHistory& h = data[i];        
+        states.push_back(h.state);
+        torques.push_back(h.torque);
+    }
+    s1->train(states, torques);
 }
 
 
@@ -118,9 +148,11 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
     }
 
     void proposeStartingPoint(SearchPointType &x) const {
+        Eigen::VectorXd p = policy()->params();
         x.resize(numberOfVariables());
         for (unsigned int i = 0; i < x.size(); i++) {
-            x(i) = shark::Rng::uni(MIN_PARAM, MAX_PARAM);
+            x(i) = p(i);
+            // x(i) = shark::Rng::uni(MIN_PARAM, MAX_PARAM);
         }
     }
 
@@ -141,6 +173,36 @@ private:
     learning::LearningGPSimSearchImp* mImp;
 };
 ////////////////////////////////////////////////////////////
+
+
+// CMA Optimization
+void LearningGPSimSearchImp::optimizePolicyInSim1() {
+    LOG(INFO) << FUNCTION_NAME();
+
+    shark::Rng::seed( (unsigned int) time (NULL) );
+    GPPolicyEvaluation prob(this);
+    shark::CMA cma;
+    shark::RealVector starting(prob.numberOfVariables());
+    cma.init( prob, starting, 32, 16, 1000.0 );
+    int loopCount = 0;
+    do {
+        LOG(INFO) << "==== Loop " << loopCount << " ====";
+        cma.step( prob );
+        LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
+
+        // Update the params;
+        shark::RealVector parameters = cma.solution().point;
+        Eigen::VectorXd params(parameters.size());
+        for (int i = 0; i < params.size(); i++) {
+            params(i) = parameters(i);
+        }
+        policy->setParams(params);
+        loopCount++;
+    } while(cma.solution().value > this->goodValue && loopCount < this->maxInnerLoop);
+    
+
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -177,8 +239,24 @@ void LearningGPSimSearch::train(learning::Policy* _policy,
     imp = new LearningGPSimSearchImp;
     imp->s0 = s0;
     imp->s1 = s1;
+    imp->policy = _policy;
     LOG(INFO) << "Implementation structure is initialized OK";
-    
+
+    for (int loop = 0; loop < imp->maxOuterLoop; loop++) {
+        LOG(INFO) << endl;
+        LOG(INFO) << "... start to evaluate in the real world";
+        double v = imp->evaluateSim0();
+        LOG(INFO) << "... finished to evaluate in the real world";
+        LOG(INFO) << "result: " << v;
+
+        if (v < imp->goodValue) {
+            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+            break;
+        }
+        imp->collectSim0Data();
+        imp->learnDynamicsInSim1();
+        imp->optimizePolicyInSim1();
+    }
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }

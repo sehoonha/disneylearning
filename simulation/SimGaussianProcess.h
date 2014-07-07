@@ -33,6 +33,9 @@ public:
 
     // Training functions
     void train();
+    void train(const std::vector<Eigen::VectorXd>& states,
+               const std::vector<Eigen::VectorXd>& torques);
+
     void optimize();
 
     // State functions

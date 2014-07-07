@@ -24,6 +24,7 @@
 #include "learning/PolicyPlayback.h"
 #include "learning/LearningAlgorithm.h"
 #include "learning/LearningPolicyCMASearch.h"
+#include "learning/LearningGPSimSearch.h"
 #include "learning/GaussianProcess.h"
 
 
@@ -37,6 +38,7 @@ Application::Application()
     // , MEMBER_INIT_NULL(eval)
     , MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(learning)
+    , MEMBER_INIT(maxSimLoop, 0)
 {
     // test();
 }
@@ -96,9 +98,14 @@ void Application::init() {
     }
 
     // Initialize learning policy
-    set_learning( new learning::LearningPolicyCMASearch() );
+    // set_learning( new learning::LearningPolicyCMASearch() );
+    set_learning( new learning::LearningGPSimSearch() );
     learning()->init();
 
+    // Miscellaneous
+    set_maxSimLoop( utils::Option::read("simulation.eval.maxSimLoop").toInt() );
+    LOG(INFO) << "Application.maxSimLoop() = " << this->maxSimLoop();
+    
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -171,7 +178,11 @@ void Application::reset() {
 }
 
 void Application::train() {
-    learning()->train(policy(), manager()->simulator(1));
+    // learning()->train(policy(), manager()->simulator(1));
+    learning()->train(policy(),
+                      manager()->availableSimulator(SIMTYPE_BOX2D),
+                      manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS)
+        );
 }
 
 int Application::numMaximumHistory() const {

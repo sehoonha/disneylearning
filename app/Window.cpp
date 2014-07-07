@@ -138,7 +138,6 @@ void Window::createToolbars() {
              this, SLOT(onSliderFrameChanged(int)) );
 
     toolbar->addAction( actions["Overlay"] );
-    toolbar->addAction( actions["NN"] );
     toolbar->addAction( actions["Load"] );
     toolbar->addAction( actions["Train"] );
 
@@ -172,10 +171,12 @@ void Window::onTimerRender() {
 }
 
 void Window::onTimerIdle() {
+    int maxSimLoop = app()->maxSimLoop();
+    
     if (actions["Play"]->isChecked()) {
         app()->step();
 
-        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == 2000 + 1) {
+        if (actions["StopAtEnd"]->isChecked() && app()->numMaximumHistory() == maxSimLoop + 1) {
             actions["Play"]->setChecked(false);
             onActionPlay();
             // LOG(INFO) << "evaluate = " << sim()->getCost();
@@ -254,21 +255,17 @@ void Window::onActionStep() {
 }
 
 void Window::onActionLoad() {
-    QString qfilename = QFileDialog::getOpenFileName(
-        this, tr("Load Neural Network from nn"), tr("./"), tr("NN Files (*.nn)"));
-    std::string filename = qfilename.toStdString();
-    if (filename.length() == 0) {
-        LOG(WARNING) << "User cancelled loading";
-        return;
-    }
-    LOG(INFO) << "Filename = [" << filename << "]";
-    // sim()->loadNN(filename.c_str());
+    // QString qfilename = QFileDialog::getOpenFileName(
+    //     this, tr("Load Neural Network from nn"), tr("./"), tr("NN Files (*.nn)"));
+    // std::string filename = qfilename.toStdString();
+    // if (filename.length() == 0) {
+    //     LOG(WARNING) << "User cancelled loading";
+    //     return;
+    // }
+    // LOG(INFO) << "Filename = [" << filename << "]";
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
-void Window::onActionNN() {
-    LOG(INFO) << FUNCTION_NAME() << " OK";
-    // sim()->loadNN();
-}
 
 void Window::onActionTrain() {
     app()->train();

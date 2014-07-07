@@ -189,6 +189,127 @@ void SimGaussianProcess::train() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
+                               const std::vector<Eigen::VectorXd>& torques) {
+    // Define and checking dimensions
+    int n = numDimState();
+    int m = numDimTorque();
+    int NDATA = states.size();
+    LOG(INFO) << FUNCTION_NAME();
+    LOG(INFO) << "dimensions : " << n << ", " << m;
+    LOG(INFO) << "num data : " << NDATA;
+
+    CHECK_LT( 0, NDATA );
+    CHECK_EQ( (int)states.size(), (int)torques.size() );
+    CHECK_EQ( n, (int)states[0].size() );
+    CHECK_EQ( m, (int)torques[0].size() );
+    LOG(INFO) << FUNCTION_NAME() << " : data size checking okay";
+
+    int dataRate = utils::Option::read("simulation.gp.dataRate").toInt();
+    LOG(INFO) << "Data rate = " << dataRate;
+
+    // Declare variables
+    Eigen::VectorXd prevState;
+    Eigen::VectorXd prevTorque;
+    Eigen::VectorXd currState;
+    Eigen::VectorXd currTorque;
+
+
+    std::vector<Eigen::VectorXd> inputs;
+    std::vector<Eigen::VectorXd> outputs;
+    for (int loop = 0; loop < NDATA; loop++) {
+        currState  = states[loop];
+        currTorque = torques[loop];
+
+        if (loop == 0) {
+            prevState  = currState;
+            prevTorque = currTorque;
+            continue;
+        }
+
+        // Now we have all prev/curr state/torques. ready for generating data.
+        // 1. Generate delta from our siimulation model
+        model->setState( prevState );
+        model->setTorque( prevTorque );
+        model->integrate();
+        Eigen::VectorXd currSimState = model->state();
+
+        double stepLength = (currState - prevState).norm();
+        const double STEP_LENGTH_LIMIT = 1.0;
+        if (stepLength < STEP_LENGTH_LIMIT && (loop % dataRate == 0) ) {
+
+            Eigen::VectorXd input(D_INPUT);
+            input(0) = currSimState(0);
+            input(1) = currSimState(1);
+            input(2) = currSimState(2);
+            input(3) = W_VEL * currSimState(6 + 0);
+            input(4) = W_VEL * currSimState(6 + 1);
+            input(5) = W_VEL * currSimState(6 + 2);
+            // input(0) = prevState(0);
+            // input(1) = prevState(1);
+            // input(2) = prevState(2);
+            // input(3) = W_VEL * prevState(6 + 0);
+            // input(4) = W_VEL * prevState(6 + 1);
+            // input(5) = W_VEL * prevState(6 + 2);
+            // input(6) = W_TOR * prevTorque(0);
+
+            Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
+            Eigen::VectorXd diff = currState;
+            // Eigen::VectorXd diff = currState - currSimState;
+            for (int i = 0; i < 3; i++) {
+                output(i) = diff(i);
+                output(i + 3) = W_VEL * diff(i + 6);
+            }
+
+            inputs.push_back(input);
+            outputs.push_back(output);
+
+            // cout << "== " << loop << " ==" << endl;
+            // cout << stepLength << endl;
+            // cout << "input  = " << input.transpose() << endl;
+            // cout << "output = " << output.transpose() << endl;
+            // cout << currState.transpose() << endl << currSimState.transpose() << endl;
+            // cout << endl;
+        } else {
+            // cout << "== " << loop << " ==" << endl;
+            // cout << stepLength << endl;
+            // cout << currState.transpose() << endl << currSimState.transpose() << endl;
+            // cout << endl;
+        }
+
+
+        prevState  = currState;
+        prevTorque = currTorque;
+    }
+
+    // Convert to the matrix form
+    int N = inputs.size();
+    Eigen::MatrixXd X(N, D_INPUT );
+    Eigen::MatrixXd Y(N, D_OUTPUT );
+    for (int i = 0; i < N; i++) {
+        X.row(i) = inputs[i];
+        Y.row(i) = outputs[i];
+    }
+
+    // Clear the structure
+    if (gp) {
+        delete gp;
+        gp = NULL;
+        LOG(INFO) << FUNCTION_NAME() << " : delete the previous Gaussian Process";
+    }
+
+    // Create the GP structure
+    LOG(INFO) << FUNCTION_NAME() << " : creating model... patience... ";
+    gp = (new learning::GaussianProcess());
+    gp->createModel(X, Y);
+    gp->loadAll();
+
+    // Finally, reset the used model...
+    model->setState( mState );
+    model->setTorque( mTorque );
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 void SimGaussianProcess::optimize() {
     gp->optimize();
     gp->saveAll();
