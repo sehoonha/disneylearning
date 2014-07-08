@@ -28,6 +28,7 @@
 #include<shark/ObjectiveFunctions/Loss/ZeroOneLoss.h> // Loss for classification
 // -- CMA-ES
 #include <shark/Algorithms/DirectSearch/CMA.h> // Implementation of the CMA-ES
+#include <shark/Algorithms/DirectSearch/ElitistCMA.h>
 #include <shark/ObjectiveFunctions/Benchmarks/Benchmarks.h> // Access to benchmark functions
 ////////////////////////////////////////////////////////////
 
@@ -58,7 +59,7 @@ struct LearningGPSimSearchImp {
     double evaluateSim0();
     double evaluateSim1();
     void learnDynamicsInSim1();
-    void optimizePolicyInSim1(); // CMA Optimization
+    void optimizePolicyInSim1(int outerLoop); // CMA Optimization
 
     bool flagPause;
 private:
@@ -188,41 +189,32 @@ private:
 
 
 // CMA Optimization
-void LearningGPSimSearchImp::optimizePolicyInSim1() {
+void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME();
 
     shark::Rng::seed( (unsigned int) time (NULL) );
     GPPolicyEvaluation prob(this);
+
+    // shark::ElitistCMA cma;
+    // cma.init(prob);
+
     shark::CMA cma;
     shark::RealVector starting(prob.numberOfVariables());
-    cma.init( prob, starting, 32, 16, 1000.0 );
+    cma.init( prob, starting, 16, 8, 1000.0 );
+
 
 
     double bestValue = 10e10;
+    Eigen::VectorXd bestParams;
     int loopCount = 0;
     int noUpdateCount = 0;
 
     
     do {
-        LOG(INFO) << "==== Loop " << loopCount << " ====";
+        LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
         cma.step( prob );
+        LOG(INFO) << endl;
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
-
-        // Am I improving?
-        double v = cma.solution().value;
-        if (v < bestValue) {
-            noUpdateCount = 0;
-            bestValue = v;
-        } else {
-            noUpdateCount++;
-        }
-        LOG(INFO) << "Best value = " << bestValue << " (noUpdateCount : "<< noUpdateCount << " / "
-                  << maxInnerNoUpdateLoop << ")";
-        if (noUpdateCount >= maxInnerNoUpdateLoop) {
-            LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
-            break;
-        }
-
 
         // Update the params;
         shark::RealVector parameters = cma.solution().point;
@@ -231,6 +223,32 @@ void LearningGPSimSearchImp::optimizePolicyInSim1() {
             params(i) = parameters(i);
         }
         policy->setParams(params);
+
+        // Am I improving?
+        double v = cma.solution().value;
+        if (v < bestValue) {
+            noUpdateCount = 0;
+            bestValue = v;
+            bestParams = params;
+        } else {
+            noUpdateCount++;
+        }
+        // hmm...for checking..
+        policy->setParams(bestParams);
+        
+        
+
+        LOG(INFO) << "Summarize the inner loop : ";
+        LOG(INFO) << "Best value = " << bestValue << " (noUpdateCount : "<< noUpdateCount << " / "
+                  << maxInnerNoUpdateLoop << ")";
+        LOG(INFO) << "Best params = " << bestParams.transpose();
+        LOG(INFO) << endl;
+        if (noUpdateCount >= maxInnerNoUpdateLoop) {
+            LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
+            break;
+        }
+
+
         loopCount++;
 
         while (flagPause ) {
@@ -241,6 +259,13 @@ void LearningGPSimSearchImp::optimizePolicyInSim1() {
     } while(cma.solution().value > this->goodValue && loopCount < this->maxInnerLoop);
     
 
+    LOG(INFO) << endl << endl;
+    LOG(INFO) << "Set the policy current best parameter";
+    LOG(INFO) << "value  = " << bestValue;
+    LOG(INFO) << "params = " << bestParams;
+    policy->setParams(bestParams);
+    LOG(INFO) << endl << endl;
+
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -250,6 +275,10 @@ void LearningGPSimSearchImp::optimizePolicyInSim1() {
 void worker(LearningGPSimSearchImp* imp) {
     LOG(INFO) << FUNCTION_NAME() << " begins";
 
+    LOG(INFO) << "Initial optimization";
+    imp->optimizePolicyInSim1(-1);
+
+    // 
     for (int loop = 0; loop < imp->maxOuterLoop; loop++) {
         LOG(INFO) << "================== Outer Loop " << loop << " =====================";
         LOG(INFO) << endl;
@@ -264,7 +293,7 @@ void worker(LearningGPSimSearchImp* imp) {
         }
         imp->collectSim0Data();
         imp->learnDynamicsInSim1();
-        imp->optimizePolicyInSim1();
+        imp->optimizePolicyInSim1(loop);
     }
 
     

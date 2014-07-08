@@ -135,7 +135,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
     Eigen::VectorXd df0 = -log_likelihood_gradient();	//initial gradient
     Eigen::VectorXd X = get_loghyper();			//hyper parameters
 
-    if(verbose) cout << f0 << " <- " << get_loghyper().transpose() << endl;
+    if(verbose) LOG_EVERY_N(INFO, 50) << f0 << " <- " << get_loghyper().transpose();
 
     Eigen::VectorXd s = -df0;								//initial search direction
     double d0 = -s.dot(s);									//initial slope
@@ -174,7 +174,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
                 f3 = -log_likelihood();
                 df3 = -log_likelihood_gradient();
 
-                if(verbose) cout << i << " : " << f3 << " <- " << get_loghyper().transpose() << endl;
+                if(verbose) LOG_EVERY_N(INFO, 50) << i << " : " << f3 << " <- " << get_loghyper().transpose() << endl;
 
                 bool nanFound = false;
                 //test NaN and Inf's
@@ -259,7 +259,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
                 dF0 = df3;
             }
 
-            if(verbose) cout << i << " : " << F0 << " <- " << get_loghyper().transpose() << endl;
+            if(verbose) LOG_EVERY_N(INFO, 50) << i << " : " << F0 << " <- " << get_loghyper().transpose() << endl;
 
             M--;
             i++;
@@ -273,7 +273,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
             s = (df3.dot(df3)-df0.dot(df3)) / (df0.dot(df0))*s - df3;	// Polack-Ribiere CG direction
             df0 = df3;													// swap derivatives
             d3 = d0; d0 = df0.dot(s);
-            if(verbose) cout << i << " : " << f0 << " <- " << get_loghyper().transpose() << endl;
+            if(verbose) LOG_EVERY_N(INFO, 50) << i << " : " << f0 << " <- " << get_loghyper().transpose() << endl;
             if(d0 > 0)													// new slope must be negative
             {															// otherwise use steepest direction
                 s = -df0;
@@ -289,7 +289,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
             f0 = F0;
             df0 = dF0;
 
-            if(verbose) cout << i << " : " << f0 << " <- " << get_loghyper().transpose() << endl;
+            if(verbose) LOG_EVERY_N(INFO, 50) << i << " : " << f0 << " <- " << get_loghyper().transpose() << endl;
 
             if(ls_failed || i >= n)								// line search failed twice in a row
                 break;											// or we ran out of time, so we give up

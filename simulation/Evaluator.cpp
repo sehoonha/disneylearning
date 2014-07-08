@@ -85,6 +85,7 @@ double Evaluator::eval(Simulator* _sim) {
         offset+cos(alphab + alphaw)*(lb/2 + alphab*rw) - alphaw*rw - rw*sin(alphab + alphaw),
         rw + sin(alphab + alphaw)*(lb/2 + alphab*rw) + rw*cos(alphab + alphaw);     
 
+    double currentCost = 0;
 
     // Define axes
     const int X = 1;
@@ -104,7 +105,7 @@ double Evaluator::eval(Simulator* _sim) {
         failed = true;
     }
     if (failed) {
-        mCost += COST_FAIL;
+        currentCost += COST_FAIL;
     }
 
     
@@ -114,7 +115,7 @@ double Evaluator::eval(Simulator* _sim) {
     double cost = (top - wheel).squaredNorm()
         + (top - cart).squaredNorm()
         + (wheel - cart).squaredNorm();
-    mCost += cost;
+    currentCost += cost;
 
 
     Eigen::VectorXd dq = x.tail(n);
@@ -123,8 +124,12 @@ double Evaluator::eval(Simulator* _sim) {
 
     Eigen::MatrixXd R = Eigen::MatrixXd::Zero(u.size(), u.size());
     R(0, 0) = 1e-6;
-    mCost += u.dot(R * u);
+    currentCost += u.dot(R * u);
 
+    // Final integrate
+    double t = _sim->time();
+    double coef = pow(0.1, t);
+    mCost += (coef * currentCost);
     return mCost;
 }
 

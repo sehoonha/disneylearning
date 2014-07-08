@@ -4,12 +4,12 @@
   <sim type="SimGaussianProcess"/>
 
 
-  <init angle="0.30" />
-  <eval maxSimLoop="2000" maxInnerLoop="200" maxInnerNoUpdateLoop="5" 
-        maxOuterLoop="20" goodValue="30.0" />
+  <init angle="0.25" />
+  <eval maxSimLoop="2000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
+        maxOuterLoop="20" goodValue="120.0" />
 
-  <!-- <gp filename="data_real3.csv" dataRate="20" maxOptLoop="5000" /> -->
-  <gp filename="data_real_p0.csv" dataRate="20" maxOptLoop="5000" />
+  <gp filename="data_real3.csv" dataRate="20" maxOptLoop="10000" />
+  <!-- <gp filename="data_real_p0.csv" dataRate="20" maxOptLoop="5000" /> -->
 
 
   <!-- <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/> -->
