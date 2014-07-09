@@ -5,8 +5,8 @@
 
 
   <init angle="0.25" />
-  <eval maxSimLoop="2000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="20" goodValue="120.0" />
+  <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
+        maxOuterLoop="0" goodValue="120.0" />
 
   <gp filename="data_real3.csv" dataRate="20" maxOptLoop="10000" />
   <!-- <gp filename="data_real_p0.csv" dataRate="20" maxOptLoop="5000" /> -->
@@ -14,8 +14,16 @@
 
   <!-- <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/> -->
   <!-- <policy type="Feedback" params="-719.813, -45.9087, -541.661, 0980.184, -1958.46" /> -->
-  <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" />
+  <!-- <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1"/> -->
   <!-- <policy type="Playback" filename="data_torque.csv" n="12" m="4" controlStep="1" /> -->
+
+  <policy type="Feedback" params="-1673.19 -8845.25 -77.8163 01280.53 -163.293" controlStep="1"/>
+
+
+  <!-- old controllers for initial mathcal model (without mass modification) -->
+  <!-- <policy type="Feedback" params="-2716691.61124318, -1189377.26019541, 953603.332319511, 10071.8805575885, 768507.689769501" controlStep="1"/> -->
+  <!-- <policy type="Feedback" params="18324,-33046,12511.1,16938,25786.9" controlStep="1"/> -->
+
 </simulation>
 
 

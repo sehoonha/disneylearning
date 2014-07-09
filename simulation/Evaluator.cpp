@@ -23,9 +23,71 @@ Evaluator::~Evaluator() {
 
 void Evaluator::reset() {
     mCost = 0.0;
+    mIsFailed = false;
 }
 
 double Evaluator::eval(Simulator* _sim) {
+    return eval2(_sim);
+}
+
+double Evaluator::eval2(Simulator* _sim) {
+
+    // Fetch the state
+    int n = _sim->numDimConfig();
+    const Eigen::VectorXd& x = _sim->state();
+    const Eigen::VectorXd& u = _sim->torque();
+
+    // Equilibrium state
+    Eigen::VectorXd qEq(n);
+    qEq << 0.0, 0.0, 0.0, 0.0, PI/2.0, -PI/2.0;
+    Eigen::VectorXd dqEq(n);
+    dqEq << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    Eigen::VectorXd xEq(n * 2);
+    xEq.head(n) = qEq;
+    xEq.tail(n) = dqEq;
+
+    // Define R matrix
+    Eigen::MatrixXd R = Eigen::MatrixXd::Zero(n * 2, n * 2);
+    R(0, 0) = 1.0;
+    R(1, 1) = 1.0;
+    R(2, 2) = R(3, 3) = R(4, 4) = R(5, 5) = 1.0;
+    R(6, 6) = 0.1;
+    R(7, 7) = 0.1;
+    R(8, 8) = R(9, 9) = R(10, 10) = R(11, 11) = 0.1;
+
+    R *= 0.01;
+
+
+    // Add a cost
+    Eigen::VectorXd dx = (x - xEq);
+    double costNow = dx.dot( R * dx );
+    mCost += costNow;
+
+    // Check failure
+    const double FAILED_COST = 1000.0;
+
+    // if (fabs(x(0)) > 0.7 ||
+    //     fabs(x(1)) > 0.7 ||
+    //     fabs(x(0) + x(1)) > 0.5 ||
+    //     fabs(x(2)) > 0.7) {
+    if (fabs(x(0) + x(1) + x(2)) > 0.5 
+        || fabs(x(0) + x(1)) > 0.3
+        // || fabs(x(0)) > 1.0
+        // || fabs(x(1)) > 1.0
+        // || fabs(x(2)) > 1.0
+        ) {
+        mIsFailed = true;
+    }
+    
+    if (mIsFailed) {
+        mCost += FAILED_COST;
+    }
+    
+    return mCost;
+}
+
+
+double Evaluator::eval1(Simulator* _sim) {
     // Parameters
     double offset = 0;
     double radius = 0.05;

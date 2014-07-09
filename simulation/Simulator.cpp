@@ -42,7 +42,7 @@ Simulator* Simulator::init() {
 }
 
 void Simulator::step() {
-    
+    // LOG(INFO) << "==== step ====";
     if ( (mControlStep < 2) ||
          (numHistories() % mControlStep) == 1
           ) {

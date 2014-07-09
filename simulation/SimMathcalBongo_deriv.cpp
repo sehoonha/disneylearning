@@ -271,6 +271,7 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     dx.head(n) = dq;
     dx.tail(n) = ddq;
 
+    // LOG(INFO) << endl;
     // LOG(INFO) << "q = " << q.transpose();
     // LOG(INFO) << "M = " << endl << M;
     // LOG(INFO) << "C = " << endl << C;
@@ -279,16 +280,15 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     // LOG(INFO) << "PsiDot = " << endl << PsiDot;
     // LOG(INFO) << "F = " << endl << F;
     // LOG(INFO) << "xEq = " << endl << xEq;
-    // LOG(INFO) << "u = " << endl << u;
+    // LOG(INFO) << "u = " << u.transpose();
     // LOG(INFO) << "U = " << endl << U;
     // LOG(INFO) << "D = " << endl << D;
     // LOG(INFO) << "Dv = " << endl << Dv;
     // LOG(INFO) << "lagMult = " << endl << lagMult;
-    // LOG(INFO) << "ddq = " << endl << ddq;
-    // LOG(INFO) << "dx = " << endl << dx;
+    // LOG(INFO) << "ddq = " << ddq.transpose();
+    // LOG(INFO) << "dx = " <<  dx.transpose();
     // exit(0);
 
-    // cout << dx.transpose() << " " << noise.transpose() << " " << noise.norm() << endl;
     return dx;
 }
 
