@@ -16,7 +16,7 @@
 #define D_INPUT 7
 #define D_OUTPUT 6
 #define W_VEL 0.1
-#define W_TOR 0.05
+#define W_TOR 0.005
 
 namespace disney {
 namespace simulation {
@@ -149,8 +149,10 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         const double STATE_DIFFERENCE_LIMIT = 10.0;
         if (stepLength < STEP_LENGTH_LIMIT
             && stateDifference < STATE_DIFFERENCE_LIMIT
+            && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
             && (loop % dataRate == 0)
             ) {
+
             Eigen::VectorXd input(D_INPUT);
             // input(0) = currSimState(0);
             // input(1) = currSimState(1);
@@ -216,6 +218,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
     LOG(INFO) << FUNCTION_NAME() << " : creating model... NUM DATA = " << N;
+
+    // // Load the GP, if exists
     // gp->loadAll();
 
     // Finally, reset the used model...

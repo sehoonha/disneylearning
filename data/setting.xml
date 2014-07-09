@@ -8,17 +8,16 @@
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="20" goodValue="120.0" />
 
-  <gp filename="data_real3.csv" dataRate="100" maxOptLoop="10000" />
+  <gp filename="data_new_real3.csv" dataRate="20" maxOptLoop="10000" />
   <!-- <gp filename="data_real_p0.csv" dataRate="20" maxOptLoop="5000" /> -->
 
 
   <!-- <policy type="Playback" filename="data_torque.csv" n="12" m="4" controlStep="1" /> -->
   <!-- <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/> -->
-  <policy type="Feedback" params="-3505.66 -1599.93 01773.06 0201.611 -28.0495" controlStep="2"
-          comment="Math" />
+  <!-- <policy type="Feedback" params="-3505.66 -1599.93 01773.06 0201.611 -28.0495" comment="Math" /> -->
   <!-- <policy type="Feedback" params="-719.813, -45.9087, -541.661, 0980.184, -1958.46" /> -->
 
-  <!-- <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="2"/> -->
+  <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1"/>
 
 
 

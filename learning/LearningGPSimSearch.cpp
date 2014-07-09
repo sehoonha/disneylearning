@@ -200,7 +200,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
 
     shark::CMA cma;
     shark::RealVector starting(prob.numberOfVariables());
-    cma.init( prob, starting, 16, 8, 1000.0 );
+    cma.init( prob, starting, 32, 16, 1000.0 );
 
 
 
