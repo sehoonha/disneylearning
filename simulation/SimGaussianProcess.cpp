@@ -63,10 +63,12 @@ void SimGaussianProcess::train() {
     int n = numDimState();
     int m = numDimTorque();
     LOG(INFO) << FUNCTION_NAME() << " : " << n << ", " << m;
-    // std::string filename = "data_realsim.csv";
-    std::string filename = utils::Option::read("simulation.gp.filename").toString();
-    LOG(INFO) << "filename = " << filename;
-    std::ifstream fin(filename.c_str());
+
+
+    // // std::string filename = "data_realsim.csv";
+    // std::string filename = utils::Option::read("simulation.gp.filename").toString();
+    // LOG(INFO) << "filename = " << filename;
+    // std::ifstream fin(filename.c_str());
 
     Eigen::VectorXd currState;
     Eigen::VectorXd currTorque;
@@ -76,24 +78,35 @@ void SimGaussianProcess::train() {
 
     std::vector<Eigen::VectorXd> states;
     std::vector<Eigen::VectorXd> torques;
-    for (int loop = 0; ; loop++) {
-        currState  = Eigen::VectorXd::Zero(n);
-        currTorque = Eigen::VectorXd::Zero(m);
 
-        for (int i = 0; i < n; i++) {
-            fin >> currState(i);
+    FOREACH(const utils::OptionItem& o, utils::Option::readAll("simulation.gp.data")) {
+        const std::string filename = o.attrString("filename");
+        LOG(INFO) << "Data filename = [" << filename << "]";
+        std::ifstream fin(filename.c_str());
+
+        int loop = 0;
+        for (; ; loop++) {
+            currState  = Eigen::VectorXd::Zero(n);
+            currTorque = Eigen::VectorXd::Zero(m);
+
+            for (int i = 0; i < n; i++) {
+                fin >> currState(i);
+            }
+            for (int i = 0; i < m; i++) {
+                fin >> currTorque(i);
+            }
+            if (fin.fail()) {
+                LOG(INFO) << "end of data at loop = " << loop;
+                break;
+            }
+            states.push_back(currState);
+            torques.push_back(currTorque);
         }
-        for (int i = 0; i < m; i++) {
-            fin >> currTorque(i);
-        }
-        if (fin.fail()) {
-            LOG(INFO) << "end of data at loop = " << loop;
-            break;
-        }
-        states.push_back(currState);
-        torques.push_back(currTorque);
+        fin.close();
+
+        LOG(INFO) << "Data filename = [" << filename << "] : # lines = " << loop;
+        LOG(INFO) << "--> # states = " << states.size();
     }
-    fin.close();
     LOG(INFO) << FUNCTION_NAME() << " OK";
     train(states, torques);
 }

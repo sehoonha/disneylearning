@@ -13,6 +13,7 @@
 
 #include "utils/Option.h"
 #include "utils/CppCommon.h"
+#include "utils/Misc.h"
 #include "simulation/Simulator.h"
 #include "simulation/SimGaussianProcess.h"
 #include "simulation/Evaluator.h"
@@ -241,7 +242,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
         LOG(INFO) << "Summarize the inner loop : ";
         LOG(INFO) << "Best value = " << bestValue << " (noUpdateCount : "<< noUpdateCount << " / "
                   << maxInnerNoUpdateLoop << ")";
-        LOG(INFO) << "Best params = " << bestParams.transpose();
+        LOG(INFO) << "Best params = " << utils::V2S(bestParams);
         LOG(INFO) << endl;
         if (noUpdateCount >= maxInnerNoUpdateLoop) {
             LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
@@ -262,7 +263,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     LOG(INFO) << endl << endl;
     LOG(INFO) << "Set the policy current best parameter";
     LOG(INFO) << "Best value  = " << bestValue;
-    LOG(INFO) << "Best params = " << bestParams.transpose();
+    LOG(INFO) << "Best params = " << utils::V2S(bestParams);
     policy->setParams(bestParams);
     LOG(INFO) << endl << endl;
 
