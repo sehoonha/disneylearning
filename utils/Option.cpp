@@ -59,6 +59,10 @@ double OptionItem::attrDouble(const char* const key) const {
 int OptionItem::attrInt(const char* const key) const {
     return boost::lexical_cast<int>(attrs.at(key));
 }
+
+bool OptionItem::attrBool(const char* const key) const {
+    return boost::lexical_cast<bool>(attrs.at(key));
+}
     
 std::string OptionItem::attrString(const char* const key) const {
     return attrs.at(key);

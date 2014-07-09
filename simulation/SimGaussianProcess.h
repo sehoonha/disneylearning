@@ -31,6 +31,15 @@ public:
     virtual ~SimGaussianProcess();
     virtual Simulator* init();
 
+    // Input/output functions
+    int numDimInput() { return mDimInput; }
+    int numDimOutput() { return mDimOutput; }
+    Eigen::VectorXd createInput(const Eigen::VectorXd& prevState,
+                                const Eigen::VectorXd& prevTorque,
+                                const Eigen::VectorXd& currSimState);
+    
+
+
     // Training functions
     void train();
     void train(const std::vector<Eigen::VectorXd>& states,
@@ -44,7 +53,7 @@ public:
     virtual Eigen::VectorXd state() const { return mState; }
 
     virtual int numDimTorque() const { return 4; }
-    
+
     // Simulation functions
     virtual void integrate();
     Eigen::VectorXd deriv(const Eigen::VectorXd& state, const Eigen::VectorXd& control);
@@ -55,11 +64,21 @@ public:
     // Visualization functions
     virtual void render();
 
+    
+
 protected:
     Eigen::VectorXd mState;
 
     SimMathcalBongo* model;
     learning::GaussianProcess* gp;
+
+    bool mFlagInputPrevState;
+    bool mFlagInputCurrSimState;
+    bool mFlagInputTorque;
+    bool mFlagOutputDiff;
+    int mDimInput;
+    int mDimOutput;
+
 }; // class SimGaussianProcess
 
 } // namespace simulation

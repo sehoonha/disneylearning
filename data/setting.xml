@@ -8,10 +8,13 @@
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" />
 
-  <gp filename="data_new_real3.csv" dataRate="10" maxOptLoop="10000">
+  <gp dataRate="20" maxOptLoop="10000">
     <data filename="data_box2d_math1.csv" />
     <data filename="data_box2d_math2.csv" />
     <data filename="data_box2d_math3.csv" />
+
+    <function inputPrevState="0" inputCurrSimState="1" inputTorque="1"   outputDiff="0" />
+    <behavior loadAtConsume="0" saveAfterOptimize="1" />
   </gp>
   <!-- <gp filename="data_real_p0.csv" dataRate="20" maxOptLoop="5000" /> -->
 

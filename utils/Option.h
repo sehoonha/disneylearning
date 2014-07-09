@@ -31,6 +31,7 @@ struct OptionItem {
     bool hasAttr(const char* const key) const;
     double attrDouble(const char* const key) const;
     int attrInt(const char* const key) const;
+    bool attrBool(const char* const key) const;
     std::string attrString(const char* const key) const;
     std::vector<double> attrVectorDouble(const char* const key) const;
 };

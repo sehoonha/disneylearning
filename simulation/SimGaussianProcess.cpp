@@ -13,8 +13,8 @@
 #include "learning/GaussianProcess.h"
 
 
-#define D_INPUT 7
-#define D_OUTPUT 6
+// #define D_INPUT 6
+// #define D_OUTPUT 6
 #define W_VEL 0.1
 #define W_TOR 0.005
 
@@ -33,6 +33,31 @@ SimGaussianProcess::~SimGaussianProcess() {
 }
 
 Simulator* SimGaussianProcess::init() {
+    LOG(INFO) << FUNCTION_NAME();
+
+    // Fetch flags
+    utils::OptionItem o = utils::Option::read("simulation.gp.function");
+    mFlagInputPrevState = o.attrBool("inputPrevState");
+    mFlagInputCurrSimState = o.attrBool("inputCurrSimState");
+    mFlagInputTorque = o.attrBool("inputTorque");
+    mFlagOutputDiff = o.attrBool("outputDiff");
+
+    LOG(INFO) << "mFlagInputPrevState = " << mFlagInputPrevState;
+    LOG(INFO) << "mFlagInputCurrSimState = " << mFlagInputCurrSimState;
+    LOG(INFO) << "mFlagInputTorque = " << mFlagInputTorque;
+    LOG(INFO) << "mFlagOutputDiff = " << mFlagOutputDiff;
+
+    // Calculate the dimensions
+    mDimInput = 0;
+    if (mFlagInputPrevState) mDimInput += 6;
+    if (mFlagInputCurrSimState) mDimInput += 6;
+    if (mFlagInputTorque) mDimInput += 1;
+    mDimOutput = 6;
+    LOG(INFO) << "numDimInput = " << numDimInput();
+    LOG(INFO) << "numDimOutput = " << numDimOutput();
+    
+    // Setup the initial state
+
     int n = numDimConfig();
     int m = numDimState();
     
@@ -58,6 +83,33 @@ Simulator* SimGaussianProcess::init() {
     return this;
 }
 
+Eigen::VectorXd SimGaussianProcess::createInput(const Eigen::VectorXd& prevState,
+                                                const Eigen::VectorXd& prevTorque,
+                                                const Eigen::VectorXd& currSimState) {
+    int ptr = 0;
+    Eigen::VectorXd input(numDimInput());
+    if (mFlagInputPrevState) {
+        input(ptr++) = prevState(0);
+        input(ptr++) = prevState(1);
+        input(ptr++) = prevState(2);
+        input(ptr++) = W_VEL * prevState(6 + 0);
+        input(ptr++) = W_VEL * prevState(6 + 1);
+        input(ptr++) = W_VEL * prevState(6 + 2);
+    }
+    if (mFlagInputCurrSimState) {
+        input(ptr++) = currSimState(0);
+        input(ptr++) = currSimState(1);
+        input(ptr++) = currSimState(2);
+        input(ptr++) = W_VEL * currSimState(6 + 0);
+        input(ptr++) = W_VEL * currSimState(6 + 1);
+        input(ptr++) = W_VEL * currSimState(6 + 2);
+    }
+    if (mFlagInputTorque) {
+        input(ptr++) = W_TOR * prevTorque(0);
+    }
+    CHECK_EQ( (int)ptr, (int)numDimInput() );
+    return input;
+}
 
 void SimGaussianProcess::train() {
     int n = numDimState();
@@ -166,30 +218,26 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             && (loop % dataRate == 0)
             ) {
 
-            Eigen::VectorXd input(D_INPUT);
-            // input(0) = currSimState(0);
-            // input(1) = currSimState(1);
-            // input(2) = currSimState(2);
-            // input(3) = W_VEL * currSimState(6 + 0);
-            // input(4) = W_VEL * currSimState(6 + 1);
-            // input(5) = W_VEL * currSimState(6 + 2);
-            input(0) = prevState(0);
-            input(1) = prevState(1);
-            input(2) = prevState(2);
-            input(3) = W_VEL * prevState(6 + 0);
-            input(4) = W_VEL * prevState(6 + 1);
-            input(5) = W_VEL * prevState(6 + 2);
-            input(6) = W_TOR * prevTorque(0);
+            // 1. Create input
+            Eigen::VectorXd input = createInput(prevState, prevTorque, currSimState);
 
-
-            Eigen::VectorXd output = Eigen::VectorXd::Zero(D_OUTPUT);
-            // Eigen::VectorXd diff = currState;
-            Eigen::VectorXd diff = currState - currSimState;
-            for (int i = 0; i < 3; i++) {
-                output(i) = diff(i);
-                output(i + 3) = W_VEL * diff(i + 6);
+            // 2. Create output
+            Eigen::VectorXd output = Eigen::VectorXd::Zero(numDimOutput());
+            if (mFlagOutputDiff) {
+                Eigen::VectorXd diff = currState - currSimState;
+                for (int i = 0; i < 3; i++) {
+                    output(i) = diff(i);
+                    output(i + 3) = W_VEL * diff(i + 6);
+                }
+            } else {
+                Eigen::VectorXd diff = currState;
+                for (int i = 0; i < 3; i++) {
+                    output(i) = diff(i);
+                    output(i + 3) = W_VEL * diff(i + 6);
+                }
             }
 
+            // 3. Collect input/output
             inputs.push_back(input);
             outputs.push_back(output);
 
@@ -212,8 +260,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
 
     // Convert to the matrix form
     int N = inputs.size();
-    Eigen::MatrixXd X(N, D_INPUT );
-    Eigen::MatrixXd Y(N, D_OUTPUT );
+    Eigen::MatrixXd X(N, numDimInput() );
+    Eigen::MatrixXd Y(N, numDimOutput() );
     for (int i = 0; i < N; i++) {
         X.row(i) = inputs[i];
         Y.row(i) = outputs[i];
@@ -232,8 +280,12 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     gp->createModel(X, Y);
     LOG(INFO) << FUNCTION_NAME() << " : creating model... NUM DATA = " << N;
 
-    // // Load the GP, if exists
-    // gp->loadAll();
+    // Load the GP, if exists
+    bool loadAtConsume = utils::Option::read("simulation.gp.behavior").attrBool("loadAtConsume");
+    LOG(INFO) << "loadAtConsume = " << loadAtConsume;
+    if (loadAtConsume) {
+        gp->loadAll();
+    }
 
     // Finally, reset the used model...
     model->setState( mState );
@@ -243,7 +295,11 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
 
 void SimGaussianProcess::optimize() {
     gp->optimize();
-    gp->saveAll();
+    bool saveAfterOptimize = utils::Option::read("simulation.gp.behavior").attrBool("saveAfterOptimize");
+    LOG(INFO) << "saveAfterOptimize = " << saveAfterOptimize;
+    if (saveAfterOptimize) {
+        gp->saveAll();
+    }
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -259,20 +315,7 @@ void SimGaussianProcess::integrate() {
     Eigen::VectorXd dx = model->state() - x_prev;
 
     // 2. Correct the dynamics
-    Eigen::VectorXd input( D_INPUT );
-    // input(0) = x_sim(0);
-    // input(1) = x_sim(1);
-    // input(2) = x_sim(2);
-    // input(3) = W_VEL * x_sim(6 + 0);
-    // input(4) = W_VEL * x_sim(6 + 1);
-    // input(5) = W_VEL * x_sim(6 + 2);
-    input(0) = x_prev(0);
-    input(1) = x_prev(1);
-    input(2) = x_prev(2);
-    input(3) = W_VEL * x_prev(6 + 0);
-    input(4) = W_VEL * x_prev(6 + 1);
-    input(5) = W_VEL * x_prev(6 + 2);
-    input(6) = W_TOR * mTorque(0);
+    Eigen::VectorXd input = createInput(mState, mTorque, x_sim);
 
     Eigen::VectorXd dx_delta = Eigen::VectorXd::Zero( 12 );
     if (gp) {
@@ -298,10 +341,12 @@ void SimGaussianProcess::integrate() {
     }
 
     // 3. To the next state
-    Eigen::VectorXd x_curr = mState + dx + dx_delta;
-    mState = x_curr;
-
-    // mState = dx_delta;
+    if (mFlagOutputDiff) {
+        Eigen::VectorXd x_curr = mState + dx + dx_delta;
+        mState = x_curr;
+    } else {
+        mState = dx_delta;
+    }
     
 
     // 4. Finalize the state by maintaining the constraints
