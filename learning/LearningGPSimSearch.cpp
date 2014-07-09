@@ -261,8 +261,8 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
 
     LOG(INFO) << endl << endl;
     LOG(INFO) << "Set the policy current best parameter";
-    LOG(INFO) << "value  = " << bestValue;
-    LOG(INFO) << "params = " << bestParams;
+    LOG(INFO) << "Best value  = " << bestValue;
+    LOG(INFO) << "Best params = " << bestParams.transpose();
     policy->setParams(bestParams);
     LOG(INFO) << endl << endl;
 

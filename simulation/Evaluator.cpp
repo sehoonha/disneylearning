@@ -72,9 +72,9 @@ double Evaluator::eval2(Simulator* _sim) {
     //     fabs(x(2)) > 0.7) {
     if (fabs(x(0) + x(1) + x(2)) > 0.5 
         || fabs(x(0) + x(1)) > 0.3
-        // || fabs(x(0)) > 1.0
-        // || fabs(x(1)) > 1.0
-        // || fabs(x(2)) > 1.0
+        || fabs(x(6) + x(7)) > 2.0
+        || fabs(x(6)) > 6.2
+        || fabs(x(7)) > 6.2
         ) {
         mIsFailed = true;
     }
