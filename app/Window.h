@@ -60,6 +60,7 @@ public slots:
     void onActionConsume();
     void onActionOptimize();
 
+    void onActionLoadHistory();
 
 protected:
     void keyPressEvent(QKeyEvent* event);

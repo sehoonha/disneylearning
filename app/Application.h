@@ -41,6 +41,7 @@ public:
     
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
+    void loadHistory(const char* const filename);
 
     std::vector<std::string> allSimulatorNames();
     void collectData(const char* const _type);

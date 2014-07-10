@@ -205,6 +205,13 @@ void Application::updateToHistory(int index) const {
     }
 }
 
+void Application::loadHistory(const char* const filename) {
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        sim->loadHistoryFromFile(filename);
+    }
+}
+
+
 std::vector<std::string> Application::allSimulatorNames() {
     std::vector<std::string> ret;
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {

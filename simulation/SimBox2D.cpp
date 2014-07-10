@@ -631,7 +631,7 @@ void SimBox2D::setState(const Eigen::VectorXd& _state) {
     Eigen::Vector3d l2 = 0.5 * (leftLink1 + leftLink2);
     imp->l2->SetTransform(b2Vec2(l2(X), l2(Y)), thetal2 + imp->l1->GetAngle());
 
-    LOG(INFO) << FUNCTION_NAME() << " OK";
+    // LOG(INFO) << FUNCTION_NAME() << " OK";
     
 }
 

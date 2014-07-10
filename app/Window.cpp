@@ -89,6 +89,7 @@ void Window::setCenter() {
 }
 
 void Window::createActions() {
+    // For tool bars
     createAction("Reset");
     createAction("Play")->setCheckable(true);
     createAction("Anim")->setCheckable(true);
@@ -99,7 +100,8 @@ void Window::createActions() {
 
     createAction("Overlay")->setCheckable(true);
     actions["Overlay"]->setChecked(false);
-    
+
+
     createAction("NN");
     createAction("Train");
     createAction("Pause")->setCheckable(true);
@@ -108,6 +110,10 @@ void Window::createActions() {
     createAction("Consume");
     createAction("Optimize");
     createAction("Load")->setShortcut( QKeySequence("Ctrl+L") );
+
+    // For menus
+    createAction("LoadHistory");
+
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -163,7 +169,7 @@ void Window::createToolbars() {
 
 void Window::createMenus() {
     QMenu* menuFile = menuBar()->addMenu(tr("File"));
-    menuFile->addAction( actions["Load"] );
+    menuFile->addAction( actions["LoadHistory"] );
      
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -299,6 +305,22 @@ void Window::onActionOptimize() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void Window::onActionLoadHistory() {
+    QString qfilename = QFileDialog::getOpenFileName(
+        this, tr("Load Simulation History"), tr("./"), tr("CSV Files (*.csv)"));
+    std::string filename = qfilename.toStdString();
+    if (filename.length() == 0) {
+        LOG(WARNING) << "User cancelled loading";
+        return;
+    }
+    LOG(INFO) << "Filename = [" << filename << "]";
+    app()->loadHistory(filename.c_str());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+
+    int n = app()->numMaximumHistory();
+    sliderFrame()->setRange(0, n - 1);
+
+}
 
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {

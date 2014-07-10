@@ -6,6 +6,7 @@
  */
 
 #include "Simulator.h"
+#include <fstream>
 #include <iomanip>
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
@@ -90,6 +91,46 @@ void Simulator::updateToHistory(int index) {
         eval()->setCost(sh.cost);
     }
     mContacts = sh.contacts;
+}
+
+void Simulator::loadHistoryFromFile(const char* const filename) {
+    clearHistory();
+    
+    std::ifstream fin(filename);
+    if (fin.is_open() == false) {
+        LOG(FATAL) << "cannot open " << filename;
+        return;
+    }
+
+    int n = numDimState();
+    int m = numDimTorque();
+    LOG(INFO) << FUNCTION_NAME() << "type = " << this->type() << " : " << n << ", " << m;
+
+    Eigen::VectorXd currState;
+    Eigen::VectorXd currTorque;
+    int loop = 0;
+    for (; ; loop++) {
+        currState  = Eigen::VectorXd::Zero(n);
+        currTorque = Eigen::VectorXd::Zero(m);
+
+        for (int i = 0; i < n; i++) {
+            fin >> currState(i);
+        }
+        for (int i = 0; i < m; i++) {
+            fin >> currTorque(i);
+        }
+        if (fin.fail()) {
+            LOG(INFO) << "end of data at loop = " << loop;
+            break;
+        }
+        setState(currState);
+        mTorque = currTorque;
+        pushHistory();
+        // states.push_back(currState);
+        // torques.push_back(currTorque);
+    }
+
+    fin.close();
 }
 
 void Simulator::renderInfo() {
