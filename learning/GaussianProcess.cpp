@@ -69,9 +69,12 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
 
     // cout << imp->X << endl;
     LOG(INFO) << "data is copied";
-    
+    const std::string COV = utils::Option::read("simulation.gp.cov").toString();
+    LOG(INFO) << "Covariance Function = " << COV;
+
     for (int i = 0; i < NOUTPUT; i++) {
-        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum (CovSEard, CovNoise)");
+        libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, COV.c_str());
+        // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum (CovSEard, CovNoise)");
 
 
         // libgp::GaussianProcess* gp = new libgp::GaussianProcess(NINPUT, "CovSum ( CovSEiso, CovNoise)");
@@ -206,7 +209,7 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd& _x) {
     for (int j = 0; j < NOUTPUT; j++) {
         libgp::GaussianProcess* gp = imp->gp_array[j];
         ret(j) = gp->f(x);
-        // mVariance(j) = gp->var(x);
+        mVariance(j) = gp->var(x);
     }
     delete[] x;
     return ret;

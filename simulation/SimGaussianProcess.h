@@ -78,6 +78,8 @@ protected:
     bool mFlagOutputDiff;
     int mDimInput;
     int mDimOutput;
+    double W_VEL;
+    double W_TOR;
 
 }; // class SimGaussianProcess
 

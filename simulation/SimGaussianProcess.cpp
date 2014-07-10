@@ -9,14 +9,15 @@
 #include <fstream>
 #include "utils/CppCommon.h"
 #include "utils/Option.h"
+#include "utils/Misc.h"
 #include "SimMathcalBongo.h"
 #include "learning/GaussianProcess.h"
 
 
 // #define D_INPUT 6
 // #define D_OUTPUT 6
-#define W_VEL 0.1
-#define W_TOR 0.005
+// #define W_VEL 0.1
+// #define W_TOR 0.005
 
 namespace disney {
 namespace simulation {
@@ -46,6 +47,13 @@ Simulator* SimGaussianProcess::init() {
     LOG(INFO) << "mFlagInputCurrSimState = " << mFlagInputCurrSimState;
     LOG(INFO) << "mFlagInputTorque = " << mFlagInputTorque;
     LOG(INFO) << "mFlagOutputDiff = " << mFlagOutputDiff;
+
+    // Fetch weights
+    utils::OptionItem o_w = utils::Option::read("simulation.gp.weight");
+    W_VEL = o_w.attrDouble("vel");
+    W_TOR = o_w.attrDouble("tor");
+    LOG(INFO) << "W_VEL = " << W_VEL;
+    LOG(INFO) << "W_TOR = " << W_TOR;
 
     // Calculate the dimensions
     mDimInput = 0;
@@ -214,7 +222,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         const double STATE_DIFFERENCE_LIMIT = 10.0;
         if (stepLength < STEP_LENGTH_LIMIT
             && stateDifference < STATE_DIFFERENCE_LIMIT
-            && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
+            // && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
+            // && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
             && (loop % dataRate == 0)
             ) {
 
@@ -241,11 +250,13 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             inputs.push_back(input);
             outputs.push_back(output);
 
+            // using disney::utils::V2S;
             // cout << "== " << loop << " ==" << endl;
-            // cout << stepLength << endl;
-            // cout << "input  = " << input.transpose() << endl;
-            // cout << "output = " << output.transpose() << endl;
-            // cout << currState.transpose() << endl << currSimState.transpose() << endl;
+            // cout << "input  = " << V2S(input) << endl;
+            // cout << "output = " << V2S(output) << endl;
+            // cout << "prevState = " << V2S(prevState) << endl;
+            // cout << "currState = " << V2S(currState) << endl;
+            // cout << "currSimState = " << V2S(currSimState) << endl;
             // cout << endl;
         } else {
             // cout << "== " << loop << " ==" << endl;
@@ -323,7 +334,7 @@ void SimGaussianProcess::integrate() {
         // cout << "input = " << input.transpose() << endl;
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
-        if (var.norm() < 1.0) {
+        if (var.norm() < 0.0001) {
             for (int i = 0; i < 3; i++) {
                 dx_delta(i) = output(i);
                 dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
