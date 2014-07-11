@@ -38,7 +38,7 @@ public:
     void reset();
     void train();
     void togglePause();
-    
+
     int numMaximumHistory() const;
     void updateToHistory(int index) const;
     void loadHistory(const char* const filename);
@@ -52,7 +52,9 @@ public:
     void loadAllPolicies();
     int numPolicies() const { return mPolicies.size(); }
     std::string nameOfPolicy(int index);
+    void selectPolicy(int index);
     void selectPolicy(const char* const _name);
+    
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);

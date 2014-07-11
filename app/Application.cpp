@@ -298,6 +298,15 @@ std::string Application::nameOfPolicy(int index) {
     return mPolicies[index]->name();
 }
 
+void Application::selectPolicy(int index) {
+    learning::Policy* p = mPolicies[index];
+    set_policy(p);
+    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+        sim->set_policy( policy() );
+    }
+    LOG(INFO) << FUNCTION_NAME() << " OK : " << p->name();
+}
+
 void Application::selectPolicy(const char* const _name) {
     std::string name(_name);
     FOREACH(learning::Policy* p, mPolicies) {

@@ -2,10 +2,12 @@
 
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
+#include <boost/thread.hpp>
 
 #include "GLWidget.h"
 #include "utils/CppCommon.h"
 #include "Application.h"
+#include "ScenarioTestAll.h"
 // #include "box2dsimulation.h"
 
 namespace disney {
@@ -113,7 +115,7 @@ void Window::createActions() {
 
     // For menus
     createAction("LoadHistory");
-
+    createAction("TestAll");
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -180,6 +182,9 @@ void Window::createMenus() {
         }
     }
     connect(menuPolicy, SIGNAL(triggered(QAction*)), this, SLOT(onMenuPolicy(QAction*)));
+
+    QMenu* menuScenario = menuBar()->addMenu(tr("Scenario"));
+    menuScenario->addAction( actions["TestAll"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -336,6 +341,12 @@ void Window::onMenuPolicy(QAction* action) {
     std::string txt = action->text().toStdString();
     LOG(INFO) << FUNCTION_NAME() << " : " << txt;
     app()->selectPolicy( txt.c_str() );
+}
+
+void Window::onActionTestAll() {
+    LOG(INFO) << FUNCTION_NAME();
+    boost::thread t(&ScenarioTestAll, app());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
 void Window::keyPressEvent(QKeyEvent* event) {
