@@ -61,6 +61,7 @@ public slots:
     void onActionOptimize();
 
     void onActionLoadHistory();
+    void onMenuPolicy(QAction* action);
 
 protected:
     void keyPressEvent(QKeyEvent* event);

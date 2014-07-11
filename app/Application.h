@@ -47,12 +47,20 @@ public:
     void collectData(const char* const _type);
     void consumeData();
     void optimizeGP();
+
+    // Managing policies
+    void loadAllPolicies();
+    int numPolicies() const { return mPolicies.size(); }
+    std::string nameOfPolicy(int index);
+    void selectPolicy(const char* const _name);
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);
-    MEMBER_PTR(learning::Policy*, policy);
     MEMBER_PTR(learning::LearningAlgorithm*, learning);
     MEMBER_VAR(int, maxSimLoop);
+
+    MEMBER_PTR(learning::Policy*, policy);
+    std::vector<learning::Policy*> mPolicies;
 }; // class Application
 
 } // namespace app

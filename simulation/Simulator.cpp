@@ -28,7 +28,6 @@ Simulator::Simulator()
 Simulator::Simulator(const char* const _type) 
     : mType(_type)
     , mTimestep(0.001)
-    , mControlStep(2)
     , MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(eval)
 {
@@ -42,10 +41,17 @@ Simulator* Simulator::init() {
     return this;
 }
 
+int Simulator::controlStep() const {
+    if (policy()) {
+        return policy()->controlStep();
+    }
+    return 1;
+}
+
 void Simulator::step() {
     // LOG(INFO) << "==== step ====";
-    if ( (mControlStep < 2) ||
-         (numHistories() % mControlStep) == 1
+    if ( (controlStep() < 2) ||
+         (numHistories() % controlStep()) == 1
           ) {
         control();
     }

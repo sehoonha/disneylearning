@@ -171,6 +171,16 @@ void Window::createMenus() {
     QMenu* menuFile = menuBar()->addMenu(tr("File"));
     menuFile->addAction( actions["LoadHistory"] );
      
+    QMenu* menuPolicy = menuBar()->addMenu(tr("Policy"));
+    for (int i = 0; i < app()->numPolicies(); i++) {
+        std::string name = app()->nameOfPolicy(i);
+        menuPolicy->addAction(name.c_str());
+        if (name == "Zero") {
+            menuPolicy->addSeparator();
+        }
+    }
+    connect(menuPolicy, SIGNAL(triggered(QAction*)), this, SLOT(onMenuPolicy(QAction*)));
+
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
     
@@ -322,6 +332,12 @@ void Window::onActionLoadHistory() {
 
 }
 
+void Window::onMenuPolicy(QAction* action) {
+    std::string txt = action->text().toStdString();
+    LOG(INFO) << FUNCTION_NAME() << " : " << txt;
+    app()->selectPolicy( txt.c_str() );
+}
+
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {
         // LOG(INFO) << FUNCTION_NAME() << " : U";
@@ -363,7 +379,6 @@ void Window::takeCapture() {
 }
 
 // avconv -r 100 -i ./capture.%04d.png output.mp4
-
 
 void Window::takeScreenshot(const char* const filename) {
     // QPixmap pixmap;

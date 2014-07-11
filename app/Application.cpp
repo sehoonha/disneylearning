@@ -13,6 +13,7 @@
 #include "utils/CppCommon.h"
 #include "utils/Option.h"
 #include "utils/LoadOpengl.h"
+#include "utils/Misc.h"
 #include "simulation/Simulator.h"
 #include "simulation/SimBox2D.h"
 #include "simulation/SimMathcalBongo.h"
@@ -52,49 +53,15 @@ void Application::init() {
     set_manager( new simulation::Manager() );
     manager()->init();
 
-    // Initialize a policy
-    utils::OptionItem opt = utils::Option::read("simulation.policy");
-    std::string policy_type = opt.attrString("type");
-    LOG(INFO) << "policy.type = " << policy_type;
-    int policy_controlStep = -1;
-    if (opt.hasAttr("controlStep")) {
-        policy_controlStep = opt.attrInt("controlStep");
-        LOG(INFO) << "policy.controlStep = " << policy_controlStep;
-    }
+    // Load all
+    loadAllPolicies();
 
-    // Case 1. Feedback policy
-    if (policy_type == "Feedback") { 
-        set_policy ( new learning::PolicyFeedback() );
-        policy()->init();
-
-        std::vector<double> params_v = opt.attrVectorDouble("params");
-        Eigen::Map<Eigen::VectorXd> params(params_v.data(), params_v.size());
-        LOG(INFO) << "policy.params = " << params.transpose();
-        policy()->setParams(params);
-    }
-    // Case 2. Playback policy
-    else if (policy_type == "Playback") { 
-        learning::PolicyPlayback* p = new learning::PolicyPlayback();
-        p->init();
-
-        std::string filename = opt.attrString("filename");
-        int n = opt.attrDouble("n");
-        int m = opt.attrDouble("m");
-        LOG(INFO) << "policy.filename = " << filename;
-        LOG(INFO) << "policy.dimensions(n, m) = " << n << " " << m;
-        p->load(filename.c_str(), n, m);
-        set_policy( p );
-    } else {
-        LOG(WARNING) << "we do not have a policy... ";
-    }
+    CHECK_NOTNULL(policy());
 
     // Initialize evaluators to all simulators
     FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
         sim->set_policy( policy() );
         sim->set_eval( new simulation::Evaluator() );
-        if (policy_controlStep > 0) {
-            sim->setControlStep(policy_controlStep);
-        }
     }
 
     // Initialize learning policy
@@ -253,6 +220,7 @@ void Application::consumeData() {
     CHECK_NOTNULL(simgp);
     simgp->train();
 }
+
 void Application::optimizeGP() {
     simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS);
     CHECK_NOTNULL(sim);
@@ -261,6 +229,89 @@ void Application::optimizeGP() {
     simgp->optimize();
 }
 
+
+// Managing policies
+void Application::loadAllPolicies() {
+    LOG(INFO) << FUNCTION_NAME();
+    FOREACH(const utils::OptionItem& opt, utils::Option::readAll("simulation.policy")) {
+        // Initialize a policy
+        std::string policy_type = opt.attrString("type");
+        LOG(INFO) << endl;
+        LOG(INFO) << "policy.type = " << policy_type;
+
+        learning::Policy* current = NULL;
+        
+        // Case 1. Feedback policy
+        if (policy_type == "Feedback") {
+            LOG(INFO) << "loading a feedback policy";
+            learning::PolicyFeedback* p = new learning::PolicyFeedback();
+            p->init();
+            current = p;
+
+            std::vector<double> params_v = opt.attrVectorDouble("params");
+            Eigen::Map<Eigen::VectorXd> params(params_v.data(), params_v.size());
+            LOG(INFO) << "policy.params = " << utils::V2S_SHORT(params);
+            p->setParams(params);
+        }
+        // Case 2. Playback policy
+        else if (policy_type == "Playback") { 
+            LOG(INFO) << "loading a playback policy";
+            learning::PolicyPlayback* p = new learning::PolicyPlayback();
+            p->init();
+            current = p;
+
+            std::string filename = opt.attrString("filename");
+            int n = opt.attrDouble("n");
+            int m = opt.attrDouble("m");
+            LOG(INFO) << "policy.filename = " << filename;
+            LOG(INFO) << "policy.dimensions(n, m) = " << n << " " << m;
+            p->load(filename.c_str(), n, m);
+            // set_policy( p );
+        } else {
+            LOG(WARNING) << "we do not have a policy... type = " << policy_type;
+        }
+
+        // Follow-up
+        if (opt.hasAttr("name")) {
+            std::string name = opt.attrString("name");
+            current->setName(name);
+            LOG(INFO) << "policy.name = " << current->name();
+        }
+        if (opt.hasAttr("controlStep")) {
+            int controlStep = opt.attrInt("controlStep");
+            current->setControlStep(controlStep);
+            LOG(INFO) << "policy.controlStep = " << controlStep;
+        }
+
+        if (opt.hasAttr("select") && opt.attrBool("select")) {
+            set_policy( current );
+            LOG(INFO) << "Select the current policy!!! ";
+        }
+
+        mPolicies.push_back(current);
+    }
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+
+std::string Application::nameOfPolicy(int index) {
+    return mPolicies[index]->name();
+}
+
+void Application::selectPolicy(const char* const _name) {
+    std::string name(_name);
+    FOREACH(learning::Policy* p, mPolicies) {
+        if (p->name() == name) {
+            set_policy(p);
+            FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
+                sim->set_policy( policy() );
+            }
+            LOG(INFO) << FUNCTION_NAME() << " OK : " << p->name();
+            return;
+        }
+    }
+    LOG(WARNING) << FUNCTION_NAME() << " cannot find the policy " << name;
+}
 
 // class Application ends
 ////////////////////////////////////////////////////////////

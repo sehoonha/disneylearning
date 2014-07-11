@@ -49,8 +49,7 @@ public:
     virtual Simulator* init();
     std::string type() const { return mType; }
     void setType(const char* const _type) { mType = _type; }
-    int controlStep() const { return mControlStep; }
-    void setControlStep(int _controlStep) { mControlStep = _controlStep; }
+    int controlStep() const;
 
     // State functions
     virtual int numDimConfig() const { return numDimState() / 2; }
@@ -97,7 +96,7 @@ protected:
     // std::vector<Eigen::VectorXd> mHistory; // Record in the full state
     // -- removed -- Eigen::VectorXd mState // state is not always a single vector
 
-    int mControlStep;
+    // int mControlStep;
     MEMBER_PTR(learning::Policy*, policy);
     Eigen::VectorXd mTorque;
     Eigen::VectorXd mContacts;

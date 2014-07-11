@@ -25,6 +25,17 @@ static std::string V2S(const Eigen::VectorXd& v) {
     return sout.str();
 }
 
+static std::string V2S_SHORT(const Eigen::VectorXd& v) {
+    std::stringstream sout;
+    sout << std::fixed << std::setprecision(2);
+    for (int i = 0; i < v.size(); i++) {
+        if (i > 0) sout << ", ";
+        sout << v(i);
+    }
+    return sout.str();
+}
+
+
 } // namespace utils
 } // namespace disney
 

@@ -15,6 +15,7 @@ namespace learning {
 // class Policy implementation
 Policy::Policy(int _dim)
     : mDim(_dim)
+    , mControlStep(2)
 {
 }
 
