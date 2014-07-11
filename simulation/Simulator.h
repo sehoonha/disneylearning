@@ -48,6 +48,7 @@ public:
 
     virtual Simulator* init();
     std::string type() const { return mType; }
+    void setType(const char* const _type) { mType = _type; }
     int controlStep() const { return mControlStep; }
     void setControlStep(int _controlStep) { mControlStep = _controlStep; }
 

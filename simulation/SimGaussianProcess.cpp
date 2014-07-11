@@ -86,6 +86,7 @@ Simulator* SimGaussianProcess::init() {
 
     model = (new SimMathcalBongo());
     model->init();
+    model->setType(SIMTYPE_GAUSSIANPROCESS"_INT"); // Set type as Internal
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
@@ -334,19 +335,30 @@ void SimGaussianProcess::integrate() {
         // cout << "input = " << input.transpose() << endl;
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
-        if (var.norm() < 0.0001) {
-            for (int i = 0; i < 3; i++) {
-                dx_delta(i) = output(i);
-                dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
-            }
-            // LOG(INFO) << ">> "
-            //           << "(" << var.norm() << " / " << var.transpose() << ") "
-            //           << endl << dx_delta.transpose();
-        } else {
-            // LOG_EVERY_N(INFO, 30)
-            //     << "reject due to high variance: "  
-            //     << "(" << var.norm() << " / " << var.transpose() << ") ";
+
+        for (int i = 0; i < 3; i++) {
+            dx_delta(i) = output(i);
+            dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
         }
+
+        // Adjust the difference using the variance
+        double v = var.norm();
+        double w = exp(-100000.0 * v);
+        dx_delta *= w;
+
+        // if (var.norm() < 0.0001) {
+        //     for (int i = 0; i < 3; i++) {
+        //         dx_delta(i) = output(i);
+        //         dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
+        //     }
+        //     // LOG(INFO) << ">> "
+        //     //           << "(" << var.norm() << " / " << var.transpose() << ") "
+        //     //           << endl << dx_delta.transpose();
+        // } else {
+        //     // LOG_EVERY_N(INFO, 30)
+        //     //     << "reject due to high variance: "  
+        //     //     << "(" << var.norm() << " / " << var.transpose() << ") ";
+        // }
         
         // cout << "model->state = " << model->state().transpose() << endl;
     }

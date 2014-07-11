@@ -1,6 +1,6 @@
 <simulation>
   <sim type="SimBox2D" />
-  <!-- <sim type="SimMathcalBongo" /> -->
+  <sim type="SimMathcalBongo" />
   <sim type="SimGaussianProcess"/>
 
 
@@ -12,7 +12,7 @@
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.01" />
+    <weight vel="0.1" tor="0.005" />
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
     <function inputPrevState="0" inputCurrSimState="1" inputTorque="1"   outputDiff="1" />
@@ -20,9 +20,7 @@
 
     <data filename="data_box2d_math1.csv" />
     <data filename="data_box2d_math2.csv" />
-    <!-- <data filename="data_box2d_math3.csv" /> -->
-
-
+    <data filename="data_box2d_math3.csv" />
   </gp>
 
 
@@ -32,9 +30,9 @@
   <!-- <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1"/> -->
 
 
-  <policy type="Feedback" params="-1454.02, -2874.23, 0582.331, 380.828, -531.899" controlStep="1" comment="Math1"/>
+  <!-- <policy type="Feedback" params="-1454.02, -2874.23, 0582.331, 380.828, -531.899" controlStep="1" comment="Math1"/> -->
   <!-- <policy type="Feedback" params="127.56746405, -7883.79933312, -77.48762756, 892.10510117, -378.39292809" controlStep="1" comment="Math2"/> -->
-  <!-- <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" comment="Math3"/> -->
+  <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" comment="Math3"/>
   <!-- <policy type="Feedback" params="-8537.2140838521, -3375.6105153636, 3263.3788594249, 826.1767448669, 358.2607696150" controlStep="1" comment="Math4Box"/> -->
 
 
