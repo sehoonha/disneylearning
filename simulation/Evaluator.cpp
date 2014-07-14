@@ -88,6 +88,12 @@ double Evaluator::eval2(Simulator* _sim) {
 
 
 double Evaluator::eval1(Simulator* _sim) {
+    const double COST_FAIL = 1000.0;
+    if (isFailed()) {
+        mCost += COST_FAIL;
+        return mCost;
+    }
+    
     // Parameters
     double offset = 0;
     double radius = 0.05;
@@ -154,7 +160,6 @@ double Evaluator::eval1(Simulator* _sim) {
     const int Y = 2;
 
     // Check the fail
-    const double COST_FAIL = 1000.0;
     bool failed = false;
     if (top(Y) < 0.2 || cart(Y) < 0.0) {
         failed = true;

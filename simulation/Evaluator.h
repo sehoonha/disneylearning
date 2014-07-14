@@ -29,6 +29,7 @@ public:
     void setCost(double _cost) { mCost = _cost; }
     virtual void reset();
     virtual double eval(Simulator* _sim);
+    bool isFailed() const { return mIsFailed; }
     double eval1(Simulator* _sim);
     double eval2(Simulator* _sim);
 protected:

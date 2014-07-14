@@ -225,7 +225,10 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
         cma.step( prob );
         LOG(INFO) << endl;
-        LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point << " " << cma.sigma();
+        LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point;
+        LOG(INFO) << "mean = " << cma.mean();
+        LOG(INFO) << "sigma = " << cma.sigma();
+        LOG(INFO) << "cov = " << endl << cma.covarianceMatrix();
 
         // Update the params;
         shark::RealVector parameters = cma.solution().point;

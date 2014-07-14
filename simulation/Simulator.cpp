@@ -55,7 +55,9 @@ void Simulator::step() {
           ) {
         control();
     }
-    integrate();
+    if (eval() == NULL || eval()->isFailed() == false ) {
+        integrate();
+    }
     if (eval()) {
         eval()->eval(this);
     }
