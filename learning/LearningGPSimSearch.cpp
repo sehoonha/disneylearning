@@ -146,6 +146,10 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
         : mImp(_imp)
         {
             m_features |= CAN_PROPOSE_STARTING_POINT;
+            mInnerLoopOnSim0 = utils::Option::read("simulation.eval.innerLoopOnSim0").toBool();
+            if (mInnerLoopOnSim0) {
+                LOG(INFO) << "Inner Loop Optimization is set as Simulation 0 Mode!!!";
+            }
         }
 
     learning::Policy* policy() const { return mImp->policy; }
@@ -178,13 +182,19 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
         for (int i = 0; i < p.size(); i++) params(i) = p(i);
 
         policy()->setParams(params);
-        double value = mImp->evaluateSim1();
+        double value = 0.0;
+        if (mInnerLoopOnSim0) {
+            value = mImp->evaluateSim0();
+        } else {
+            value = mImp->evaluateSim1();
+        }
         LOG(INFO) << "# " << m_evaluationCounter << " : " << params.transpose()
                   << " -> " << value;
         return value;
     }
 private:
     learning::LearningGPSimSearchImp* mImp;
+    bool mInnerLoopOnSim0;
 };
 ////////////////////////////////////////////////////////////
 
@@ -302,6 +312,12 @@ void worker(LearningGPSimSearchImp* imp) {
 
 }
 
+void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
+    LOG(INFO) << FUNCTION_NAME() << " begins";
+    imp->optimizePolicyInSim1(-1);
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 // thread worker function ends
 ////////////////////////////////////////////////////////////
 
@@ -327,6 +343,19 @@ void LearningGPSimSearch::train(learning::Policy* _policy,
                                 simulation::Simulator* _sim1) {
     using namespace simulation;
     LOG(INFO) << FUNCTION_NAME();
+    bool flagInnerLoopOnSim0 = utils::Option::read("simulation.eval.innerLoopOnSim0").toBool();
+    if (flagInnerLoopOnSim0) {
+        LOG(INFO) << "Testing the inner loop opimization on Simulation0";
+        imp = new LearningGPSimSearchImp;
+        imp->s0 = _sim0;
+        imp->s1 = NULL;
+        imp->policy = _policy;
+        LOG(INFO) << "Implementation structure is initialized OK";
+        boost::thread t(&worker_innerloopsim0, imp);
+        LOG(INFO) << "Testing the inner loop opimization on Simulation0 OK";
+        return;
+    }
+
     // Fetch simulators
     Simulator* s0 = _sim0; // real environment
     SimGaussianProcess* s1 = dynamic_cast<SimGaussianProcess*>(_sim1); // virtual environment

@@ -139,21 +139,25 @@ SimBox2DImp::SimBox2DImp() {
             bodyDef.angle = -PI / 2.0;
             break;
         }
+        // bodyDef.linearDamping  = 0.5;
+        // bodyDef.angularDamping = 0.5;
+
         b2Body* body = world->CreateBody(&bodyDef);
         // Define another box shape for our dynamic body.
         b2PolygonShape shape;
         double sx;
         double sy;
+        double mass;
         switch(i) {
         case 0: 
         case 1:
-            sx = WIDTH; sy = height; break;
+            sx = WIDTH; sy = height; mass = 14.5; break;
             // shape.SetAsBox(width, height); break;
         case 2:
         case 3: 
             // shape.SetAsBox(0.05, width); break;
             // shape.SetAsBox(width, 0.05); break;
-            sx = WIDTH; sy = 0.05; break;
+            sx = WIDTH; sy = 0.05; mass = 15.5; break;
         }
         shape.SetAsBox(sx, sy);
         shape.m_radius = SKIN; 
@@ -161,7 +165,7 @@ SimBox2DImp::SimBox2DImp() {
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
         // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 15.0 / (4.0 * sx * sy);
+        fixtureDef.density = mass / (4.0 * sx * sy);
         // Override the default friction.
         fixtureDef.friction = MU;
         // Add the shape to the body.

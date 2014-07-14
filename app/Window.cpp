@@ -176,7 +176,10 @@ void Window::createMenus() {
     QMenu* menuPolicy = menuBar()->addMenu(tr("Policy"));
     for (int i = 0; i < app()->numPolicies(); i++) {
         std::string name = app()->nameOfPolicy(i);
-        menuPolicy->addAction(name.c_str());
+        QAction* action = new QAction(tr(name.c_str()), this);
+        action->setShortcut( QKeySequence(QString("Ctrl+%1").arg(i) ) );
+        menuPolicy->addAction(action);
+        // menuPolicy->addAction(name.c_str());
         if (name == "Zero") {
             menuPolicy->addSeparator();
         }

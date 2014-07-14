@@ -57,6 +57,7 @@ Policy* PolicyFeedback::init() {
 }
 
 void PolicyFeedback::setParams(const Eigen::VectorXd& _params) {
+    Policy::setParams(_params);
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 5; j++) {
             if (i == 0 || i == 1) {

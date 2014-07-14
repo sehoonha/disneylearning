@@ -28,6 +28,7 @@ Policy* PolicyPlayback::init() {
 }
 
 void PolicyPlayback::setParams(const Eigen::VectorXd& _params) {
+    Policy::setParams(_params);
 }
 
 bool PolicyPlayback::load(const char* const filename, int n, int m) {

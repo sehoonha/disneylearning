@@ -27,6 +27,7 @@ struct OptionItem {
     std::string toString() const { return value; }
     double toDouble() const;
     int toInt() const;
+    bool toBool() const;
 
     bool hasAttr(const char* const key) const;
     double attrDouble(const char* const key) const;

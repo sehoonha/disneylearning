@@ -192,8 +192,11 @@ void Application::collectData(const char* const _type) {
     // simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
+    LOG(INFO) << "Policy: " << sim->policy()->name();
     // std::string filename = "data_math.csv";
-    std::string filename = std::string("data_") + std::string(_type) + ".csv";
+    std::string filename
+        = std::string("data_") + std::string(_type)
+        + std::string("_") + sim->policy()->name() + ".csv";
     LOG(INFO) << "collect data into file " << filename;
 
     std::ofstream fout(filename.c_str(), std::ios::app);
@@ -286,6 +289,7 @@ void Application::loadAllPolicies() {
         if (opt.hasAttr("select") && opt.attrBool("select")) {
             set_policy( current );
             LOG(INFO) << "Select the current policy!!! ";
+
         }
 
         mPolicies.push_back(current);

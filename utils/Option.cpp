@@ -47,6 +47,10 @@ int OptionItem::toInt() const {
     return boost::lexical_cast<int>(value);
 }
 
+bool OptionItem::toBool() const {
+    return boost::lexical_cast<bool>(value);
+}
+
 bool OptionItem::hasAttr(const char* const key) const {
     return (attrs.find(key) != attrs.end());
 }
