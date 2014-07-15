@@ -59,8 +59,12 @@ void Application::init() {
     CHECK_NOTNULL(policy());
 
     // Initialize evaluators to all simulators
-    FOREACH(simulation::Simulator* sim, manager()->allSimulators()) {
-        sim->set_policy( policy() );
+    FOREACH(simulation::Simulator* sim, manager()->allExistingSimulators()) {
+        if (sim->isReserved() == false) {
+            sim->set_policy( policy() );
+        } else {
+            sim->set_policy( policy()->duplicate() );
+        }
         sim->set_eval( new simulation::Evaluator() );
     }
 
@@ -146,9 +150,11 @@ void Application::reset() {
 
 void Application::train() {
     // learning()->train(policy(), manager()->simulator(1));
-    learning()->train(policy(),
-                      manager()->availableSimulator(SIMTYPE_BOX2D),
-                      manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS)
+    learning()->train(
+        manager(),
+        policy(),
+        manager()->findSimulator(SIMTYPE_BOX2D),
+        manager()->findSimulator(SIMTYPE_GAUSSIANPROCESS)
         );
 }
 
@@ -188,7 +194,7 @@ std::vector<std::string> Application::allSimulatorNames() {
 }
 
 void Application::collectData(const char* const _type) {
-    simulation::Simulator* sim = manager()->availableSimulator(_type);
+    simulation::Simulator* sim = manager()->findSimulator(_type);
     // simulation::Simulator* sim = manager()->simulator(1);
     CHECK_NOTNULL(sim);
     LOG(INFO) << "Found a simulator: " << sim->type();
@@ -217,7 +223,7 @@ void Application::collectData(const char* const _type) {
 }
 
 void Application::consumeData() {
-    simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS);
+    simulation::Simulator* sim = manager()->findSimulator(SIMTYPE_GAUSSIANPROCESS);
     CHECK_NOTNULL(sim);
     simulation::SimGaussianProcess* simgp = dynamic_cast<simulation::SimGaussianProcess*>(sim);
     CHECK_NOTNULL(simgp);
@@ -225,7 +231,7 @@ void Application::consumeData() {
 }
 
 void Application::optimizeGP() {
-    simulation::Simulator* sim = manager()->availableSimulator(SIMTYPE_GAUSSIANPROCESS);
+    simulation::Simulator* sim = manager()->findSimulator(SIMTYPE_GAUSSIANPROCESS);
     CHECK_NOTNULL(sim);
     simulation::SimGaussianProcess* simgp = dynamic_cast<simulation::SimGaussianProcess*>(sim);
     CHECK_NOTNULL(simgp);
@@ -324,6 +330,12 @@ void Application::selectPolicy(const char* const _name) {
         }
     }
     LOG(WARNING) << FUNCTION_NAME() << " cannot find the policy " << name;
+}
+
+std::string Application::statusMessage() {
+    std::stringstream sout;
+    sout << policy()->name() << " : params = " <<  utils::V2S(policy()->params());
+    return sout.str();
 }
 
 // class Application ends

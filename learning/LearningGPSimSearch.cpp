@@ -14,10 +14,12 @@
 #include "utils/Option.h"
 #include "utils/CppCommon.h"
 #include "utils/Misc.h"
+#include "simulation/Manager.h"
 #include "simulation/Simulator.h"
 #include "simulation/SimGaussianProcess.h"
 #include "simulation/Evaluator.h"
 #include "learning/Policy.h"
+#include "learning/GaussianProcess.h"
 
 ////////////////////////////////////////////////////////////
 // Shark Library
@@ -41,6 +43,7 @@ namespace learning {
 ////////////////////////////////////////////////////////////
 // struct LearningGPSimSearchImp implementation
 struct LearningGPSimSearchImp {
+    simulation::Manager* manager;
     std::vector<simulation::SimulatorHistory> data;
     learning::Policy* policy;
     simulation::Simulator* s0;
@@ -58,9 +61,10 @@ struct LearningGPSimSearchImp {
     
     void collectSim0Data();
     double evaluateSim0();
-    double evaluateSim1();
+    double evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId = NULL);
     void learnDynamicsInSim1();
     void optimizePolicyInSim1(int outerLoop); // CMA Optimization
+    void testAllSimulators();
 
     bool flagPause;
 private:
@@ -68,7 +72,8 @@ private:
 };
 
 LearningGPSimSearchImp::LearningGPSimSearchImp()
-    : policy(NULL)
+    : manager(NULL)
+    , policy(NULL)
     , s0(NULL)
     , s1(NULL)
     , evalCnt0(0)
@@ -112,10 +117,25 @@ double LearningGPSimSearchImp::evaluateSim0() {
     return evaluate(s0);
 }
 
-double LearningGPSimSearchImp::evaluateSim1() {
-    CHECK_NOTNULL(s1);
+double LearningGPSimSearchImp::evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId) {
+    simulation::SimGaussianProcess* sgp = NULL;
+    while(1) {
+        simulation::Simulator* s =  manager->unoccupiedSimulator(SIMTYPE_GAUSSIANPROCESS);
+        sgp = dynamic_cast<simulation::SimGaussianProcess*>(s);
+        if (sgp) {
+            break;
+        }
+        boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+    }
+    CHECK_NOTNULL(sgp);
+    sgp->policy()->setParams(params);
+    if (pOutSimId) {
+        (*pOutSimId) = sgp->id();
+    }
     evalCnt1++;
-    return evaluate(s1);
+    double value = evaluate(sgp);
+    manager->markSimulatorAsUnoccupied(sgp);
+    return value;
 }
 
 void LearningGPSimSearchImp::learnDynamicsInSim1() {
@@ -128,10 +148,35 @@ void LearningGPSimSearchImp::learnDynamicsInSim1() {
     }
     s1->train(states, torques);
     s1->optimize();
+
+    CHECK_NOTNULL(manager);
+    Eigen::VectorXd hyper = s1->gaussianProcess()->hyperParameters();
+    FOREACH(simulation::Simulator* rs, manager->allReservedSimulators()) {
+        simulation::SimGaussianProcess* sgp = dynamic_cast<simulation::SimGaussianProcess*>(rs);
+        if (sgp == NULL) {
+            continue;
+        }
+        sgp->train(states, torques);
+        sgp->gaussianProcess()->setHyperParameters(hyper);
+    }
+
+    
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
 }
 
+void LearningGPSimSearchImp::testAllSimulators() {
+    Eigen::VectorXd p = Eigen::VectorXd::Random(5);
+    LOG(INFO) << "Random parameter for testing = " << utils::V2S_SHORT(p);
+    policy->setParams(p);
+    for (int i = 2; i < 7; i++) {
+        simulation::Simulator* s = manager->simulator(i);
+        double v = evaluate(s);
+        LOG(INFO) << "Test Sim " << s->id() << " " << s->type() << " --> " << v;
+    }
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+    exit(0);
+}
 
 // struct LearningGPSimSearchImp ends
 ////////////////////////////////////////////////////////////
@@ -181,15 +226,25 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
         Eigen::VectorXd params( p. size() );
         for (int i = 0; i < p.size(); i++) params(i) = p(i);
 
-        policy()->setParams(params);
+        // policy()->setParams(params);
         double value = 0.0;
+        int id = -1;
         if (mInnerLoopOnSim0) {
             value = mImp->evaluateSim0();
         } else {
-            value = mImp->evaluateSim1();
+            value = mImp->evaluateSim1(params, &id);
         }
-        LOG(INFO) << "# " << m_evaluationCounter << " : " << params.transpose()
+        LOG(INFO) << "Id(" << id << ")"
+                  << "# " << m_evaluationCounter << " : " << utils::V2S_SHORT(params)
                   << " -> " << value;
+
+        
+        // double err = (params - mImp->manager->simulator(id)->policy()->params()).squaredNorm();
+        // // if (err > 1.0) {
+        // LOG(INFO) << "err = " << err << endl << utils::V2S(params) << endl <<  utils::V2S(policy()->params());
+
+        // }
+        
         return value;
     }
 private:
@@ -223,7 +278,8 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     
     do {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
-        cma.step( prob );
+        // cma.step( prob );
+        cma.stepParallel( prob );
         LOG(INFO) << endl;
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point;
         LOG(INFO) << "mean = " << cma.mean();
@@ -290,6 +346,14 @@ void worker(LearningGPSimSearchImp* imp) {
     LOG(INFO) << FUNCTION_NAME() << " begins";
 
     LOG(INFO) << "Initial optimization";
+
+    // {
+    //     // Testing code
+    //     imp->collectSim0Data();
+    //     imp->learnDynamicsInSim1();
+    //     imp->testAllSimulators();
+    // }
+
     imp->optimizePolicyInSim1(-1);
 
     // 
@@ -341,7 +405,8 @@ void LearningGPSimSearch::init() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
-void LearningGPSimSearch::train(learning::Policy* _policy,
+void LearningGPSimSearch::train(simulation::Manager* _manager,
+                                learning::Policy* _policy,
                                 simulation::Simulator* _sim0,
                                 simulation::Simulator* _sim1) {
     using namespace simulation;
@@ -350,6 +415,7 @@ void LearningGPSimSearch::train(learning::Policy* _policy,
     if (flagInnerLoopOnSim0) {
         LOG(INFO) << "Testing the inner loop opimization on Simulation0";
         imp = new LearningGPSimSearchImp;
+        imp->manager = _manager;
         imp->s0 = _sim0;
         imp->s1 = NULL;
         imp->policy = _policy;
@@ -370,6 +436,7 @@ void LearningGPSimSearch::train(learning::Policy* _policy,
     // Initialize the imp structure
     if (imp) { delete imp; imp = NULL; }
     imp = new LearningGPSimSearchImp;
+    imp->manager = _manager;
     imp->s0 = s0;
     imp->s1 = s1;
     imp->policy = _policy;

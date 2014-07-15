@@ -11,6 +11,16 @@
 #include "LearningAlgorithm.h"
 
 namespace disney {
+namespace simulation {
+class Simulator;
+class Manager;
+} // namespace simulation
+namespace learning {
+class Policy;
+} // namespace learning
+} // namespace disney
+
+namespace disney {
 namespace learning {
 
 struct LearningGPSimSearchImp;
@@ -22,7 +32,8 @@ public:
 
     virtual void init();
 
-    virtual void train(learning::Policy* _policy,
+    virtual void train(simulation::Manager* _manager,
+                       learning::Policy* _policy,
                        simulation::Simulator* _sim0,
                        simulation::Simulator* _sim1);
 

@@ -27,7 +27,8 @@ void LearningAlgorithm::train(learning::Policy* _policy,
                               simulation::Simulator* _sim) {
 }
 
-void LearningAlgorithm::train(learning::Policy* _policy,
+void LearningAlgorithm::train(simulation::Manager* _manager,
+                              learning::Policy* _policy,
                               simulation::Simulator* _sim0,
                               simulation::Simulator* _sim1) {
 }

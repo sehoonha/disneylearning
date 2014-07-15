@@ -72,7 +72,7 @@ double Evaluator::eval2(Simulator* _sim) {
     //     fabs(x(2)) > 0.7) {
     if (fabs(x(0) + x(1) + x(2)) > 0.5  // When the robot is tilted too much
         || fabs(x(0) + x(1)) > 0.3 // When the board hit the ground
-        || fabs(x(6) + x(7)) > 2.0 // When the body of robot moves too fast
+        || fabs(x(6) + x(7)) > 6.2 // When the body of robot moves too fast
         || fabs(x(6)) > 6.2 // Velocity of the wheel reaches the limit (2 PI)
         || fabs(x(7)) > 6.2 // Velocity of the board reaches the limit (2 PI)
         ) {

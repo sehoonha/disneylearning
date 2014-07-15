@@ -20,6 +20,7 @@ public:
     virtual ~PolicyPlayback();
 
     virtual Policy* init();
+    virtual Policy* duplicate();
     virtual void setParams(const Eigen::VectorXd& _params);
 
     virtual void reset() { mIndex = 1; }

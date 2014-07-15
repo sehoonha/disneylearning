@@ -19,6 +19,7 @@ public:
     virtual ~PolicyFeedback();
 
     virtual Policy* init();
+    virtual Policy* duplicate();
 
     virtual void setParams(const Eigen::VectorXd& _params);
 

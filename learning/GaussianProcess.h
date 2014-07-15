@@ -32,6 +32,9 @@ public:
 
     Eigen::VectorXd predict(const Eigen::VectorXd& _x);
     Eigen::VectorXd varianceOfLastPrediction() const { return mVariance; }
+
+    Eigen::VectorXd hyperParameters();
+    void setHyperParameters(const Eigen::VectorXd& _hparams);
     
 protected:
     GaussianProcessImp* imp;

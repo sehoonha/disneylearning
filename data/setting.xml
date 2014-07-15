@@ -3,10 +3,15 @@
   <sim type="SimMathcalBongo" />
   <sim type="SimGaussianProcess"/>
 
+  <sim type="SimGaussianProcess" isReserved="1"/>
+  <sim type="SimGaussianProcess" isReserved="1"/>
+  <sim type="SimGaussianProcess" isReserved="1"/>
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+
 
   <init angle="0.25" />
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="20" goodValue="120.0" 
+        maxOuterLoop="0" goodValue="120.0" 
         innerLoopOnSim0="0"
         />
 
@@ -18,7 +23,7 @@
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
     <function inputPrevState="0" inputCurrSimState="1" inputTorque="1"   outputDiff="1" />
-    <behavior loadAtConsume="1" saveAfterOptimize="1" />
+    <behavior loadAtConsume="0" saveAfterOptimize="1" />
 
     <data filename="data_SimBox2D_Math1.csv" />
     <data filename="data_SimBox2D_Math2.csv" />

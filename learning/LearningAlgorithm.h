@@ -11,6 +11,7 @@
 namespace disney {
 
 namespace simulation {
+class Manager;
 class Simulator;
 class Evaluator;
 } // namespace simulation
@@ -35,7 +36,8 @@ public:
     virtual void train(learning::Policy* _policy,
                        simulation::Simulator* _sim);
 
-    virtual void train(learning::Policy* _policy,
+    virtual void train(simulation::Manager* _manager,
+                       learning::Policy* _policy,
                        simulation::Simulator* _sim0,
                        simulation::Simulator* _sim1);
 

@@ -11,6 +11,10 @@
 #include <vector>
 #include "utils/HppCommon.h"
 
+namespace boost {
+class mutex;
+} // namespace boost
+
 namespace disney {
 namespace simulation {
 class Simulator;
@@ -32,13 +36,20 @@ public:
 
     // Manage simulators
     int numSimulators() const { return mSimulators.size(); }
-    Simulator* simulator(int index) { return mSimulators[index]; }
-    Simulator* availableSimulator(const char* const _type);
-    void add(Simulator* _sim) { mSimulators.push_back(_sim); }
+    Simulator* simulator(int index);
+    void add(Simulator* _sim, bool isReserved = false);
 
+    Simulator* findSimulator(const char* const _type);
+    Simulator* unoccupiedSimulator(const char* const _type);
+    bool markSimulatorAsUnoccupied(Simulator* _sim);
     std::vector<Simulator*>& allSimulators() { return mSimulators; }
+    std::vector<Simulator*>& allReservedSimulators() { return mReservedSimulators; }
+    std::vector<Simulator*> allExistingSimulators();
 protected:
     std::vector<Simulator*> mSimulators;
+    std::vector<Simulator*> mReservedSimulators;
+    boost::mutex* mMutex;
+
 }; // class Manager
 
 } // namespace simulation

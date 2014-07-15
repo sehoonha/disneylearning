@@ -27,6 +27,16 @@ Policy* PolicyPlayback::init() {
     return this;
 }
 
+Policy* PolicyPlayback::duplicate() {
+    PolicyPlayback* ret = new PolicyPlayback();
+    ret->mName = this->mName;
+    ret->mDim = this->mDim;
+    ret->mParams = this->mParams;
+    ret->mIndex = this->mIndex;
+    ret->mTorques = this->mTorques;
+    return ret;
+}
+
 void PolicyPlayback::setParams(const Eigen::VectorXd& _params) {
     Policy::setParams(_params);
 }

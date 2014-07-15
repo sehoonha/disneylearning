@@ -195,6 +195,7 @@ void Window::createMenus() {
 
 void Window::onTimerRender() {
     gl()->updateGL();
+    statusbar()->showMessage( app()->statusMessage().c_str() );
 }
 
 void Window::onTimerIdle() {
@@ -228,6 +229,7 @@ void Window::onTimerIdle() {
         }
     }
     
+
     // updateInfo
     // std::stringstream sout;
     // sout << std::fixed << std::setprecision(4);
@@ -296,6 +298,7 @@ void Window::onActionLoad() {
 
 void Window::onActionTrain() {
     app()->train();
+    
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

@@ -22,12 +22,16 @@ namespace simulation {
 Simulator::Simulator()
     : MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(eval)
+    , mIsReserved(false)
+    , mIsOccupied(false)
 {
 }
 
 Simulator::Simulator(const char* const _type) 
     : mType(_type)
     , mTimestep(0.001)
+    , mIsReserved(false)
+    , mIsOccupied(false)
     , MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(eval)
 {

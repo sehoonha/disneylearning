@@ -54,7 +54,7 @@ public:
     std::string nameOfPolicy(int index);
     void selectPolicy(int index);
     void selectPolicy(const char* const _name);
-    
+    std::string statusMessage();
 protected:
     MEMBER_PTR(simulation::Manager*, manager);
     // MEMBER_PTR(simulation::Evaluator*, eval);

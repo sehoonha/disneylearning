@@ -56,6 +56,17 @@ Policy* PolicyFeedback::init() {
     return this;
 }
 
+Policy* PolicyFeedback::duplicate() {
+    PolicyFeedback* ret = new PolicyFeedback();
+    ret->mName = this->mName;
+    ret->mDim = this->mDim;
+    ret->mParams = this->mParams;
+    ret->K = this->K;
+    ret->F = this->F;
+    ret->C = this->C;
+    return ret;
+}
+
 void PolicyFeedback::setParams(const Eigen::VectorXd& _params) {
     Policy::setParams(_params);
     for (int i = 0; i < 4; i++) {

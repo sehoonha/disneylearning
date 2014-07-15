@@ -64,7 +64,7 @@ public:
     // Visualization functions
     virtual void render();
 
-    
+    learning::GaussianProcess* gaussianProcess() { return gp; }
 
 protected:
     Eigen::VectorXd mState;

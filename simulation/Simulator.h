@@ -50,6 +50,12 @@ public:
     std::string type() const { return mType; }
     void setType(const char* const _type) { mType = _type; }
     int controlStep() const;
+    int id() const { return mId; }
+    void setId(int _id) { mId = _id; }
+    bool isReserved() const { return mIsReserved; }
+    void setIsReserved(bool _v) { mIsReserved = _v; }
+    bool isOccupied() const { return mIsOccupied; }
+    void setIsOccupied(bool _v) { mIsOccupied = _v; }
 
     // State functions
     virtual int numDimConfig() const { return numDimState() / 2; }
@@ -102,7 +108,9 @@ protected:
     Eigen::VectorXd mContacts;
 
     MEMBER_PTR(Evaluator*, eval);
-
+    int mId;
+    bool mIsReserved;
+    bool mIsOccupied;
 }; // class Simulator
 
 } // namespace simulation

@@ -19,6 +19,7 @@ public:
     Policy(int _dim);
     virtual ~Policy();
     virtual Policy* init();
+    virtual Policy* duplicate() = 0;
 
     virtual std::string name() const { return mName; }
     virtual void setName(const std::string& _name) { mName = _name; }

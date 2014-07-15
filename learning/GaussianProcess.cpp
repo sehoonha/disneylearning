@@ -18,6 +18,7 @@
 #include "cg.h"
 #include "CGMulti.h"
 #include <cstdio>
+#include <boost/thread.hpp>
 
 #include "utils/CppCommon.h"
 #include "utils/Option.h"
@@ -182,14 +183,42 @@ void GaussianProcess::test() {
 void GaussianProcess::setTrainingData(const Eigen::MatrixXd& _X, const Eigen::MatrixXd& _Y) {
 }
 
+
+void worker_optimizer(int index, libgp::GaussianProcess* gp, int MAX_OPT_LOOP, int VERBOSE) {
+    LOG(INFO) << FUNCTION_NAME() << " ID = " << index;
+    libgp::CG cg;
+    cg.maximize(gp, MAX_OPT_LOOP, VERBOSE);
+    LOG(INFO) << FUNCTION_NAME() << " ID = " << index << " OK";
+}
+
+
 void GaussianProcess::optimize() {
     LOG(INFO) << FUNCTION_NAME();
 
-    libgp::CGMulti cg;
     int VERBOSE = 1;
     int MAX_OPT_LOOP = utils::Option::read("simulation.gp.maxOptLoop").toInt();
     LOG(INFO) << "MAX_OPT_LOOP = " << MAX_OPT_LOOP;
+
+    // Choice 1. Share the hyper parameters
+    libgp::CGMulti cg;
     cg.maximize(imp->gp_array, MAX_OPT_LOOP, VERBOSE);
+
+    // // Choice 2. handle separately
+    // VERBOSE = 0;
+    // std::vector<boost::thread*> threads;
+    // for (int i = 0; i < imp->gp_array.size(); i++) {
+    //     libgp::GaussianProcess* gp = imp->gp_array[i];
+    //     boost::thread* th = new boost::thread(&worker_optimizer, i, gp, MAX_OPT_LOOP, VERBOSE); 
+    //     threads.push_back(th);
+    //     // libgp::CG cg;
+    //     // cg.maximize(gp, MAX_OPT_LOOP, VERBOSE);
+    // }
+    // for (int i = 0; i < threads.size(); i++) {
+    //     boost::thread* th = threads[i];
+    //     LOG(INFO) << "waiting for joining the thread " << i;
+    //     th->join();
+    //     LOG(INFO) << "success for joining the thread " << i;
+    // }
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -213,6 +242,21 @@ Eigen::VectorXd GaussianProcess::predict(const Eigen::VectorXd& _x) {
     }
     delete[] x;
     return ret;
+}
+
+Eigen::VectorXd GaussianProcess::hyperParameters() {
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        return gp->covf().get_loghyper();
+    }
+    return Eigen::VectorXd::Zero(1);
+}
+
+void GaussianProcess::setHyperParameters(const Eigen::VectorXd& _hparams) {
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        gp->covf().set_loghyper(_hparams);
+    }
 }
 
 // class GaussianProcess ends
