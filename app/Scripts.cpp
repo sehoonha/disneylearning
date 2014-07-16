@@ -51,16 +51,21 @@ void plotVectorField(Application* app) {
     CHECK_LT(0, NS);
 
     Eigen::VectorXd state = manager->simulator(0)->state();
-    Eigen::VectorXd stableState = manager->simulator(0)->state();
     Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
     LOG(INFO) << "state = " << utils::V2S(state, 4);
     LOG(INFO) << "torque = " << utils::V2S(torque, 4);
+    std::vector<Eigen::VectorXd> stableStates;
 
     for (int loop = 0; loop < NS; loop++) {
         simulation::Simulator* s = manager->simulator(loop);
 
-        int iN = 21;
+        int iN = 31;
         int jN = iN;
+        double MINX = -0.3;
+        double MAXX = 0.3;
+        double MINY = -0.3;
+        double MAXY = 0.3;
+        double MARGIN = 0.3;
 
         Eigen::VectorXd X(iN);
         Eigen::VectorXd Y(jN);
@@ -69,25 +74,32 @@ void plotVectorField(Application* app) {
         
         for (int i = 0; i < iN; i++) {
             int ii = 1;
-            double xi = interpolatedValue(i, iN, -0.2, 0.2);
+            double xi = interpolatedValue(i, iN, MINX, MAXX);
             state(ii) = X(i) = xi;
 
             for (int j = 0; j < jN; j++) {
                 int ji = 2;
-                double xj = interpolatedValue(j, jN, -0.2, 0.2);
+                double xj = interpolatedValue(j, jN, MINY, MAXY);
                 state(ji) = Y(j) = xj;
 
+                Eigen::VectorXd stableState;
                 Eigen::VectorXd nextState;
                 if (loop == 0) {
                     s->setState(state);
                     s->setTorque(torque);
                     s->integrate();
                     stableState = s->state();
+                    int idx = i * jN + j;
+                    CHECK_EQ( (int)idx, (int)stableStates.size() );
+                    stableStates.push_back(stableState);
+
                     s->setTorque(torque);
                     s->integrate();
                     nextState = s->state();
                     
                 } else {
+                    int idx = i * jN + j;
+                    stableState = stableStates[idx];
                     s->setState(stableState);
                     s->setTorque(torque);
                     s->integrate();
@@ -98,6 +110,14 @@ void plotVectorField(Application* app) {
                 double dx_j = nextState(ji) - stableState(ji);
                 DX(j, i) = dx_i;
                 DY(j, i) = dx_j;
+
+                if (i == 0 && j == 0) {
+                    cout << "(" << state(ii) << ", " << state(ji) << ") ";
+                    cout << "(" << stableState(ii) << ", " << stableState(ji) << ") ";
+                    cout << "(" << nextState(ii) << ", " << nextState(ji) << ") ";
+                    cout << " -> " << dx_i << " " << dx_j;
+                    cout << endl;
+                }
             }
         }
 
@@ -112,7 +132,9 @@ void plotVectorField(Application* app) {
         sout << "Y = load('vectorfield_Y.txt');";
         sout << "DX = load('vectorfield_DX.txt');";
         sout << "DY = load('vectorfield_DY.txt');";
-        sout << "quiver(X, Y, DX, DY, scale=10.0);";
+        sout << "quiver(X, Y, DX, DY, scale=20.0);";
+        sout << "axis([" << MINX - MARGIN << " " << MAXX + MARGIN << " "
+             << MINY - MARGIN << " " << MAXY + MARGIN << "]);";
         sout << "print -dpng 'plot" << loop << ".png';";
         sout << "\" ";
 
