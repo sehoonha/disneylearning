@@ -15,4 +15,5 @@ build/*.csv
 build/*.csv~
 build/*.gp
 build/*.gp~
+build/plot*.png
 *.nn

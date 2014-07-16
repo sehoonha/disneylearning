@@ -23,7 +23,7 @@
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
     <function inputPrevState="0" inputCurrSimState="1" inputTorque="1"   outputDiff="1" />
-    <behavior loadAtConsume="0" saveAfterOptimize="1" />
+    <behavior loadAtConsume="1" saveAfterOptimize="1" />
 
     <data filename="data_SimBox2D_Math1.csv" />
     <data filename="data_SimBox2D_Math2.csv" />

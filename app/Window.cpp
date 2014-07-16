@@ -8,6 +8,7 @@
 #include "utils/CppCommon.h"
 #include "Application.h"
 #include "ScenarioTestAll.h"
+#include "Scripts.h"
 // #include "box2dsimulation.h"
 
 namespace disney {
@@ -116,6 +117,7 @@ void Window::createActions() {
     // For menus
     createAction("LoadHistory");
     createAction("TestAll");
+    createAction("VectorField");
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -186,8 +188,9 @@ void Window::createMenus() {
     }
     connect(menuPolicy, SIGNAL(triggered(QAction*)), this, SLOT(onMenuPolicy(QAction*)));
 
-    QMenu* menuScenario = menuBar()->addMenu(tr("Scenario"));
+    QMenu* menuScenario = menuBar()->addMenu(tr("Scripts"));
     menuScenario->addAction( actions["TestAll"] );
+    menuScenario->addAction( actions["VectorField"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -352,6 +355,12 @@ void Window::onMenuPolicy(QAction* action) {
 void Window::onActionTestAll() {
     LOG(INFO) << FUNCTION_NAME();
     boost::thread t(&ScenarioTestAll, app());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionVectorField() {
+    LOG(INFO) << FUNCTION_NAME();
+    plotVectorField(app());
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

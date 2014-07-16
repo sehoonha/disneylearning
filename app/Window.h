@@ -63,6 +63,7 @@ public slots:
     void onActionLoadHistory();
     void onMenuPolicy(QAction* action);
     void onActionTestAll();
+    void onActionVectorField();
 
 protected:
     void keyPressEvent(QKeyEvent* event);

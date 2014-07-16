@@ -15,15 +15,17 @@
 namespace disney {
 namespace utils {
 
-static std::string V2S(const Eigen::VectorXd& v) {
+static std::string V2S(const Eigen::VectorXd& v, int precision = 10) {
     std::stringstream sout;
-    sout << std::fixed << std::setprecision(10);
+    sout << std::fixed << std::setprecision(precision);
     for (int i = 0; i < v.size(); i++) {
         if (i > 0) sout << ", ";
         sout << v(i);
     }
     return sout.str();
 }
+
+
 
 static std::string V2S_SHORT(const Eigen::VectorXd& v) {
     std::stringstream sout;
@@ -34,6 +36,7 @@ static std::string V2S_SHORT(const Eigen::VectorXd& v) {
     }
     return sout.str();
 }
+
 
 
 } // namespace utils
