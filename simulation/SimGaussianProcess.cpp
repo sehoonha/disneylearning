@@ -223,8 +223,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         const double STATE_DIFFERENCE_LIMIT = 10.0;
         if (stepLength < STEP_LENGTH_LIMIT
             && stateDifference < STATE_DIFFERENCE_LIMIT
-            // && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
-            // && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
+            && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
+            && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
             && (loop % dataRate == 0)
             ) {
 
@@ -344,6 +344,7 @@ void SimGaussianProcess::integrate() {
         // Adjust the difference using the variance
         double v = var.norm();
         double w = exp(-100000.0 * v);
+        // double w = exp(-100.0 * v);
         dx_delta *= w;
 
         // if (var.norm() < 0.0001) {

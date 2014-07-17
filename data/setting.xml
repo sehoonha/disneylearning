@@ -15,7 +15,7 @@
         innerLoopOnSim0="0"
         />
 
-  <gp dataRate="10" maxOptLoop="10000">
+  <gp dataRate="20" maxOptLoop="10000">
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
