@@ -108,7 +108,7 @@ void plotVectorField(Application* app) {
                     LOG(INFO) << utils::V2S(state, 4);
                     LOG(INFO) << utils::V2S(stableState, 4);
                     LOG(INFO) << utils::V2S(nextState, 4);
-                    exit(0);
+                    // exit(0);
                 } else {
                     int idx = i * jN + j;
                     stableState = stableStates[idx];

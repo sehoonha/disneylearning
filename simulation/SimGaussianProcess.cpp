@@ -73,8 +73,13 @@ Simulator* SimGaussianProcess::init() {
     xEq << 0, 0, 0, 0, PI_2, -PI_2        , 0, 0, 0, 0, 0, 0;
 
     Eigen::VectorXd xOffset(m);
-    double angIni = utils::Option::read("simulation.init.angle").toDouble();
-    xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
+    Eigen::VectorXd stateIni = utils::Option::read("simulation.init.state").toVectorXd();
+    if (utils::Option::read("simulation.init.unitIsDeg").toBool()) {
+        stateIni *= (PI / 180.0);
+    }
+    xOffset = stateIni;
+    // double angIni = utils::Option::read("simulation.init.angle").toDouble();
+    // xOffset << 0.0, (angIni * PI / 180), 0, 0, 0, 0        , 0, 0, 0, 0, 0, 0;
         
     mState = xEq + xOffset;
 

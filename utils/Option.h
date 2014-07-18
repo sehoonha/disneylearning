@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <Eigen/Dense>
 
 namespace disney {
 namespace utils {
@@ -28,6 +29,7 @@ struct OptionItem {
     double toDouble() const;
     int toInt() const;
     bool toBool() const;
+    Eigen::VectorXd toVectorXd() const;
 
     bool hasAttr(const char* const key) const;
     double attrDouble(const char* const key) const;

@@ -7,6 +7,7 @@
 
 #include "Option.h"
 #include "CppCommon.h"
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <tinyxml2.h>
@@ -49,6 +50,21 @@ int OptionItem::toInt() const {
 
 bool OptionItem::toBool() const {
     return boost::lexical_cast<bool>(value);
+}
+
+Eigen::VectorXd OptionItem::toVectorXd() const {
+    std::vector<std::string> vec_string;
+    boost::split(vec_string, value, boost::is_any_of(", "));
+    std::vector<double> vec_double;
+    FOREACH(const std::string& s, vec_string) {
+        if (s.length() == 0) continue;
+        vec_double.push_back( boost::lexical_cast<double>(s) );
+    }
+    Eigen::VectorXd ret(vec_double.size());
+    for (int i = 0; i < vec_double.size(); i++) {
+        ret(i) = vec_double[i];
+    }
+    return ret;
 }
 
 bool OptionItem::hasAttr(const char* const key) const {

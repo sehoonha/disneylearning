@@ -9,7 +9,8 @@
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
 
 
-  <init angle="0.25" />
+  <!-- <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" /> -->
+  <init state="0.2, -0.2, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" />
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" 
         innerLoopOnSim0="0"
