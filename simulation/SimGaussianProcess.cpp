@@ -257,13 +257,12 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             outputs.push_back(output);
 
             // using disney::utils::V2S;
-            // cout << "== " << loop << " ==" << endl;
-            // cout << "input  = " << V2S(input) << endl;
-            // cout << "output = " << V2S(output) << endl;
-            // cout << "prevState = " << V2S(prevState) << endl;
-            // cout << "currState = " << V2S(currState) << endl;
-            // cout << "currSimState = " << V2S(currSimState) << endl;
-            // cout << endl;
+            // LOG(INFO) << "== " << loop << " ==";
+            // LOG(INFO) << "input  = " << V2S(input);
+            // LOG(INFO) << "output = " << V2S(output);
+            // LOG(INFO) << "prevState = " << V2S(prevState);
+            // LOG(INFO) << "currState = " << V2S(currState);
+            // LOG(INFO) << "currSimState = " << V2S(currSimState);
         } else {
             // cout << "== " << loop << " ==" << endl;
             // cout << stepLength << endl;
@@ -348,8 +347,9 @@ void SimGaussianProcess::integrate() {
 
         // Adjust the difference using the variance
         double v = var.norm();
-        double w = exp(-100000.0 * v);
-        // double w = exp(-100.0 * v);
+        // double w = exp(-1000000.0 * v);
+        // double w = exp(-100000.0 * v);
+        double w = exp(-1000.0 * v);
         dx_delta *= w;
 
         // if (var.norm() < 0.0001) {

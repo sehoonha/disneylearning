@@ -55,7 +55,8 @@ void plotVectorField(Application* app) {
     Eigen::VectorXd state = manager->simulator(0)->state();
     Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
     // torque << 20, 20, -20, -20;
-    torque << 0, 0, -0, -0;
+    torque << -20, -20, 20, 20;
+    // torque << 0, 0, -0, -0;
     LOG(INFO) << "state = " << utils::V2S(state, 4);
     LOG(INFO) << "torque = " << utils::V2S(torque, 4);
     std::vector<Eigen::VectorXd> stableStates;
@@ -63,13 +64,13 @@ void plotVectorField(Application* app) {
     for (int loop = 0; loop < NS; loop++) {
         simulation::Simulator* s = manager->simulator(loop);
 
-        int iN = 31;
+        int iN = 51;
         int jN = iN;
-        double MINX = 0.0;
-        double MAXX = 0.2;
-        double MINY = 0.0;
-        double MAXY = 0.2;
-        double MARGIN = 0.1;
+        double MINX = -0.05;
+        double MAXX = 0.05;
+        double MINY = -0.05;
+        double MAXY = 0.05;
+        double MARGIN = 0.0;
 
         Eigen::VectorXd X(iN);
         Eigen::VectorXd Y(jN);
@@ -87,13 +88,23 @@ void plotVectorField(Application* app) {
                 int ji = 2;
                 double xj = interpolatedValue(j, jN, MINY, MAXY);
                 state(ji) = Y(j) = xj;
+                state(3) = xj;
+                state(4) = 0.5 * PI - xj;
+                state(5) = -0.5 * PI - xj;
 
                 Eigen::VectorXd stableState;
                 Eigen::VectorXd nextState;
+                // s->setState(state);
+                // s->setTorque(torque);
+                // s->integrate();
+                // nextState = s->state();
+
                 if (loop == 0) {
                     s->setState(state);
-                    s->setTorque(Eigen::VectorXd::Zero(4));
-                    s->integrate();
+                    // for (int k = 0; k < 3; k++) {
+                    //     s->setTorque(Eigen::VectorXd::Zero(4));
+                    //     s->integrate();
+                    // }
                     stableState = s->state();
                     // stableState.tail(6).setZero();
                     int idx = i * jN + j;
@@ -104,14 +115,14 @@ void plotVectorField(Application* app) {
                     s->integrate();
                     nextState = s->state();
 
-                    LOG(INFO) << endl;
-                    LOG(INFO) << utils::V2S(state, 4);
-                    LOG(INFO) << utils::V2S(stableState, 4);
-                    LOG(INFO) << utils::V2S(nextState, 4);
+                    // LOG(INFO) << endl;
+                    // LOG(INFO) << utils::V2S(state, 4);
+                    // LOG(INFO) << utils::V2S(stableState, 4);
+                    // LOG(INFO) << utils::V2S(nextState, 4);
                 } else {
                     int idx = i * jN + j;
                     stableState = stableStates[idx];
-                    LOG_EVERY_N(INFO, 100) << utils::V2S(stableState, 4);
+                    // LOG_EVERY_N(INFO, 100) << utils::V2S(stableState, 4);
                     s->setState(stableState);
                     s->setTorque(torque);
                     s->integrate();
@@ -121,17 +132,20 @@ void plotVectorField(Application* app) {
 
                 
                 // Eigen::VectorXd nextState = s->state();
-                double dx_i = nextState(ii) - stableState(ii);
-                double dx_j = nextState(ji) - stableState(ji);
+                // double dx_i = nextState(ii) - stableState(ii);
+                // double dx_j = nextState(ji) - stableState(ji);
+                // double dx_i = nextState(ii) - state(ii);
+                // double dx_j = nextState(ji) - state(ji);
+                double dx_i = nextState(ii + 6);
+                double dx_j = nextState(ji + 6);
                 DX(j, i) = dx_i;
                 DY(j, i) = dx_j;
 
-                if (i == 0 && j == 0) {
-                    cout << "(" << state(ii) << ", " << state(ji) << ") ";
-                    cout << "(" << stableState(ii) << ", " << stableState(ji) << ") ";
-                    cout << "(" << nextState(ii) << ", " << nextState(ji) << ") ";
-                    cout << " -> " << dx_i << " " << dx_j;
-                    cout << endl;
+                if (loop == 0 || (i == 25 && j == 25)) {
+                    LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
+                    LOG(INFO) << utils::V2S(state, 4);
+                    LOG(INFO) << utils::V2S(stableState, 4);
+                    LOG(INFO) << utils::V2S(nextState, 4);
                 }
 
                 double varnom = 0.0;
@@ -152,7 +166,7 @@ void plotVectorField(Application* app) {
         save(V, "vectorfield_V.txt");
 
         std::stringstream sout;
-        sout << "octave --eval \" ";
+        sout << "octave --silent --eval \" ";
         sout << "X  = load('vectorfield_X.txt');";
         sout << "Y  = load('vectorfield_Y.txt');";
         sout << "DX = load('vectorfield_DX.txt');";
@@ -162,7 +176,7 @@ void plotVectorField(Application* app) {
         sout << "axis([" << MINX - MARGIN << " " << MAXX + MARGIN << " "
              << MINY - MARGIN << " " << MAXY + MARGIN << "]);";
         sout << "print -dpng 'plot" << loop << ".png';";
-        sout << "contour(X, Y, V);";
+        sout << "contour(X, Y, V, [0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0]);";
         sout << "colorbar;";
         sout << "axis([" << MINX - MARGIN << " " << MAXX + MARGIN << " "
              << MINY - MARGIN << " " << MAXY + MARGIN << "]);";
