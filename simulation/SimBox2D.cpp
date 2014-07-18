@@ -641,6 +641,13 @@ void SimBox2D::setState(const Eigen::VectorXd& _state) {
     imp->l2->SetTransform(b2Vec2(l2(X), l2(Y)), thetal2 + imp->l1->GetAngle());
 
     // LOG(INFO) << FUNCTION_NAME() << " OK";
+
+    for (int i = 0; i < imp->bodies.size(); i++) {
+        b2Body* body = imp->bodies[i];
+        body->SetLinearVelocity(b2Vec2(0.0, 0.0));
+        body->SetAngularVelocity(0.0);
+    }
+
     
 }
 
