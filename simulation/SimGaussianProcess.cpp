@@ -239,7 +239,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
             && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
             && ((prevState -  currState).norm() > 0.000001)
-            && (prevTorque(0) > 15)
+            && (prevTorque.norm() < 1.0)
+            // && (prevTorque(0) > 15)
             && (loop % dataRate == 0)
             ) {
 
