@@ -199,26 +199,26 @@ void GaussianProcess::optimize() {
     int MAX_OPT_LOOP = utils::Option::read("simulation.gp.maxOptLoop").toInt();
     LOG(INFO) << "MAX_OPT_LOOP = " << MAX_OPT_LOOP;
 
-    // Choice 1. Share the hyper parameters
-    libgp::CGMulti cg;
-    cg.maximize(imp->gp_array, MAX_OPT_LOOP, VERBOSE);
+    // // Choice 1. Share the hyper parameters
+    // libgp::CGMulti cg;
+    // cg.maximize(imp->gp_array, MAX_OPT_LOOP, VERBOSE);
 
-    // // Choice 2. handle separately
-    // VERBOSE = 0;
-    // std::vector<boost::thread*> threads;
-    // for (int i = 0; i < imp->gp_array.size(); i++) {
-    //     libgp::GaussianProcess* gp = imp->gp_array[i];
-    //     boost::thread* th = new boost::thread(&worker_optimizer, i, gp, MAX_OPT_LOOP, VERBOSE); 
-    //     threads.push_back(th);
-    //     // libgp::CG cg;
-    //     // cg.maximize(gp, MAX_OPT_LOOP, VERBOSE);
-    // }
-    // for (int i = 0; i < threads.size(); i++) {
-    //     boost::thread* th = threads[i];
-    //     LOG(INFO) << "waiting for joining the thread " << i;
-    //     th->join();
-    //     LOG(INFO) << "success for joining the thread " << i;
-    // }
+    // Choice 2. handle separately
+    VERBOSE = 0;
+    std::vector<boost::thread*> threads;
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        boost::thread* th = new boost::thread(&worker_optimizer, i, gp, MAX_OPT_LOOP, VERBOSE); 
+        threads.push_back(th);
+        // libgp::CG cg;
+        // cg.maximize(gp, MAX_OPT_LOOP, VERBOSE);
+    }
+    for (int i = 0; i < threads.size(); i++) {
+        boost::thread* th = threads[i];
+        LOG(INFO) << "waiting for joining the thread " << i;
+        th->join();
+        LOG(INFO) << "success for joining the thread " << i;
+    }
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }

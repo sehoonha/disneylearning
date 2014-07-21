@@ -54,12 +54,16 @@ void plotVectorField(Application* app) {
 
     Eigen::VectorXd state = manager->simulator(0)->state();
     Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
-    // torque << 20, 20, -20, -20;
-    torque << -20, -20, 20, 20;
+    torque << 20, 20, -20, -20;
+    // torque << -20, -20, 20, 20;
     // torque << 0, 0, -0, -0;
     LOG(INFO) << "state = " << utils::V2S(state, 4);
     LOG(INFO) << "torque = " << utils::V2S(torque, 4);
     std::vector<Eigen::VectorXd> stableStates;
+
+    Eigen::MatrixXd DX0;
+    Eigen::MatrixXd DY0;
+
 
     for (int loop = 0; loop < NS; loop++) {
         simulation::Simulator* s = manager->simulator(loop);
@@ -141,7 +145,7 @@ void plotVectorField(Application* app) {
                 DX(j, i) = dx_i;
                 DY(j, i) = dx_j;
 
-                if (loop == 0 || (i == 25 && j == 25)) {
+                if ((i == 25 && j == 25)) {
                     LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
                     LOG(INFO) << utils::V2S(state, 4);
                     LOG(INFO) << utils::V2S(stableState, 4);
@@ -157,6 +161,28 @@ void plotVectorField(Application* app) {
                 V(j, i) = varnom;
 
             }
+        }
+
+        if (loop == 0) {
+            DX0 = DX;
+            DY0 = DY;
+        } else {
+            double cnt_error = 0.0;
+            double sum_error = 0.0;
+            for (int i = 0; i < DX.rows(); i++) {
+                for (int j = 0; j < DX.cols(); j++) {
+                    double dx0 = DX0(i, j);
+                    double dy0 = DY0(i, j);
+                    double dx1 = DX(i, j);
+                    double dy1 = DY(i, j);
+
+                    double error = (dx0 - dx1) * (dx0 - dx1) + (dy0 - dy1) * (dy0 - dy1);
+                    sum_error += error;
+                    cnt_error += 1.0;
+                }
+            }
+            double avg_error = sum_error / cnt_error;
+            LOG(INFO) << "Average of errors = " << avg_error << " at the loop " << loop;
         }
 
         save(X, "vectorfield_X.txt");

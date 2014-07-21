@@ -20,10 +20,11 @@
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.0005" />
+    <weight vel="0.1" tor="0.05" />
+    <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
-    <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="1" />
+    <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="0" />
     <behavior loadAtConsume="1" saveAfterOptimize="1" />
 
     <data filename="data_SimBox2D_Math1.csv" />

@@ -60,7 +60,7 @@ Simulator* SimGaussianProcess::init() {
     if (mFlagInputPrevState) mDimInput += 6;
     if (mFlagInputCurrSimState) mDimInput += 6;
     if (mFlagInputTorque) mDimInput += 1;
-    mDimOutput = 6;
+    mDimOutput = 3;
     LOG(INFO) << "numDimInput = " << numDimInput();
     LOG(INFO) << "numDimOutput = " << numDimOutput();
     
@@ -102,25 +102,33 @@ Eigen::VectorXd SimGaussianProcess::createInput(const Eigen::VectorXd& prevState
                                                 const Eigen::VectorXd& currSimState) {
     int ptr = 0;
     Eigen::VectorXd input(numDimInput());
-    if (mFlagInputPrevState) {
-        input(ptr++) = prevState(0);
-        input(ptr++) = prevState(1);
-        input(ptr++) = prevState(2);
-        input(ptr++) = W_VEL * prevState(6 + 0);
-        input(ptr++) = W_VEL * prevState(6 + 1);
-        input(ptr++) = W_VEL * prevState(6 + 2);
-    }
-    if (mFlagInputCurrSimState) {
-        input(ptr++) = currSimState(0);
-        input(ptr++) = currSimState(1);
-        input(ptr++) = currSimState(2);
-        input(ptr++) = W_VEL * currSimState(6 + 0);
-        input(ptr++) = W_VEL * currSimState(6 + 1);
-        input(ptr++) = W_VEL * currSimState(6 + 2);
-    }
-    if (mFlagInputTorque) {
-        input(ptr++) = W_TOR * prevTorque(0);
-    }
+    input(ptr++) = prevState(0);
+    input(ptr++) = prevState(1);
+    input(ptr++) = prevState(2);
+    input(ptr++) = W_VEL * currSimState(6 + 0);
+    input(ptr++) = W_VEL * currSimState(6 + 1);
+    input(ptr++) = W_VEL * currSimState(6 + 2);
+    input(ptr++) = W_TOR * prevTorque(0);
+
+    // if (mFlagInputPrevState) {
+    //     input(ptr++) = prevState(0);
+    //     input(ptr++) = prevState(1);
+    //     input(ptr++) = prevState(2);
+    //     input(ptr++) = W_VEL * prevState(6 + 0);
+    //     input(ptr++) = W_VEL * prevState(6 + 1);
+    //     input(ptr++) = W_VEL * prevState(6 + 2);
+    // }
+    // if (mFlagInputCurrSimState) {
+    //     input(ptr++) = currSimState(0);
+    //     input(ptr++) = currSimState(1);
+    //     input(ptr++) = currSimState(2);
+    //     input(ptr++) = W_VEL * currSimState(6 + 0);
+    //     input(ptr++) = W_VEL * currSimState(6 + 1);
+    //     input(ptr++) = W_VEL * currSimState(6 + 2);
+    // }
+    // if (mFlagInputTorque) {
+    //     input(ptr++) = W_TOR * prevTorque(0);
+    // }
     CHECK_EQ( (int)ptr, (int)numDimInput() );
     return input;
 }
@@ -230,6 +238,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             && stateDifference < STATE_DIFFERENCE_LIMIT
             && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
             && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
+            && ((prevState -  currState).norm() > 0.000001)
+            && (prevTorque(0) > 15)
             && (loop % dataRate == 0)
             ) {
 
@@ -247,8 +257,9 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             } else {
                 Eigen::VectorXd diff = currState;
                 for (int i = 0; i < 3; i++) {
-                    output(i) = diff(i);
-                    output(i + 3) = W_VEL * diff(i + 6);
+                    output(i) = W_VEL * diff(i + 6);
+                    // output(i) = diff(i);
+                    // output(i + 3) = W_VEL * diff(i + 6);
                 }
             }
 
@@ -340,16 +351,23 @@ void SimGaussianProcess::integrate() {
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
 
+        // LOG(INFO) << endl;
+        // LOG(INFO) << "Input: " << utils::V2S(input);
+        // LOG(INFO) << "Output: " << utils::V2S(output);
+        
         for (int i = 0; i < 3; i++) {
-            dx_delta(i) = output(i);
-            dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
+            dx_delta(i + 6) = (1.0 / W_VEL) * output(i);
+
+            // dx_delta(i) = output(i);
+            // dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
         }
 
         // Adjust the difference using the variance
         double v = var.norm();
         // double w = exp(-1000000.0 * v);
         // double w = exp(-100000.0 * v);
-        double w = exp(-1000.0 * v);
+        // double w = exp(-1000.0 * v);
+        double w = 1.0;
         dx_delta *= w;
 
         // if (var.norm() < 0.0001) {
