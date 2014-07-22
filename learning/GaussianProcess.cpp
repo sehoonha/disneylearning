@@ -144,7 +144,7 @@ void GaussianProcess::loadAll() {
             LOG(INFO) << "cannot load GP " << i << " from " << filename;
         }
     }
-    // test();
+    test();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
@@ -166,16 +166,21 @@ void GaussianProcess::test() {
     double sum_error = 0.0;
     for (int i = 0; i < N; i++) {
         Eigen::VectorXd x = imp->X.row(i);
-        Eigen::VectorXd y = this->predict(x);
+        Eigen::VectorXd x2 = x + 0.01 * Eigen::VectorXd::Random(x.size());
+        Eigen::VectorXd y = this->predict(x2);
         Eigen::VectorXd yhat = imp->Y.row(i);
+        double v = this->varianceOfLastPrediction().norm();
         double err = (y - yhat).norm();
         sum_error += err;
+        cout << endl;
         cout << i << " : "
              << err << ". " << endl
              << "x : " << x.transpose() << endl
+             << "x2 : " << x2.transpose() << endl
              << "y : " << y.transpose() << endl
              << "f : " << yhat.transpose() << " "
              << endl;
+        cout << "|var| = " << v << endl;
     }
     cout << sum_error << endl;
 }

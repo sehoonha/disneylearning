@@ -240,7 +240,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
             && ((prevState -  currState).norm() > 0.000001)
             // && (prevTorque.norm() < 1.0)
-            && (prevTorque(0) > 15)
+            // && (prevTorque(0) > 15)
             && (loop % dataRate == 0)
             ) {
 
@@ -268,10 +268,10 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             inputs.push_back(input);
             outputs.push_back(output);
 
-            using disney::utils::V2S;
-            LOG(INFO) << "== " << loop << " ==";
-            LOG(INFO) << "input  = " << V2S(input);
-            LOG(INFO) << "output = " << V2S(output);
+            // using disney::utils::V2S;
+            // LOG(INFO) << "== " << loop << " ==";
+            // LOG(INFO) << "input  = " << V2S(input);
+            // LOG(INFO) << "output = " << V2S(output);
             // LOG(INFO) << "prevState = " << V2S(prevState);
             // LOG(INFO) << "currState = " << V2S(currState);
             // LOG(INFO) << "currSimState = " << V2S(currSimState);
@@ -368,11 +368,10 @@ void SimGaussianProcess::integrate() {
         double w = 1.0;
         dx_delta *= w;
 
-        LOG(INFO) << endl;
-        LOG(INFO) << "Input: " << utils::V2S(input);
-        LOG(INFO) << "Output: " << utils::V2S(output);
-        LOG(INFO) << "|var| = " << v;
-
+        // LOG(INFO) << endl;
+        // LOG(INFO) << "Input: " << utils::V2S(input);
+        // LOG(INFO) << "Output: " << utils::V2S(output);
+        // LOG(INFO) << "|var| = " << v;
 
         // if (var.norm() < 0.0001) {
         //     for (int i = 0; i < 3; i++) {

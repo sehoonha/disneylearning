@@ -54,9 +54,9 @@ void plotVectorField(Application* app) {
 
     Eigen::VectorXd state = manager->simulator(0)->state();
     Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
-    torque << 20, 20, -20, -20;
+    // torque << 20, 20, -20, -20;
     // torque << -20, -20, 20, 20;
-    // torque << 0, 0, -0, -0;
+    torque << 0, 0, -0, -0;
     LOG(INFO) << "state = " << utils::V2S(state, 4);
     LOG(INFO) << "torque = " << utils::V2S(torque, 4);
     std::vector<Eigen::VectorXd> stableStates;
