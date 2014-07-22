@@ -54,9 +54,9 @@ void plotVectorField(Application* app) {
 
     Eigen::VectorXd state = manager->simulator(0)->state();
     Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
-    // torque << 20, 20, -20, -20;
+    torque << 20, 20, -20, -20;
     // torque << -20, -20, 20, 20;
-    torque << 0, 0, -0, -0;
+    // torque << 0, 0, -0, -0;
     LOG(INFO) << "state = " << utils::V2S(state, 4);
     LOG(INFO) << "torque = " << utils::V2S(torque, 4);
     std::vector<Eigen::VectorXd> stableStates;
@@ -145,12 +145,6 @@ void plotVectorField(Application* app) {
                 DX(j, i) = dx_i;
                 DY(j, i) = dx_j;
 
-                if ((i == 25 && j == 25)) {
-                    LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
-                    LOG(INFO) << utils::V2S(state, 4);
-                    LOG(INFO) << utils::V2S(stableState, 4);
-                    LOG(INFO) << utils::V2S(nextState, 4);
-                }
 
                 double varnom = 0.0;
                 disney::simulation::SimGaussianProcess* sgp = dynamic_cast<disney::simulation::SimGaussianProcess*>(s);
@@ -159,6 +153,14 @@ void plotVectorField(Application* app) {
                     // cout << "|var| = " << varnom << endl;
                 }
                 V(j, i) = varnom;
+
+                if ((i == 25 && j == 25)) {
+                    LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
+                    LOG(INFO) << utils::V2S(state, 4);
+                    LOG(INFO) << utils::V2S(stableState, 4);
+                    LOG(INFO) << utils::V2S(nextState, 4);
+                    // LOG(INFO) << "|var| = " << varnom;
+                }
 
             }
         }
