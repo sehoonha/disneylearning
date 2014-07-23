@@ -64,6 +64,7 @@ public slots:
     void onMenuPolicy(QAction* action);
     void onActionTestAll();
     void onActionVectorField();
+    void onActionComparison();
 
 protected:
     void keyPressEvent(QKeyEvent* event);

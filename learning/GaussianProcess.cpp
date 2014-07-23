@@ -144,7 +144,7 @@ void GaussianProcess::loadAll() {
             LOG(INFO) << "cannot load GP " << i << " from " << filename;
         }
     }
-    test();
+    // test();
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

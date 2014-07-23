@@ -118,6 +118,7 @@ void Window::createActions() {
     createAction("LoadHistory");
     createAction("TestAll");
     createAction("VectorField");
+    createAction("Comparison");
 }
 
 QAction* Window::createAction(const char* _name) {
@@ -191,6 +192,7 @@ void Window::createMenus() {
     QMenu* menuScenario = menuBar()->addMenu(tr("Scripts"));
     menuScenario->addAction( actions["TestAll"] );
     menuScenario->addAction( actions["VectorField"] );
+    menuScenario->addAction( actions["Comparison"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -361,6 +363,12 @@ void Window::onActionTestAll() {
 void Window::onActionVectorField() {
     LOG(INFO) << FUNCTION_NAME();
     plotVectorField(app());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
+void Window::onActionComparison() {
+    LOG(INFO) << FUNCTION_NAME();
+    compareBox2DandMath(app());
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

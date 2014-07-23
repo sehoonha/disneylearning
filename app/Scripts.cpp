@@ -13,6 +13,8 @@
 #include "utils/Misc.h"
 #include "simulation/Manager.h"
 #include "simulation/Simulator.h"
+#include "simulation/SimMathcalBongo.h"
+#include "simulation/SimBox2D.h"
 #include "simulation/SimGaussianProcess.h"
 #include "simulation/Evaluator.h"
 #include "learning/GaussianProcess.h"
@@ -68,7 +70,7 @@ void plotVectorField(Application* app) {
     for (int loop = 0; loop < NS; loop++) {
         simulation::Simulator* s = manager->simulator(loop);
 
-        int iN = 51;
+        int iN = 31;
         int jN = iN;
         double MINX = -0.05;
         double MAXX = 0.05;
@@ -86,7 +88,7 @@ void plotVectorField(Application* app) {
             int ii = 1;
             double xi = interpolatedValue(i, iN, MINX, MAXX);
             state(ii) = X(i) = xi;
-            state(0)  = -xi;
+            state(0) = -xi;
 
             for (int j = 0; j < jN; j++) {
                 int ji = 2;
@@ -103,45 +105,54 @@ void plotVectorField(Application* app) {
                 // s->integrate();
                 // nextState = s->state();
 
-                if (loop == 0) {
-                    s->setState(state);
-                    // for (int k = 0; k < 3; k++) {
-                    //     s->setTorque(Eigen::VectorXd::Zero(4));
-                    //     s->integrate();
-                    // }
-                    stableState = s->state();
-                    // stableState.tail(6).setZero();
-                    int idx = i * jN + j;
-                    CHECK_EQ( (int)idx, (int)stableStates.size() );
-                    stableStates.push_back(stableState);
-
+                s->setState(state);
+                for (int k = 0; k < 5; k++) {
                     s->setTorque(torque);
                     s->integrate();
-                    nextState = s->state();
-
-                    // LOG(INFO) << endl;
-                    // LOG(INFO) << utils::V2S(state, 4);
-                    // LOG(INFO) << utils::V2S(stableState, 4);
-                    // LOG(INFO) << utils::V2S(nextState, 4);
-                } else {
-                    int idx = i * jN + j;
-                    stableState = stableStates[idx];
-                    // LOG_EVERY_N(INFO, 100) << utils::V2S(stableState, 4);
-                    s->setState(stableState);
-                    s->setTorque(torque);
-                    s->integrate();
-                    nextState = s->state();
-                    
                 }
+                nextState = s->state();
+                
+
+                
+                // if (loop == 0) {
+                //     s->setState(state);
+                //     // for (int k = 0; k < 3; k++) {
+                //     //     s->setTorque(Eigen::VectorXd::Zero(4));
+                //     //     s->integrate();
+                //     // }
+                //     stableState = s->state();
+                //     // stableState.tail(6).setZero();
+                //     int idx = i * jN + j;
+                //     CHECK_EQ( (int)idx, (int)stableStates.size() );
+                //     stableStates.push_back(stableState);
+
+                //     s->setTorque(torque);
+                //     s->integrate();
+                //     nextState = s->state();
+
+                //     // LOG(INFO) << endl;
+                //     // LOG(INFO) << utils::V2S(state, 4);
+                //     // LOG(INFO) << utils::V2S(stableState, 4);
+                //     // LOG(INFO) << utils::V2S(nextState, 4);
+                // } else {
+                //     int idx = i * jN + j;
+                //     stableState = stableStates[idx];
+                //     // LOG_EVERY_N(INFO, 100) << utils::V2S(stableState, 4);
+                //     s->setState(stableState);
+                //     s->setTorque(torque);
+                //     s->integrate();
+                //     nextState = s->state();
+                    
+                // }
 
                 
                 // Eigen::VectorXd nextState = s->state();
                 // double dx_i = nextState(ii) - stableState(ii);
                 // double dx_j = nextState(ji) - stableState(ji);
-                // double dx_i = nextState(ii) - state(ii);
-                // double dx_j = nextState(ji) - state(ji);
-                double dx_i = nextState(ii + 6);
-                double dx_j = nextState(ji + 6);
+                double dx_i = nextState(ii) - state(ii);
+                double dx_j = nextState(ji) - state(ji);
+                // double dx_i = nextState(ii + 6);
+                // double dx_j = nextState(ji + 6);
                 DX(j, i) = dx_i;
                 DY(j, i) = dx_j;
 
@@ -154,13 +165,13 @@ void plotVectorField(Application* app) {
                 }
                 V(j, i) = varnom;
 
-                if ((i == 25 && j == 25)) {
-                    LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
-                    LOG(INFO) << utils::V2S(state, 4);
-                    LOG(INFO) << utils::V2S(stableState, 4);
-                    LOG(INFO) << utils::V2S(nextState, 4);
-                    // LOG(INFO) << "|var| = " << varnom;
-                }
+                // if ((i == 25 && j == 25)) {
+                //     LOG(INFO) << "-- " << loop << "-- " << i << " " << j;
+                //     LOG(INFO) << utils::V2S(state, 4);
+                //     LOG(INFO) << utils::V2S(stableState, 4);
+                //     LOG(INFO) << utils::V2S(nextState, 4);
+                //     // LOG(INFO) << "|var| = " << varnom;
+                // }
 
             }
         }
@@ -222,6 +233,86 @@ void plotVectorField(Application* app) {
     
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
+void compareBox2DandMath(Application* app) {
+    LOG(INFO) << FUNCTION_NAME();
+
+    disney::simulation::Manager* manager = app->manager();
+    int NS = manager->numSimulators();
+    LOG(INFO) << "# of simulators = " << NS;
+    CHECK_LT(0, NS);
+
+    simulation::Simulator* s0 = manager->findSimulator(SIMTYPE_BOX2D);
+    simulation::Simulator* s1 = manager->findSimulator(SIMTYPE_MATHCALBONGO);
+
+    Eigen::VectorXd state = manager->simulator(0)->state();
+    Eigen::VectorXd torque = Eigen::VectorXd::Zero(4);
+    // torque << 20, 20, -20, -20;
+    // torque << -20, -20, 20, 20;
+    torque << 0, 0, -0, -0;
+    LOG(INFO) << "state = " << utils::V2S(state, 4);
+    LOG(INFO) << "torque = " << utils::V2S(torque, 4);
+    std::vector<Eigen::VectorXd> stableStates;
+
+    Eigen::MatrixXd DX0;
+    Eigen::MatrixXd DY0;
+
+
+    int iN = 3;
+    int jN = iN;
+    double MINX = -0.05;
+    double MAXX = 0.05;
+    double MINY = -0.05;
+    double MAXY = 0.05;
+        
+    for (int i = 0; i < iN; i++) {
+        int ii = 1;
+        double xi = interpolatedValue(i, iN, MINX, MAXX);
+        state(ii) =  xi;
+        // state(0)  = -xi;
+
+        for (int j = 0; j < jN; j++) {
+            int ji = 2;
+            double xj = interpolatedValue(j, jN, MINY, MAXY);
+            state(ji) = xj;
+            state(3) = xj;
+            state(4) = 0.5 * PI - xj;
+            state(5) = -0.5 * PI - xj;
+
+            s0->setState(state);
+            LOG(INFO) << endl;
+            LOG(INFO) << "Begin " << i << " " << j;
+            LOG(INFO) << "initial = " << utils::V2S(state, 4);
+
+            // Copy the s0 to s1
+            s1->setState(s0->state());
+
+            for (int k = 0; k < 5; k++) {
+                Eigen::VectorXd prevState = s0->state();
+                
+                // Step forward the simulator 0
+                s0->setTorque(torque);
+                s0->integrate();
+                Eigen::VectorXd ns0 = s0->state();
+                // Step forward the simulator 1
+                s1->setTorque(torque);
+                s1->integrate();
+                Eigen::VectorXd ns1 = s1->state();
+                LOG(INFO) << "Step " << k;
+                // LOG(INFO) << "P : " << utils::V2S(prevState, 6);
+                LOG(INFO) << "dB : " << utils::V2S(ns0, 6);
+                LOG(INFO) << "dM : " << utils::V2S(ns1, 6);
+                LOG(INFO) << "diff = "
+                          << (ns0 - ns1).head(6).norm() << " "
+                          << (ns0 - ns1).tail(6).norm() ;
+            }
+
+        }
+    }
+    
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 
 } // namespace app
 } // namespace disney

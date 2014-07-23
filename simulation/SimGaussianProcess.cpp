@@ -353,8 +353,10 @@ void SimGaussianProcess::integrate() {
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
 
         
+        double h = this->timeStep();
         for (int i = 0; i < 3; i++) {
             dx_delta(i + 6) = (1.0 / W_VEL) * output(i);
+            dx_delta(i) = h * dx_delta(i + 6);
 
             // dx_delta(i) = output(i);
             // dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
@@ -365,13 +367,13 @@ void SimGaussianProcess::integrate() {
         // double w = exp(-1000000.0 * v);
         // double w = exp(-100000.0 * v);
         // double w = exp(-1000.0 * v);
-        double w = 1.0;
-        dx_delta *= w;
+        double w = 0.0;
+        dx_delta = w * dx_delta + (1 - w) * x_sim;
 
         // LOG(INFO) << endl;
         // LOG(INFO) << "Input: " << utils::V2S(input);
         // LOG(INFO) << "Output: " << utils::V2S(output);
-        // LOG(INFO) << "|var| = " << v;
+        LOG(INFO) << "|var|, w = " << v << ", " << w;
 
         // if (var.norm() < 0.0001) {
         //     for (int i = 0; i < 3; i++) {
@@ -396,6 +398,14 @@ void SimGaussianProcess::integrate() {
         mState = x_curr;
     } else {
         mState = dx_delta;
+        // mState(6) = dx_delta(6);
+        // mState(7) = dx_delta(7);
+        // mState(8) = dx_delta(8);
+
+        // mState(0) += h * dx_delta(6);
+        // mState(1) += h * dx_delta(7);
+        // mState(2) += h * dx_delta(8);
+
     }
     
 

@@ -20,6 +20,7 @@ namespace app {
 
 
 void plotVectorField(Application* app);
+void compareBox2DandMath(Application* app);
 
 } // namespace app
 } // namespace disney
