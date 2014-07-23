@@ -268,13 +268,13 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             inputs.push_back(input);
             outputs.push_back(output);
 
-            // using disney::utils::V2S;
-            // LOG(INFO) << "== " << loop << " ==";
+            using disney::utils::V2S;
+            LOG(INFO) << "== " << loop << " ==";
             // LOG(INFO) << "input  = " << V2S(input);
             // LOG(INFO) << "output = " << V2S(output);
-            // LOG(INFO) << "prevState = " << V2S(prevState);
-            // LOG(INFO) << "currState = " << V2S(currState);
-            // LOG(INFO) << "currSimState = " << V2S(currSimState);
+            LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
+            LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
+            LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
         } else {
             // cout << "== " << loop << " ==" << endl;
             // cout << stepLength << endl;
@@ -295,6 +295,14 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         Y.row(i) = outputs[i];
     }
 
+    // {
+    //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(X, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    //     cout << "Its singular values are:" << endl << svd.singularValues() << endl;
+    //     cout << "Its left singular vectors are the columns of the thin U matrix:" << endl << svd.matrixU() << endl;
+    //     cout << "Its right singular vectors are the columns of the thin V matrix:" << endl << svd.matrixV() << endl;        
+    //     exit(0);
+    // }
+    
     // Clear the structure
     if (gp) {
         delete gp;
