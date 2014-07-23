@@ -302,7 +302,35 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     //     cout << "Its right singular vectors are the columns of the thin V matrix:" << endl << svd.matrixV() << endl;        
     //     exit(0);
     // }
-    
+    {
+        std::stringstream sout;
+        sout << "quiver3(";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << X(i, 0) << ",";
+        sout << "],";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << X(i, 1) << ",";
+        sout << "],";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << X(i, 2) << ",";
+        sout << "],";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << Y(i, 0) << ",";
+        sout << "],";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << Y(i, 1) << ",";
+        sout << "],";
+        sout << "[";
+        for (int i = 0; i < N; i++) sout << Y(i, 2) << ",";
+        sout << "]";
+        sout << ");";
+        sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
+        sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
+        sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
+
+        cout << endl << endl << sout.str();
+        exit(0);
+    }
     // Clear the structure
     if (gp) {
         delete gp;
