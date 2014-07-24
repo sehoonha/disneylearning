@@ -314,6 +314,36 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     }
 
 
+    {
+        Eigen::MatrixXd Xr = X.transpose();
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(Xr, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        Eigen::MatrixXd U = svd.matrixU();
+        LOG(INFO) << "size of U = " << U.rows() << " " << U.cols();
+        Xr = (U.transpose() * Xr).topRows(3);
+        LOG(INFO) << "Xr = " << endl << Xr;
+        Xr.transposeInPlace();
+        LOG(INFO) << "Xr = " << endl << Xr;
+        
+        std::stringstream sout;
+        sout << "hold on; " << endl;
+        sout << "quiver3(" << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 2) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 2) << ","; sout << "]" << endl;
+        sout << ");" << endl;
+        sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
+        sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
+        sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
+        sout << "hold off; " << endl;
+
+        cout << endl << endl << sout.str();
+        exit(0);
+    }
+
+
     // {
     //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(X, Eigen::ComputeThinU | Eigen::ComputeThinV);
     //     cout << "Its singular values are:" << endl << svd.singularValues() << endl;
