@@ -213,6 +213,10 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
 
     std::vector<Eigen::VectorXd> inputs;
     std::vector<Eigen::VectorXd> outputs;
+
+    std::vector<Eigen::VectorXd> testinputs;
+    std::vector<Eigen::VectorXd> testoutputs;
+
     for (int loop = 0; loop < NDATA; loop++) {
         currState  = states[loop];
         currTorque = torques[loop];
@@ -241,7 +245,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             && ((prevState -  currState).norm() > 0.000001)
             // && (prevTorque.norm() < 1.0)
             // && (prevTorque(0) > 15)
-            && (loop % dataRate == 0)
+            && ( (loop % dataRate == 0) || (loop % dataRate == (dataRate / 2)) )
             ) {
 
             // 1. Create input
@@ -265,16 +269,22 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             }
 
             // 3. Collect input/output
-            inputs.push_back(input);
-            outputs.push_back(output);
+            if ( (loop % dataRate) == 0) {
+                inputs.push_back(input);
+                outputs.push_back(output);
 
-            using disney::utils::V2S;
-            LOG(INFO) << "== " << loop << " ==";
-            // LOG(INFO) << "input  = " << V2S(input);
-            // LOG(INFO) << "output = " << V2S(output);
-            LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
-            LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
-            LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
+                using disney::utils::V2S;
+                LOG(INFO) << "== " << loop << " ==";
+                // LOG(INFO) << "input  = " << V2S(input);
+                // LOG(INFO) << "output = " << V2S(output);
+                LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
+                LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
+                LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
+            } else {
+                LOG(INFO) << "== " << loop << " == is collected as a training data";
+                testinputs.push_back(input);
+                testoutputs.push_back(output);
+            }
         } else {
             // cout << "== " << loop << " ==" << endl;
             // cout << stepLength << endl;
@@ -295,6 +305,15 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         Y.row(i) = outputs[i];
     }
 
+    int M = inputs.size();
+    Eigen::MatrixXd P(M, numDimInput() );
+    Eigen::MatrixXd Q(M, numDimOutput() );
+    for (int i = 0; i < M; i++) {
+        P.row(i) = testinputs[i];
+        Q.row(i) = testoutputs[i];
+    }
+
+
     // {
     //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(X, Eigen::ComputeThinU | Eigen::ComputeThinV);
     //     cout << "Its singular values are:" << endl << svd.singularValues() << endl;
@@ -302,35 +321,6 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     //     cout << "Its right singular vectors are the columns of the thin V matrix:" << endl << svd.matrixV() << endl;        
     //     exit(0);
     // }
-    {
-        std::stringstream sout;
-        sout << "quiver3(";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << X(i, 0) << ",";
-        sout << "],";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << X(i, 1) << ",";
-        sout << "],";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << X(i, 2) << ",";
-        sout << "],";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << Y(i, 0) << ",";
-        sout << "],";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << Y(i, 1) << ",";
-        sout << "],";
-        sout << "[";
-        for (int i = 0; i < N; i++) sout << Y(i, 2) << ",";
-        sout << "]";
-        sout << ");";
-        sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
-        sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
-        sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
-
-        cout << endl << endl << sout.str();
-        exit(0);
-    }
     // Clear the structure
     if (gp) {
         delete gp;
@@ -343,6 +333,68 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     gp = (new learning::GaussianProcess());
     gp->createModel(X, Y);
     LOG(INFO) << FUNCTION_NAME() << " : creating model... NUM DATA = " << N;
+
+    {
+        gp->optimize();
+        Eigen::MatrixXd S(M, numDimInput() );
+        Eigen::MatrixXd R(M, numDimOutput() );
+        for (int i = 0; i < M; i++) {
+            Eigen::VectorXd x = P.row(i);
+            x +=  0.5 * Eigen::VectorXd::Random(numDimInput());
+            S.row(i) = x;
+            Eigen::VectorXd y = gp->predict(x);
+            Eigen::VectorXd var = gp->varianceOfLastPrediction();
+            Eigen::VectorXd ybar = Q.row(i);
+            // if (var.norm() > 0.0001) {
+            //     y.setZero();
+            // }
+            R.row(i) = y;
+
+            using disney::utils::V2S;
+            LOG(INFO) << "Case " << i;
+            LOG(INFO) << "predict: " << V2S(y);
+            LOG(INFO) << "answer : " << V2S(ybar);
+            LOG(INFO) << "variance : " << "|" << var.norm() << "| <- " << V2S(var);
+        }
+
+
+        std::stringstream sout;
+        sout << "hold on; " << endl;
+        // sout << "quiver3(" << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 0) << ","; sout << "]," << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 1) << ","; sout << "]," << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 2) << ","; sout << "]," << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 0) << ","; sout << "]," << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 1) << ","; sout << "]," << endl;
+        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 2) << ","; sout << "]" << endl;
+        // sout << ");" << endl;
+        sout << "quiver3(" << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 2) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 2) << ","; sout << "]" << endl;
+        sout << ", 'color', [1, 0, 0]);" << endl;
+
+        sout << "quiver3(" << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 2) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << R(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << R(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << R(i, 2) << ","; sout << "]" << endl;
+        sout << ", 'color', [0, 0, 1]);" << endl;
+
+        sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
+        sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
+        sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
+        sout << "hold off; " << endl;
+
+        cout << endl << endl << sout.str();
+        exit(0);
+    }
+
 
     // Load the GP, if exists
     bool loadAtConsume = utils::Option::read("simulation.gp.behavior").attrBool("loadAtConsume");
