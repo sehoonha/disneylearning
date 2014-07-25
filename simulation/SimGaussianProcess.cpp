@@ -102,33 +102,33 @@ Eigen::VectorXd SimGaussianProcess::createInput(const Eigen::VectorXd& prevState
                                                 const Eigen::VectorXd& currSimState) {
     int ptr = 0;
     Eigen::VectorXd input(numDimInput());
-    input(ptr++) = prevState(0);
-    input(ptr++) = prevState(1);
-    input(ptr++) = prevState(2);
-    input(ptr++) = W_VEL * currSimState(6 + 0);
-    input(ptr++) = W_VEL * currSimState(6 + 1);
-    input(ptr++) = W_VEL * currSimState(6 + 2);
-    input(ptr++) = W_TOR * prevTorque(0);
+    // input(ptr++) = prevState(0);
+    // input(ptr++) = prevState(1);
+    // input(ptr++) = prevState(2);
+    // input(ptr++) = W_VEL * currSimState(6 + 0);
+    // input(ptr++) = W_VEL * currSimState(6 + 1);
+    // input(ptr++) = W_VEL * currSimState(6 + 2);
+    // input(ptr++) = W_TOR * prevTorque(0);
 
-    // if (mFlagInputPrevState) {
-    //     input(ptr++) = prevState(0);
-    //     input(ptr++) = prevState(1);
-    //     input(ptr++) = prevState(2);
-    //     input(ptr++) = W_VEL * prevState(6 + 0);
-    //     input(ptr++) = W_VEL * prevState(6 + 1);
-    //     input(ptr++) = W_VEL * prevState(6 + 2);
-    // }
-    // if (mFlagInputCurrSimState) {
-    //     input(ptr++) = currSimState(0);
-    //     input(ptr++) = currSimState(1);
-    //     input(ptr++) = currSimState(2);
-    //     input(ptr++) = W_VEL * currSimState(6 + 0);
-    //     input(ptr++) = W_VEL * currSimState(6 + 1);
-    //     input(ptr++) = W_VEL * currSimState(6 + 2);
-    // }
-    // if (mFlagInputTorque) {
-    //     input(ptr++) = W_TOR * prevTorque(0);
-    // }
+    if (mFlagInputPrevState) {
+        input(ptr++) = prevState(0);
+        input(ptr++) = prevState(1);
+        input(ptr++) = prevState(2);
+        input(ptr++) = W_VEL * prevState(6 + 0);
+        input(ptr++) = W_VEL * prevState(6 + 1);
+        input(ptr++) = W_VEL * prevState(6 + 2);
+    }
+    if (mFlagInputCurrSimState) {
+        input(ptr++) = currSimState(0);
+        input(ptr++) = currSimState(1);
+        input(ptr++) = currSimState(2);
+        input(ptr++) = W_VEL * currSimState(6 + 0);
+        input(ptr++) = W_VEL * currSimState(6 + 1);
+        input(ptr++) = W_VEL * currSimState(6 + 2);
+    }
+    if (mFlagInputTorque) {
+        input(ptr++) = W_TOR * prevTorque(0);
+    }
     CHECK_EQ( (int)ptr, (int)numDimInput() );
     return input;
 }
@@ -257,14 +257,14 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
                 Eigen::VectorXd diff = currState - currSimState;
                 for (int i = 0; i < 3; i++) {
                     output(i) = diff(i);
-                    output(i + 3) = W_VEL * diff(i + 6);
+                    // output(i + 3) = W_VEL * diff(i + 6);
                 }
             } else {
                 Eigen::VectorXd diff = currState;
                 for (int i = 0; i < 3; i++) {
-                    output(i) = W_VEL * diff(i + 6);
-                    // output(i) = diff(i);
-                    // output(i + 3) = W_VEL * diff(i + 6);
+                    // output(i) = W_VEL * diff(i + 6);
+                    output(i) = diff(i);
+                    output(i + 3) = W_VEL * diff(i + 6);
                 }
             }
 
@@ -313,44 +313,28 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         Q.row(i) = testoutputs[i];
     }
 
-
+    Eigen::MatrixXd U;
     {
         Eigen::MatrixXd Xr = X.transpose();
         Eigen::JacobiSVD<Eigen::MatrixXd> svd(Xr, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        Eigen::MatrixXd U = svd.matrixU();
-        LOG(INFO) << "size of U = " << U.rows() << " " << U.cols();
+        U = svd.matrixU();
+        // LOG(INFO) << "size of U = " << U.rows() << " " << U.cols();
         Xr = (U.transpose() * Xr).topRows(3);
-        LOG(INFO) << "Xr = " << endl << Xr;
         Xr.transposeInPlace();
-        LOG(INFO) << "Xr = " << endl << Xr;
-        
-        std::stringstream sout;
-        sout << "hold on; " << endl;
-        sout << "quiver3(" << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 0) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 1) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Xr(i, 2) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 0) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 1) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 2) << ","; sout << "]" << endl;
-        sout << ");" << endl;
-        sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
-        sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
-        sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
-        sout << "hold off; " << endl;
-
-        cout << endl << endl << sout.str();
-        exit(0);
+        X = Xr;
     }
-
-
+    
     // {
-    //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(X, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    //     Eigen::MatrixXd Xr = X.transpose();
+    //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(Xr, Eigen::ComputeThinU | Eigen::ComputeThinV);
     //     cout << "Its singular values are:" << endl << svd.singularValues() << endl;
     //     cout << "Its left singular vectors are the columns of the thin U matrix:" << endl << svd.matrixU() << endl;
     //     cout << "Its right singular vectors are the columns of the thin V matrix:" << endl << svd.matrixV() << endl;        
     //     exit(0);
     // }
+
+
+
     // Clear the structure
     if (gp) {
         delete gp;
@@ -366,12 +350,24 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
 
     {
         gp->optimize();
+        Eigen::MatrixXd Pr = P.transpose();
+        Pr = (U.transpose() * Pr).topRows(3);
+        Pr.transposeInPlace();
+        
         Eigen::MatrixXd S(M, numDimInput() );
-        Eigen::MatrixXd R(M, numDimOutput() );
         for (int i = 0; i < M; i++) {
             Eigen::VectorXd x = P.row(i);
-            x +=  0.5 * Eigen::VectorXd::Random(numDimInput());
+            x += 0.3 * Eigen::VectorXd::Random(numDimInput());
             S.row(i) = x;
+        }
+        
+        Eigen::MatrixXd Sr = S.transpose();
+        Sr = (U.transpose() * Sr).topRows(3);
+        Sr.transposeInPlace();
+
+        Eigen::MatrixXd R(M, numDimOutput() );
+        for (int i = 0; i < M; i++) {
+            Eigen::VectorXd x = Sr.row(i);
             Eigen::VectorXd y = gp->predict(x);
             Eigen::VectorXd var = gp->varianceOfLastPrediction();
             Eigen::VectorXd ybar = Q.row(i);
@@ -387,43 +383,102 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             LOG(INFO) << "variance : " << "|" << var.norm() << "| <- " << V2S(var);
         }
 
-
+        
         std::stringstream sout;
         sout << "hold on; " << endl;
-        // sout << "quiver3(" << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 0) << ","; sout << "]," << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 1) << ","; sout << "]," << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 2) << ","; sout << "]," << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 0) << ","; sout << "]," << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 1) << ","; sout << "]," << endl;
-        // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 2) << ","; sout << "]" << endl;
-        // sout << ");" << endl;
         sout << "quiver3(" << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 0) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 1) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << P(i, 2) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Pr(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Pr(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Pr(i, 2) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 0) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 1) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 2) << ","; sout << "]" << endl;
-        sout << ", 'color', [1, 0, 0]);" << endl;
-
+        sout << ", scale=2000.0, 'color', [0, 0, 1]);" << endl;
         sout << "quiver3(" << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 0) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 1) << ","; sout << "]," << endl;
-        sout << "["; for (int i = 0; i < M; i++) sout << S(i, 2) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Sr(i, 0) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Sr(i, 1) << ","; sout << "]," << endl;
+        sout << "["; for (int i = 0; i < M; i++) sout << Sr(i, 2) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << R(i, 0) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << R(i, 1) << ","; sout << "]," << endl;
         sout << "["; for (int i = 0; i < M; i++) sout << R(i, 2) << ","; sout << "]" << endl;
-        sout << ", 'color', [0, 0, 1]);" << endl;
-
+        sout << ", scale=2000.0, 'color', [1, 0, 0]);" << endl;
         sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
         sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
         sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
         sout << "hold off; " << endl;
 
-        cout << endl << endl << sout.str();
+        LOG(INFO) << endl << endl << sout.str();
+        std::ofstream fout("field.m");
+        fout << endl << endl << sout.str();
+        fout.close();
         exit(0);
     }
+
+
+    // {
+    //     gp->optimize();
+    //     Eigen::MatrixXd S(M, numDimInput() );
+    //     Eigen::MatrixXd R(M, numDimOutput() );
+    //     for (int i = 0; i < M; i++) {
+    //         Eigen::VectorXd x = P.row(i);
+    //         x += 0.3 * Eigen::VectorXd::Random(numDimInput());
+    //         S.row(i) = x;
+    //         Eigen::VectorXd y = gp->predict(x);
+    //         Eigen::VectorXd var = gp->varianceOfLastPrediction();
+    //         Eigen::VectorXd ybar = Q.row(i);
+    //         // if (var.norm() > 0.0001) {
+    //         //     y.setZero();
+    //         // }
+    //         R.row(i) = y;
+
+    //         using disney::utils::V2S;
+    //         LOG(INFO) << "Case " << i;
+    //         LOG(INFO) << "predict: " << V2S(y);
+    //         LOG(INFO) << "answer : " << V2S(ybar);
+    //         LOG(INFO) << "variance : " << "|" << var.norm() << "| <- " << V2S(var);
+    //     }
+
+
+    //     std::stringstream sout;
+    //     sout << "hold on; " << endl;
+    //     // sout << "quiver3(" << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 0) << ","; sout << "]," << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 1) << ","; sout << "]," << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << X(i, 2) << ","; sout << "]," << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 0) << ","; sout << "]," << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 1) << ","; sout << "]," << endl;
+    //     // sout << "["; for (int i = 0; i < N; i++) sout << Y(i, 2) << ","; sout << "]" << endl;
+    //     // sout << ", scale=2000.0";
+    //     // sout << ");" << endl;
+    //     sout << "quiver3(" << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << P(i, 0) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << P(i, 1) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << P(i, 2) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 0) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 1) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 2) << ","; sout << "]" << endl;
+    //     sout << ", scale=2000.0, 'color', [0, 0, 1]);" << endl;
+
+    //     sout << "quiver3(" << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << S(i, 0) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << S(i, 1) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << S(i, 2) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 0) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 1) << ","; sout << "]," << endl;
+    //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 2) << ","; sout << "]" << endl;
+    //     sout << ", scale=2000.0, 'color', [1, 0, 0]);" << endl;
+
+    //     sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
+    //     sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
+    //     sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
+    //     sout << "hold off; " << endl;
+
+    //     LOG(INFO) << endl << endl << sout.str();
+    //     std::ofstream fout("field.m");
+    //     fout << endl << endl << sout.str();
+    //     fout.close();
+    //     exit(0);
+    // }
 
 
     // Load the GP, if exists

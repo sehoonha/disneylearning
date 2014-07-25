@@ -17,6 +17,7 @@
 #include "gp_utils.h"
 #include "cg.h"
 #include "CGMulti.h"
+#include "utils/Misc.h"
 #include <cstdio>
 #include <boost/thread.hpp>
 
@@ -209,6 +210,11 @@ void GaussianProcess::optimize() {
     // cg.maximize(imp->gp_array, MAX_OPT_LOOP, VERBOSE);
 
     // Choice 2. handle separately
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        LOG(INFO) << "Params " << i << " = " << utils::V2S(gp->covf().get_loghyper());
+    }
+
     VERBOSE = 0;
     std::vector<boost::thread*> threads;
     for (int i = 0; i < imp->gp_array.size(); i++) {
@@ -223,6 +229,12 @@ void GaussianProcess::optimize() {
         LOG(INFO) << "waiting for joining the thread " << i;
         th->join();
         LOG(INFO) << "success for joining the thread " << i;
+    }
+
+    for (int i = 0; i < imp->gp_array.size(); i++) {
+        libgp::GaussianProcess* gp = imp->gp_array[i];
+        LOG(INFO) << "Params " << i << " = " << utils::V2S(gp->covf().get_loghyper());
+        
     }
 
     LOG(INFO) << FUNCTION_NAME() << " OK";

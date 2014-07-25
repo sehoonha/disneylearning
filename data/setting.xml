@@ -16,7 +16,7 @@
         innerLoopOnSim0="0"
         />
 
-  <gp dataRate="30" maxOptLoop="10000">
+  <gp dataRate="30" maxOptLoop="0">
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
@@ -24,8 +24,8 @@
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
-    <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="0" />
-    <behavior loadAtConsume="1" saveAfterOptimize="1" />
+    <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="1" />
+    <behavior loadAtConsume="0" saveAfterOptimize="0" />
 
     <data filename="data_SimBox2D_Math1.csv" />
     <data filename="data_SimBox2D_Math2.csv" />
