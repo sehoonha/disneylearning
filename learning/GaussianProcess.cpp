@@ -90,13 +90,13 @@ void GaussianProcess::createModel(const Eigen::MatrixXd& _X, const Eigen::Matrix
         Eigen::VectorXd params = Eigen::VectorXd::Zero(gp->covf().get_param_dim());
         params( params.size() - 1) = -2.0;
 
-        utils::OptionItem opt = utils::Option::read("simulation.gp");
-        if (opt.hasAttr("initParams")) {
-            std::vector<double> vparams = opt.attrVectorDouble("initParams");
+        utils::OptionItem opt = utils::Option::read("simulation.gp.hyper");
+        if (opt.hasAttr("params")) {
+            std::vector<double> vparams = opt.attrVectorDouble("params");
             Eigen::Map<Eigen::VectorXd> mparams( vparams.data(), vparams.size());
             CHECK_EQ( (int)mparams.size(), (int)gp->covf().get_param_dim() );
             params = mparams;
-            LOG(INFO) << "Initial params = " << params.transpose();
+            LOG(INFO) << "Initial params = " << utils::V2S(params, 4);
         }
 
         gp->covf().set_loghyper(params);
