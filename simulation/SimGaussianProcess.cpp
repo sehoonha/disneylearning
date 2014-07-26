@@ -274,14 +274,14 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
                 outputs.push_back(output);
 
                 using disney::utils::V2S;
-                LOG(INFO) << "== " << loop << " ==";
+                // LOG(INFO) << "== " << loop << " ==";
                 // LOG(INFO) << "input  = " << V2S(input);
                 // LOG(INFO) << "output = " << V2S(output);
-                LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
-                LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
-                LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
+                // LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
+                // LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
+                // LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
             } else {
-                LOG(INFO) << "== " << loop << " == is collected as a training data";
+                // LOG(INFO) << "== " << loop << " == is collected as a training data";
                 testinputs.push_back(input);
                 testoutputs.push_back(output);
             }
@@ -540,7 +540,8 @@ void SimGaussianProcess::integrate() {
         // double w = exp(-1000000.0 * v);
         // double w = exp(-100000.0 * v);
         // double w = exp(-1000.0 * v);
-        double w = exp(-50.0 * v);
+        // double w = exp(-50.0 * v);
+        double w = exp(-40.0 * v);
         // double w = 1.0;
         // dx_delta = w * dx_delta + (1 - w) * x_sim;
         dx_delta = w * dx_delta;
@@ -548,8 +549,8 @@ void SimGaussianProcess::integrate() {
         // LOG(INFO) << endl;
         // LOG(INFO) << "Input: " << utils::V2S(input);
         // LOG(INFO) << "Output: " << utils::V2S(output);
-        LOG(INFO) << "|var|, w = " << v << ", " << w;
-        LOG(INFO) << "dx_delta = " << utils::V2S(dx_delta, 6);
+        LOG_EVERY_N(INFO, 20) << "|var|, w = " << v << ", " << w;
+        // LOG(INFO) << "dx_delta = " << utils::V2S(dx_delta, 6);
 
         // if (var.norm() < 0.0001) {
         //     for (int i = 0; i < 3; i++) {

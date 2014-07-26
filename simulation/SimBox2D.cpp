@@ -482,10 +482,10 @@ void SimBox2D::render() {
     imp->drawBody(imp->wheel);
     glColor3d(0.0, 0.0, 0.0);
     imp->drawBody(imp->board);
-    glColor3d(0.0, 1.0, 0.0);
+    glColor3d(0.0, 0.0, 1.0);
     imp->drawBody(imp->l1);
     imp->drawBody(imp->l2);
-    glColor3d(0.0, 0.0, 1.0);
+    // glColor3d(0.0, 0.0, 1.0);
     imp->drawBody(imp->r1);
     imp->drawBody(imp->r2);
     glPopMatrix();

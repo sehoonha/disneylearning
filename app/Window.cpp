@@ -224,7 +224,7 @@ void Window::onTimerIdle() {
 
     if (actions["Anim"]->isChecked()) {
         int i = sliderFrame()->value();
-        i++;
+        i += 5;
         if (i >= n) {
             actions["Anim"]->setChecked(false);
         }

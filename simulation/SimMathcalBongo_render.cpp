@@ -167,10 +167,18 @@ void SimMathcalBongo::render() {
         glColor3d(1, 1, 0);
     }
     line(boardLeft(X), boardRight(X), boardLeft(Y), boardRight(Y));
-    glColor3d(0, 1, 0);
+    if (this->type() == SIMTYPE_MATHCALBONGO) {
+        glColor3d(0, 1, 0);
+    } else {
+        glColor3d(1, 0, 0);
+    }
     line(rightCart(X), rightLink1(X), rightCart(Y), rightLink1(Y));
     line(rightLink1(X), rightLink2(X), rightLink1(Y), rightLink2(Y));
-    glColor3d(0, 0, 1);
+    // if (this->type() == SIMTYPE_MATHCALBONGO) {
+    //     glColor3d(1, 0, 1);
+    // } else {
+    //     glColor3d(0, 1, 1);
+    // }
     line(leftCart(X), leftLink1(X), leftCart(Y), leftLink1(Y));
     line(leftLink1(X), leftLink2(X), leftLink1(Y), leftLink2(Y));
     glColor3d(0, 0, 0);
