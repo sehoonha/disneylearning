@@ -16,11 +16,11 @@
         innerLoopOnSim0="0"
         />
 
-  <gp dataRate="30" maxOptLoop="0">
+  <gp dataRate="30" maxOptLoop="0" >
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.05" />
+    <weight vel="0.1" tor="0.05" decay="30.0"/>
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->

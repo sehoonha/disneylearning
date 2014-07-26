@@ -17,4 +17,5 @@ build/*.gp
 build/*.gp~
 build/plot*.png
 build/var*.png
+build/field*.m
 *.nn

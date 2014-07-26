@@ -89,6 +89,7 @@ protected:
     int mDimOutput;
     double W_VEL;
     double W_TOR;
+    double K_DECAY;
     int dataRate;
 
 }; // class SimGaussianProcess
