@@ -313,6 +313,16 @@ void compareBox2DandMath(Application* app) {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void testVectorField3D(Application* app) {
+    LOG(INFO) << FUNCTION_NAME();
+
+    disney::simulation::Manager* manager = app->manager();
+    simulation::Simulator* s = manager->findSimulator(SIMTYPE_GAUSSIANPROCESS);
+    CHECK_NOTNULL(s);
+    simulation::SimGaussianProcess* sgp = dynamic_cast<simulation::SimGaussianProcess*>(s);
+    CHECK_NOTNULL(sgp);
+    sgp->testVectorField3D();
+}
 
 } // namespace app
 } // namespace disney

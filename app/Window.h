@@ -64,6 +64,7 @@ public slots:
     void onMenuPolicy(QAction* action);
     void onActionTestAll();
     void onActionVectorField();
+    void onActionVectorField3D();
     void onActionComparison();
 
 protected:

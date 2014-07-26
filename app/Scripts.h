@@ -21,6 +21,7 @@ namespace app {
 
 void plotVectorField(Application* app);
 void compareBox2DandMath(Application* app);
+void testVectorField3D(Application* app);
 
 } // namespace app
 } // namespace disney

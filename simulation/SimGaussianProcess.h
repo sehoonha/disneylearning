@@ -34,9 +34,17 @@ public:
     // Input/output functions
     int numDimInput() { return mDimInput; }
     int numDimOutput() { return mDimOutput; }
+    // Helper functions
+    bool isGoodInput(int index, 
+                     const Eigen::VectorXd& prevState,
+                     const Eigen::VectorXd& currState,
+                     const Eigen::VectorXd& currSimState,
+                     bool includeTesting);
     Eigen::VectorXd createInput(const Eigen::VectorXd& prevState,
                                 const Eigen::VectorXd& prevTorque,
                                 const Eigen::VectorXd& currSimState);
+    Eigen::VectorXd createOutput(const Eigen::VectorXd& currState,
+                                 const Eigen::VectorXd& currSimState);
     
 
 
@@ -44,6 +52,7 @@ public:
     void train();
     void train(const std::vector<Eigen::VectorXd>& states,
                const std::vector<Eigen::VectorXd>& torques);
+    void testVectorField3D();
 
     void optimize();
 
@@ -80,6 +89,7 @@ protected:
     int mDimOutput;
     double W_VEL;
     double W_TOR;
+    int dataRate;
 
 }; // class SimGaussianProcess
 

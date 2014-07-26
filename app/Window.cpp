@@ -118,6 +118,7 @@ void Window::createActions() {
     createAction("LoadHistory");
     createAction("TestAll");
     createAction("VectorField");
+    createAction("VectorField3D");
     createAction("Comparison");
 }
 
@@ -192,6 +193,7 @@ void Window::createMenus() {
     QMenu* menuScenario = menuBar()->addMenu(tr("Scripts"));
     menuScenario->addAction( actions["TestAll"] );
     menuScenario->addAction( actions["VectorField"] );
+    menuScenario->addAction( actions["VectorField3D"] );
     menuScenario->addAction( actions["Comparison"] );
 
     LOG(INFO) << FUNCTION_NAME() << " OK";
@@ -366,11 +368,19 @@ void Window::onActionVectorField() {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void Window::onActionVectorField3D() {
+    LOG(INFO) << FUNCTION_NAME();
+    testVectorField3D(app());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 void Window::onActionComparison() {
     LOG(INFO) << FUNCTION_NAME();
     compareBox2DandMath(app());
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
+
 
 void Window::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_U) {
