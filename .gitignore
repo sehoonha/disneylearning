@@ -18,4 +18,5 @@ build/*.gp~
 build/plot*.png
 build/var*.png
 build/field*.m
+build/octave-workspace
 *.nn

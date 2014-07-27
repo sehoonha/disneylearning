@@ -17,7 +17,9 @@
         />
 
   <gp dataRate="40" maxOptLoop="0" >
-    <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" />
+    <svd enabled="1" selectedAxes="3" />
+    <hyper />
+    <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 

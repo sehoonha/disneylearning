@@ -27,6 +27,7 @@ namespace simulation {
 SimGaussianProcess::SimGaussianProcess()
     : Simulator(SIMTYPE_GAUSSIANPROCESS)
     , gp(NULL)
+    , mIsInitedU(false)
 {
 }
 
@@ -285,22 +286,6 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
 
             // 2. Create output
             Eigen::VectorXd output = createOutput(currState, currSimState);
-            // Eigen::VectorXd output = Eigen::VectorXd::Zero(numDimOutput());
-            // if (mFlagOutputDiff) {
-            //     Eigen::VectorXd diff = currState - currSimState;
-            //     for (int i = 0; i < 3; i++) {
-            //         output(i) = diff(i);
-            //         output(i + 3) = W_VEL * diff(i + 6);
-            //     }
-            // } else {
-            //     Eigen::VectorXd diff = currState;
-            //     for (int i = 0; i < 3; i++) {
-            //         // output(i) = W_VEL * diff(i + 6);
-            //         output(i) = diff(i);
-            //         output(i + 3) = W_VEL * diff(i + 6);
-            //     }
-            // }
-
             // 3. Collect input/output
             if ( (loop % dataRate) == 0) {
                 inputs.push_back(input);
@@ -318,12 +303,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
                 testinputs.push_back(input);
                 testoutputs.push_back(output);
             }
-        } else {
-            // cout << "== " << loop << " ==" << endl;
-            // cout << stepLength << endl;
-            // cout << currState.transpose() << endl << currSimState.transpose() << endl;
-            // cout << endl;
-        }
+        } 
 
         prevState  = currState;
         prevTorque = currTorque;
@@ -346,16 +326,27 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         Q.row(i) = testoutputs[i];
     }
 
-    // Eigen::MatrixXd U;
-    // {
-    //     Eigen::MatrixXd Xr = X.transpose();
-    //     Eigen::JacobiSVD<Eigen::MatrixXd> svd(Xr, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    //     U = svd.matrixU();
-    //     // LOG(INFO) << "size of U = " << U.rows() << " " << U.cols();
-    //     Xr = (U.transpose() * Xr).topRows(3);
-    //     Xr.transposeInPlace();
-    //     X = Xr;
-    // }
+    bool SVDEnabled = utils::Option::read("simulation.gp.svd.enabled").toBool();
+    LOG(INFO) << "SVD enabled = " << SVDEnabled;
+    if (SVDEnabled) {
+        int selectedAxes = utils::Option::read("simulation.gp.svd.selectedAxes").toInt();
+        LOG(INFO) << "SVD: # of selected axes = " << selectedAxes;
+        Eigen::MatrixXd Xr = X.transpose();
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(Xr, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        Eigen::VectorXd singularValues = svd.singularValues();
+        U = svd.matrixU();
+        U = U.leftCols(selectedAxes);
+        LOG(INFO) << ">>> perform SVD";
+        LOG(INFO) << "Singular values: " << utils::V2S(singularValues, 6);
+        LOG(INFO) << "size of U = " << U.rows() << " " << U.cols();
+
+        Xr = (U.transpose() * Xr);
+        Xr.transposeInPlace();
+        X = Xr;
+        mIsInitedU = true;
+        // LOG(INFO) << endl << X;
+        // exit(0);
+    }
     
     // {
     //     Eigen::MatrixXd Xr = X.transpose();
@@ -426,7 +417,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 0) << ","; sout << "]," << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 1) << ","; sout << "]," << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 2) << ","; sout << "]" << endl;
-    //     sout << ", scale=2000.0, 'color', [0, 0, 1]);" << endl;
+    //     sout << ", scale=1.0, 'color', [0, 0, 1]);" << endl;
     //     sout << "quiver3(" << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << Sr(i, 0) << ","; sout << "]," << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << Sr(i, 1) << ","; sout << "]," << endl;
@@ -434,7 +425,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
     //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 0) << ","; sout << "]," << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 1) << ","; sout << "]," << endl;
     //     sout << "["; for (int i = 0; i < M; i++) sout << R(i, 2) << ","; sout << "]" << endl;
-    //     sout << ", scale=2000.0, 'color', [1, 0, 0]);" << endl;
+    //     sout << ", scale=1.0, 'color', [1, 0, 0]);" << endl;
     //     sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
     //     sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
     //     sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
@@ -626,12 +617,16 @@ void SimGaussianProcess::testVectorField3D() {
         Q.row(i) = outputs[i];
     }
 
+
     // 4. Testing
     Eigen::MatrixXd S(M, numDimInput() );
     Eigen::MatrixXd R(M, numDimOutput() );
     for (int i = 0; i < M; i++) {
         Eigen::VectorXd x = P.row(i);
         x += 0.3 * Eigen::VectorXd::Random(numDimInput());
+        if (mIsInitedU) {
+            x = (U.transpose() * x).transpose();
+        }
         S.row(i) = x;
         Eigen::VectorXd y = gp->predict(x);
         Eigen::VectorXd var = gp->varianceOfLastPrediction();
@@ -653,7 +648,10 @@ void SimGaussianProcess::testVectorField3D() {
         LOG(INFO) << "variance : " << "|" << var.norm() << "| <- " << V2S(var);
     }
 
-
+    if (mIsInitedU) {
+        P = (U.transpose() * P.transpose()).transpose();
+    }
+    
     std::stringstream sout;
     sout << "hold on; " << endl;
     sout << "quiver3(" << endl;
@@ -706,6 +704,10 @@ void SimGaussianProcess::integrate() {
     if (gp) {
         // cout << endl;
         // cout << "input = " << input.transpose() << endl;
+        if (mIsInitedU) {
+            input = (U.transpose() * input).transpose();
+        }
+
         Eigen::VectorXd output = gp->predict( input );
         Eigen::VectorXd var    = gp->varianceOfLastPrediction();
 

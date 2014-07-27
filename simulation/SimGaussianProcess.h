@@ -91,7 +91,8 @@ protected:
     double W_TOR;
     double K_DECAY;
     int dataRate;
-
+    bool mIsInitedU;
+    Eigen::MatrixXd U;
 }; // class SimGaussianProcess
 
 } // namespace simulation
