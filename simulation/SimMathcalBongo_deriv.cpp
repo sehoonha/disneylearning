@@ -38,10 +38,10 @@ SimMathcalBongo::deriv(const Eigen::VectorXd& x, const Eigen::VectorXd& u) {
     double mrl2 = 15;
     double Irl2 = 2;
     double lrl2 = 0.1;
-    double mll1 = 15;
+    double mll1 = mrl1;
     double Ill1 = 1;
     double lll1 = 1;
-    double mll2 = 15;
+    double mll2 = mrl2;
     double Ill2 = 2;
     double lll2 = 0.1;
 

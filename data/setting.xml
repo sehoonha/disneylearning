@@ -1,11 +1,11 @@
 <simulation>
   <sim type="SimBox2D" />
-  <sim type="SimMathcalBongo" />
+  <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
 
-  <sim type="SimGaussianProcess" isReserved="1"/>
-  <sim type="SimGaussianProcess" isReserved="1"/>
-  <sim type="SimGaussianProcess" isReserved="1"/>
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
 
 
@@ -13,11 +13,11 @@
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" 
-        innerLoopOnSim0="0"
+        innerLoopOnSim0="1"
         />
 
   <gp dataRate="40" maxOptLoop="0" >
-    <svd enabled="1" selectedAxes="3" />
+    <svd enabled="0" selectedAxes="3" />
     <hyper />
     <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <cov>CovSum (CovSEard, CovNoise)</cov>
@@ -45,10 +45,11 @@
 
 
   <policy type="Feedback" params="-1454.02, -2874.23, 0582.331, 380.828, -531.899" controlStep="1" name="Math1" />
-  <policy type="Feedback" params="127.56746405, -7883.79933312, -77.48762756, 892.10510117, -378.39292809" controlStep="1" name="Math2" select="1" />
+  <policy type="Feedback" params="127.56746405, -7883.79933312, -77.48762756, 892.10510117, -378.39292809" controlStep="1" name="Math2" />
   <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" name="Math3"/>
   <policy type="Feedback" params="-8537.2140838521, -3375.6105153636, 3263.3788594249, 826.1767448669, 358.2607696150" controlStep="1" name="Math4" />
-
+  <policy type="Feedback" params="-1834.9625960782, -2490.0811554657, 703.9986125618, 450.2167513827, 242.7485462668" controlStep="1" name="Math5"  select="1" />
+  <policy type="Feedback" params=" -6409.0954574768, -5702.6579569730, 4273.9854222577, 704.6754363914, 2264.9605829988" controlStep="1" name="Box1" />
 
 
   <!-- old controllers for initial mathcal model (without mass modification) -->

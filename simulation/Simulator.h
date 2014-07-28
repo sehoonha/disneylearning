@@ -91,6 +91,7 @@ public:
     virtual void updateToHistory(int index);
     virtual void updateToLatestHistory() { updateToHistory( numHistories() - 1 ); }
     virtual void loadHistoryFromFile(const char* const filename);
+    virtual void saveHistoryToFile(const char* const filename);
 
     // Visualization functions
     virtual void renderInfo();

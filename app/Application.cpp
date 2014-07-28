@@ -205,21 +205,23 @@ void Application::collectData(const char* const _type) {
         + std::string("_") + sim->policy()->name() + ".csv";
     LOG(INFO) << "collect data into file " << filename;
 
-    std::ofstream fout(filename.c_str(), std::ios::app);
-    fout << std::setprecision(12) << std::fixed;
-    for (int i = 0; i < sim->numHistories(); i++) {
-        const simulation::SimulatorHistory& h = sim->history(i);
-        for (int j = 0; j < h.state.size(); j++) {
-            fout << h.state(j) << " ";
-        }
-        fout << "  ";
-        for (int j = 0; j < h.torque.size(); j++) {
-            fout << h.torque(j) << " ";
-        }
-        fout << endl;
-    }
-    LOG(INFO) << "collect " << sim->numHistories() << " data successfully.";
-    fout.close();
+    sim->saveHistoryToFile(filename.c_str());
+
+    // std::ofstream fout(filename.c_str(), std::ios::app);
+    // fout << std::setprecision(12) << std::fixed;
+    // for (int i = 0; i < sim->numHistories(); i++) {
+    //     const simulation::SimulatorHistory& h = sim->history(i);
+    //     for (int j = 0; j < h.state.size(); j++) {
+    //         fout << h.state(j) << " ";
+    //     }
+    //     fout << "  ";
+    //     for (int j = 0; j < h.torque.size(); j++) {
+    //         fout << h.torque(j) << " ";
+    //     }
+    //     fout << endl;
+    // }
+    // LOG(INFO) << "collect " << sim->numHistories() << " data successfully.";
+    // fout.close();
 }
 
 void Application::consumeData() {

@@ -60,7 +60,7 @@ struct LearningGPSimSearchImp {
     LearningGPSimSearchImp();
     
     void collectSim0Data();
-    double evaluateSim0();
+    double evaluateSim0(const Eigen::VectorXd& params);
     double evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId = NULL);
     void learnDynamicsInSim1();
     void optimizePolicyInSim1(int outerLoop); // CMA Optimization
@@ -108,11 +108,17 @@ double LearningGPSimSearchImp::evaluate(simulation::Simulator* s) {
         s->step();
     }
     double value = s->eval()->cost();
+    if (value < 100.0) {
+        LOG(INFO) << "Save the good history into the snapshot";
+        LOG(INFO) << "params = " << utils::V2S(s->policy()->params());
+        s->saveHistoryToFile("good.csv");
+    }
     return value;
 }
 
-double LearningGPSimSearchImp::evaluateSim0() {
+double LearningGPSimSearchImp::evaluateSim0(const Eigen::VectorXd& params) {
     CHECK_NOTNULL(s0);
+    s0->policy()->setParams(params);
     evalCnt0++;
     return evaluate(s0);
 }
@@ -230,7 +236,7 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
         double value = 0.0;
         int id = -1;
         if (mInnerLoopOnSim0) {
-            value = mImp->evaluateSim0();
+            value = mImp->evaluateSim0(params);
         } else {
             value = mImp->evaluateSim1(params, &id);
         }
@@ -278,8 +284,8 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     
     do {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
-        // cma.step( prob );
-        cma.stepParallel( prob );
+        cma.step( prob );
+        // cma.stepParallel( prob );
         LOG(INFO) << endl;
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point;
         LOG(INFO) << "mean = " << cma.mean();
@@ -361,7 +367,8 @@ void worker(LearningGPSimSearchImp* imp) {
         LOG(INFO) << "================== Outer Loop " << loop << " =====================";
         LOG(INFO) << endl;
         LOG(INFO) << "... start to evaluate in the real world";
-        double v = imp->evaluateSim0();
+        LOG(INFO) << "... params = " << utils::V2S(imp->policy->params());
+        double v = imp->evaluateSim0(imp->policy->params());
         LOG(INFO) << "... finished to evaluate in the real world";
         LOG(INFO) << "result: " << v;
 

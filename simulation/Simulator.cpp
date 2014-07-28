@@ -145,6 +145,25 @@ void Simulator::loadHistoryFromFile(const char* const filename) {
     fin.close();
 }
 
+void Simulator::saveHistoryToFile(const char* const filename) {
+    // std::ofstream fout(filename.c_str(), std::ios::app);
+    std::ofstream fout(filename);
+    fout << std::setprecision(12) << std::fixed;
+    for (int i = 0; i < this->numHistories(); i++) {
+        const simulation::SimulatorHistory& h = this->history(i);
+        for (int j = 0; j < h.state.size(); j++) {
+            fout << h.state(j) << " ";
+        }
+        fout << "  ";
+        for (int j = 0; j < h.torque.size(); j++) {
+            fout << h.torque(j) << " ";
+        }
+        fout << endl;
+    }
+    LOG(INFO) << "collect " << this->numHistories() << " data successfully.";
+    fout.close();
+}
+
 void Simulator::renderInfo() {
     glColor3d(0.0, 0.0, 0.0);
     // utils::renderString(0.1, 0.1, "HAHAHA");
