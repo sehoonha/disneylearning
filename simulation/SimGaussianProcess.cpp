@@ -736,7 +736,7 @@ void SimGaussianProcess::integrate() {
         // LOG(INFO) << endl;
         // LOG(INFO) << "Input: " << utils::V2S(input);
         // LOG(INFO) << "Output: " << utils::V2S(output);
-        LOG_EVERY_N(INFO, 20) << "|var|, w = " << v << ", " << w;
+        // LOG_EVERY_N(INFO, 20) << "|var|, w = " << v << ", " << w;
         // LOG(INFO) << "dx_delta = " << utils::V2S(dx_delta, 6);
 
         // if (var.norm() < 0.0001) {

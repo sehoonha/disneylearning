@@ -8,6 +8,7 @@
 #include "LearningGPSimSearch.h"
 
 
+#include <fstream>
 #include <iomanip>
 #include <boost/thread.hpp>
 
@@ -58,7 +59,8 @@ struct LearningGPSimSearchImp {
     double goodValue;
 
     LearningGPSimSearchImp();
-    
+
+    void collectHistoryData();
     void collectSim0Data();
     double evaluateSim0(const Eigen::VectorXd& params);
     double evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId = NULL);
@@ -92,6 +94,44 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
     LOG(INFO) << "LearningGPSimSearchImp.maxInnerNoUpdateLoop = " << maxInnerNoUpdateLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxOuterLoop = " << maxOuterLoop;
 
+}
+
+void LearningGPSimSearchImp::collectHistoryData() {
+    int n = s0->numDimState();
+    int m = s0->numDimTorque();
+
+    FOREACH(const utils::OptionItem& o, utils::Option::readAll("simulation.gp.data")) {
+        const std::string filename = o.attrString("filename");
+        LOG(INFO) << "Data filename = [" << filename << "]";
+        std::ifstream fin(filename.c_str());
+
+        int loop = 0;
+        for (; ; loop++) {
+            Eigen::VectorXd currState  = Eigen::VectorXd::Zero(n);
+            Eigen::VectorXd currTorque = Eigen::VectorXd::Zero(m);
+
+            for (int i = 0; i < n; i++) {
+                fin >> currState(i);
+            }
+            for (int i = 0; i < m; i++) {
+                fin >> currTorque(i);
+            }
+            if (fin.fail()) {
+                LOG(INFO) << "end of data at loop = " << loop;
+                break;
+            }
+
+            simulation::SimulatorHistory h;
+            h.state = currState;
+            h.torque = currTorque;
+            data.push_back(h);
+        }
+        fin.close();
+
+        LOG(INFO) << "Data filename = [" << filename << "] : # lines = " << loop;
+        LOG(INFO) << "--> # states = " << data.size();
+    }
+    LOG(INFO) << "Total # histories = " << data.size();
 }
 
 void LearningGPSimSearchImp::collectSim0Data() {
@@ -360,6 +400,10 @@ void worker(LearningGPSimSearchImp* imp) {
     //     imp->learnDynamicsInSim1();
     //     imp->testAllSimulators();
     // }
+    {
+        imp->collectHistoryData();
+        imp->learnDynamicsInSim1();
+    }
 
     imp->optimizePolicyInSim1(-1);
 

@@ -410,7 +410,7 @@ void Window::takeCapture() {
     //     return;
     // }
     captureRate++;
-    if (captureRate % 10 != 1) {
+    if (captureRate % 2 != 1) {
         return;
     }
         
