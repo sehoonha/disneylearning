@@ -61,6 +61,7 @@ Policy* PolicyFeedback::duplicate() {
     ret->mName = this->mName;
     ret->mDim = this->mDim;
     ret->mParams = this->mParams;
+    ret->mControlStep = this->mControlStep;
     ret->K = this->K;
     ret->F = this->F;
     ret->C = this->C;

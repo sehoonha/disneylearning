@@ -32,6 +32,7 @@ Policy* PolicyPlayback::duplicate() {
     ret->mName = this->mName;
     ret->mDim = this->mDim;
     ret->mParams = this->mParams;
+    ret->mControlStep = this->mControlStep;
     ret->mIndex = this->mIndex;
     ret->mTorques = this->mTorques;
     return ret;

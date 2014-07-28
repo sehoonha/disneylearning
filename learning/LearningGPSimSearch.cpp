@@ -97,7 +97,7 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
 void LearningGPSimSearchImp::collectSim0Data() {
     for (int i = 0; i < s0->numHistories(); i++) {
         simulation::SimulatorHistory h = s0->history(i);
-        data.push_back(h);
+        data.push_back(h); 
     }
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
@@ -108,11 +108,11 @@ double LearningGPSimSearchImp::evaluate(simulation::Simulator* s) {
         s->step();
     }
     double value = s->eval()->cost();
-    if (value < 100.0) {
-        LOG(INFO) << "Save the good history into the snapshot";
-        LOG(INFO) << "params = " << utils::V2S(s->policy()->params());
-        s->saveHistoryToFile("good.csv");
-    }
+    // if (value < 100.0) {
+    //     LOG(INFO) << "Save the good history into the snapshot";
+    //     LOG(INFO) << "params = " << utils::V2S(s->policy()->params());
+    //     s->saveHistoryToFile("good.csv");
+    // }
     return value;
 }
 
@@ -166,7 +166,6 @@ void LearningGPSimSearchImp::learnDynamicsInSim1() {
         sgp->gaussianProcess()->setHyperParameters(hyper);
     }
 
-    
     LOG(INFO) << FUNCTION_NAME() << " OK";
 
 }
@@ -265,6 +264,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME();
 
     shark::Rng::seed( (unsigned int) time (NULL) );
+    // shark::Rng::seed( 5558 );
     GPPolicyEvaluation prob(this);
 
     // shark::ElitistCMA cma;
@@ -284,8 +284,8 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     
     do {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
-        cma.step( prob );
-        // cma.stepParallel( prob );
+        // cma.step( prob );
+        cma.stepParallel( prob );
         LOG(INFO) << endl;
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point;
         LOG(INFO) << "mean = " << cma.mean();
@@ -319,6 +319,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
                   << maxInnerNoUpdateLoop << ")";
         LOG(INFO) << "Best params = " << utils::V2S(bestParams);
         LOG(INFO) << endl;
+        LOG(INFO) << std::flush;
         if (noUpdateCount >= maxInnerNoUpdateLoop) {
             LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
             break;

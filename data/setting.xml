@@ -3,9 +3,9 @@
   <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
 
-  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
-  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
-  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+  <sim type="SimGaussianProcess" isReserved="1"/>
+  <sim type="SimGaussianProcess" isReserved="1"/>
+  <sim type="SimGaussianProcess" isReserved="1"/>
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
 
 
@@ -13,7 +13,7 @@
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" 
-        innerLoopOnSim0="1"
+        innerLoopOnSim0="0"
         />
 
   <gp dataRate="40" maxOptLoop="0" >
