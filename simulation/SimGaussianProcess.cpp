@@ -592,7 +592,8 @@ void SimGaussianProcess::testVectorField3D() {
         model->integrate();
         Eigen::VectorXd currSimState = model->state();
 
-        if (isGoodInput(loop, prevState, currState, currSimState, false)) {
+        if (isGoodInput(loop + (dataRate / 2)
+                        , prevState, currState, currSimState, false)) {
             // 1. Create input
             Eigen::VectorXd input = createInput(prevState, prevTorque, currSimState);
 
@@ -623,7 +624,7 @@ void SimGaussianProcess::testVectorField3D() {
     Eigen::MatrixXd R(M, numDimOutput() );
     for (int i = 0; i < M; i++) {
         Eigen::VectorXd x = P.row(i);
-        x += 0.3 * Eigen::VectorXd::Random(numDimInput());
+        x += 0.0 * Eigen::VectorXd::Random(numDimInput());
         if (mIsInitedU) {
             x = (U.transpose() * x).transpose();
         }
@@ -654,26 +655,26 @@ void SimGaussianProcess::testVectorField3D() {
     
     std::stringstream sout;
     sout << "hold on; " << endl;
-    sout << "quiver3(" << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 0) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 1) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 2) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 3) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 4) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 5) << ","; sout << "]" << endl;
-    sout << ", scale=1.0, 'color', [0, 0, 1]);" << endl;
-    sout << "quiver3(" << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 0) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 1) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 2) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 3) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 4) << ","; sout << "]," << endl;
-    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 5) << ","; sout << "]" << endl;
-    sout << ", scale=1.0, 'color', [1, 0, 0]);" << endl;
-
-    sout << "xlabel(\"wheel\", \"fontsize\", 20)" << endl;
-    sout << "ylabel(\"board\", \"fontsize\", 20)" << endl;
-    sout << "zlabel(\"joint\", \"fontsize\", 20)" << endl;
+    sout << "quiver3(..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 0) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 1) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << P(i, 2) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 3) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 4) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << Q(i, 5) << ","; sout << "],..." << endl;
+    sout << "'color', [0, 0, 1]);" << endl;
+    sout << "quiver3(..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 0) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 1) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << S(i, 2) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 3) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 4) << ","; sout << "],..." << endl;
+    sout << "["; for (int i = 0; i < M; i++) sout << R(i, 5) << ","; sout << "],..." << endl;
+    sout << "'color', [1, 0, 0]);" << endl;
+    sout << "grid on;" << endl;
+    sout << "xlabel('wheel', 'fontsize', 20)" << endl;
+    sout << "ylabel('board', 'fontsize', 20)" << endl;
+    sout << "zlabel('joint', 'fontsize', 20)" << endl;
     sout << "hold off; " << endl;
 
     LOG(INFO) << endl << endl << sout.str();

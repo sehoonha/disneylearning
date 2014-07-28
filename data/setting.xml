@@ -16,14 +16,14 @@
         innerLoopOnSim0="0"
         />
 
-  <gp dataRate="40" maxOptLoop="0" >
-    <svd enabled="0" selectedAxes="3" />
+  <gp dataRate="40" maxOptLoop="1000" >
+    <svd enabled="1" selectedAxes="3" />
     <hyper />
     <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.05" decay="10.0"/>
+    <weight vel="0.1" tor="0.05" decay="0.0"/>
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
@@ -34,7 +34,11 @@
     <data filename="data_SimBox2D_Math2.csv" />
     <data filename="data_SimBox2D_Math3.csv" />
 
-    <test filename="data_SimBox2D_Math4.csv" />
+    <!-- <test filename="data_SimBox2D_Math1.csv" /> -->
+    <!-- <test filename="data_SimBox2D_Math2.csv" /> -->
+    <!-- <test filename="data_SimBox2D_Math3.csv" /> -->
+    <!-- <test filename="data_SimBox2D_Math4.csv" /> -->
+    <test filename="data_SimBox2D_Zero.csv" />
   </gp>
 
   <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1" name="Zero" />
