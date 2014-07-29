@@ -36,6 +36,7 @@ public:
     Eigen::VectorXd hyperParameters();
     void setHyperParameters(const Eigen::VectorXd& _hparams);
     
+    int numData() const;
 protected:
     GaussianProcessImp* imp;
     Eigen::VectorXd mVariance;

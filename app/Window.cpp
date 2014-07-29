@@ -181,7 +181,9 @@ void Window::createMenus() {
     for (int i = 0; i < app()->numPolicies(); i++) {
         std::string name = app()->nameOfPolicy(i);
         QAction* action = new QAction(tr(name.c_str()), this);
-        action->setShortcut( QKeySequence(QString("Ctrl+%1").arg(i) ) );
+        if (i < 10) {
+            action->setShortcut( QKeySequence(QString("Ctrl+%1").arg(i) ) );
+        }
         menuPolicy->addAction(action);
         // menuPolicy->addAction(name.c_str());
         if (name == "Zero") {

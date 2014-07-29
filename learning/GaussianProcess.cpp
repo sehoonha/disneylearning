@@ -276,6 +276,10 @@ void GaussianProcess::setHyperParameters(const Eigen::VectorXd& _hparams) {
     }
 }
 
+int GaussianProcess::numData() const {
+    return imp->numData();
+}
+
 // class GaussianProcess ends
 ////////////////////////////////////////////////////////////
 

@@ -324,6 +324,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     
     do {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
+        
         // cma.step( prob );
         cma.stepParallel( prob );
         LOG(INFO) << endl;
@@ -400,9 +401,34 @@ void worker(LearningGPSimSearchImp* imp) {
     //     imp->learnDynamicsInSim1();
     //     imp->testAllSimulators();
     // }
-    {
+    bool loadDataAtInitialTraining = utils::Option::read("simulation.eval.training.loadDataAtInitialTraining").toBool();
+    LOG(INFO) << "loadDataAtInitialTraining = " << loadDataAtInitialTraining;
+    if (loadDataAtInitialTraining) {
+        LOG(INFO) << "========================================================";
+        LOG(INFO) << "================ Start to load initial data ============";
         imp->collectHistoryData();
         imp->learnDynamicsInSim1();
+        LOG(INFO) << "================ Finish to load initial data ============";
+        LOG(INFO) << "=========================================================";
+    } else {
+        LOG(INFO) << "=======================================================";
+        LOG(INFO) << "================ Skip to load initial data ============";
+        LOG(INFO) << "=======================================================";
+    }
+
+    // report the simulations
+    FOREACH(simulation::Simulator* s, imp->manager->allExistingSimulators()) {
+        simulation::SimGaussianProcess* sgp = dynamic_cast<simulation::SimGaussianProcess*>(s);
+        if (sgp == NULL) {
+            LOG(INFO) << s->type() << "[" << s->id() << "]";
+        } else {
+            if (sgp->gaussianProcess() == NULL) {
+                LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : NO GP";
+            } else {
+                LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : # data = " << sgp->gaussianProcess()->numData();
+            }
+        }
+            
     }
 
     imp->optimizePolicyInSim1(-1);

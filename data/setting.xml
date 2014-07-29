@@ -14,7 +14,9 @@
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" 
         innerLoopOnSim0="0"
-        />
+        >
+    <training loadDataAtInitialTraining="0" />
+  </eval>
 
   <gp dataRate="40" maxOptLoop="0" >
     <svd enabled="0" selectedAxes="3" />
@@ -53,6 +55,10 @@
   <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" name="Math3"/>
   <policy type="Feedback" params="-8537.2140838521, -3375.6105153636, 3263.3788594249, 826.1767448669, 358.2607696150" controlStep="1" name="Math4" />
   <policy type="Feedback" params="-1834.9625960782, -2490.0811554657, 703.9986125618, 450.2167513827, 242.7485462668" controlStep="1" name="Math5"  select="1" />
+  <policy type="Feedback" params="-4361.6150309039, -7593.9137385732, 2780.9220997782, 851.2634071987, 335.0614463922" controlStep="1" name="Math6"  />
+  <policy type="Feedback" params="-5909.1026540602, -6788.4020208260, 4786.7438901271, 1662.6632317915, 1154.5456731282" controlStep="1" name="Math7"  />
+  <policy type="Feedback" params="-2555.0498636374, -2878.3514288356, 1217.7652241915, 718.8665456008, -81.0544713042" controlStep="1" name="Math8"  />
+  <policy type="Feedback" params="-2056.9422726053, -5547.2074543877, 732.1323868336, 595.1874767528, -1050.2774304269" controlStep="1" name="Math9"  />
   <policy type="Feedback" params=" -6409.0954574768, -5702.6579569730, 4273.9854222577, 704.6754363914, 2264.9605829988" controlStep="1" name="Box1" />
   <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" />
 
