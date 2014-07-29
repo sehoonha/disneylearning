@@ -1,6 +1,6 @@
 <simulation>
   <sim type="SimBox2D" />
-  <!-- <sim type="SimMathcalBongo" /> -->
+  <sim type="SimMathcalBongo" />
   <sim type="SimGaussianProcess"/>
 
   <sim type="SimGaussianProcess" isReserved="1"/>
@@ -15,7 +15,7 @@
         maxOuterLoop="0" goodValue="120.0" 
         innerLoopOnSim0="0"
         >
-    <training loadDataAtInitialTraining="0" />
+    <training stepParallel="0" loadDataAtInitialTraining="0" />
   </eval>
 
   <gp dataRate="40" maxOptLoop="0" >

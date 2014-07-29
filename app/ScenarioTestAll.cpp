@@ -7,6 +7,8 @@
 
 #include "ScenarioTestAll.h"
 
+#include <fstream>
+#include <iomanip>
 #include <boost/thread.hpp>
 
 #include "utils/CppCommon.h"
@@ -49,8 +51,33 @@ void ScenarioTestAll(Application* app) {
         }
         LOG(INFO) << "Cost at row " << i << " : " << utils::V2S_SHORT(R.row(i));
     }
-    LOG(INFO) << "Final result" << endl << R;
 
+    // LOG(INFO) << "Final result" << endl << R;
+    LOG(INFO) << "Final result";
+    std::ofstream fout("testall.csv");
+    cout << std::fixed << std::setprecision(4);
+    fout << std::fixed << std::setprecision(4);
+    cout << "-";
+    fout << "-";
+    for (int j = 0; j < R.cols(); j++) {
+        simulation::Simulator* s = manager->simulator(j);
+        cout << ", " << s->type();
+        fout << ", " << s->type();
+    }
+    cout << endl;
+    fout << endl;
+
+    for (int i = 0; i < R.rows(); i++) {
+        cout << app->nameOfPolicy(i);
+        fout << app->nameOfPolicy(i);
+        for (int j = 0; j < R.cols(); j++) {
+            cout << ", " << R(i, j);
+            fout << ", " << R(i, j);
+        }
+        cout << endl;
+        fout << endl;
+    }
+    fout.close();
 }
 
 } // namespace app

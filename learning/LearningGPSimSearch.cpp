@@ -321,12 +321,18 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     int loopCount = 0;
     int noUpdateCount = 0;
 
-    
+    bool stepParallel = utils::Option::read("simulation.eval.training.stepParallel").toBool();
+    LOG(INFO) << "stepParallel = " << stepParallel;
     do {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
-        
-        // cma.step( prob );
-        cma.stepParallel( prob );
+
+        if (stepParallel) {
+            LOG(INFO) << "Take the parallel step";
+            cma.stepParallel( prob );
+        } else {
+            LOG(INFO) << "Take the single core step";
+            cma.step( prob );
+        }
         LOG(INFO) << endl;
         LOG(INFO) << prob.evaluationCounter() << " " << cma.solution().value << " " << cma.solution().point;
         LOG(INFO) << "mean = " << cma.mean();
