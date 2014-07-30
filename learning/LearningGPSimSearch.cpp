@@ -312,8 +312,23 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
 
     shark::CMA cma;
     shark::RealVector starting(prob.numberOfVariables());
-    cma.init( prob, starting, 32, 16, 1000.0 );
-
+    bool startFromLast = utils::Option::read("simulation.eval.cma.startFromLast").toBool();
+    LOG(INFO) << "startFromLast = " << startFromLast;
+    if (startFromLast) {
+        LOG(INFO) << "Copy the policy parameter to the start point";
+        Eigen::VectorXd policyParams = policy->params();
+        for (int i = 0; i < policyParams.size(); i++) {
+            starting(i) = policyParams(i);
+        }
+    }
+    int lambda = utils::Option::read("simulation.eval.cma.lambda").toInt();
+    int mu = utils::Option::read("simulation.eval.cma.mu").toInt();
+    double initialStep = utils::Option::read("simulation.eval.cma.initialStep").toDouble();
+    LOG(INFO) << "lambda = " << lambda;
+    LOG(INFO) << "mu = " << mu;
+    LOG(INFO) << "initialStep = " << initialStep;
+    LOG(INFO) << "starting = " << starting;
+    cma.init( prob, starting, lambda, mu, initialStep );
 
 
     double bestValue = 10e10;
@@ -393,6 +408,57 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 
+void exportIntermediateResult(LearningGPSimSearchImp* imp, int loop) {
+    LOG(INFO) << "================ Start to export intermediate result  ============";
+
+    // 0. execute the best parameters in the simulation
+    LOG(INFO) << "Evaluate the simulation to get the history";
+    int id;
+    Eigen::VectorXd bestParams = imp->policy->params();
+    LOG(INFO) << "  bestParams = " << utils::V2S(bestParams);
+    imp->evaluateSim1(bestParams, &id);
+
+    // 1. Save the simulation history
+    std::string filename_sim = (boost::format("intermediate_l%02d_sim.csv") % loop).str();
+    LOG(INFO) << "Save the simulation history to " << filename_sim;
+    imp->s1->saveHistoryToFile( filename_sim.c_str() );
+
+    // 2. Save the real history
+    std::string filename_real = (boost::format("intermediate_l%02d_real.csv") % loop).str();
+    LOG(INFO) << "Save the real environment history to " << filename_real;
+    imp->s0->saveHistoryToFile( filename_real.c_str() );
+
+    // 3. Save the entire training data
+    std::string filename_train = (boost::format("intermediate_l%02d_train.csv") % loop).str();
+    LOG(INFO) << "Save the real environment history to " << filename_train;
+    std::vector<simulation::SimulatorHistory> backup = imp->s1->allHistories();
+    imp->s0->setAllHistories(imp->data);
+    imp->s0->saveHistoryToFile( filename_train.c_str() );
+    imp->s0->setAllHistories(backup);
+    LOG(INFO) << "# histories of s0 (should be short) = " << imp->s0->numHistories();
+
+    // 4. Save the stats
+    std::string filename_txt = "intermediate.txt";
+    if (loop == -1) {
+        LOG(INFO) << "Delete " << filename_txt;
+        system("rm intermediate.txt");
+    }
+    LOG(INFO) << "Save(append) the statistics to " << filename_txt;
+    std::ofstream fout(filename_txt.c_str(), std::ios::app);
+    if (loop == -1) {
+        fout << "iter, num_data, sim, real, params" << endl; 
+    }
+    fout << loop << ", ";
+    fout << imp->data.size() << ", ";
+    fout << imp->s0->eval()->cost() << ", ";
+    fout << imp->s1->eval()->cost() << ", ";
+    fout << utils::V2S(imp->policy->params());
+    fout << endl;
+    fout.close();
+
+    LOG(INFO) << "================ Finish to export intermediate result  ============";
+    
+}
 
 ////////////////////////////////////////////////////////////
 // thread worker function implementation
@@ -449,9 +515,15 @@ void worker(LearningGPSimSearchImp* imp) {
         LOG(INFO) << "... finished to evaluate in the real world";
         LOG(INFO) << "result: " << v;
 
+        // Export some intermediate data 
+        exportIntermediateResult(imp, loop);
+
         if (v < imp->goodValue) {
             LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
             break;
+        }
+        if (loop + 1 == imp->maxOuterLoop) {
+            LOG(INFO) << "termintate. " << v << " because reach the last iteration";
         }
         imp->collectSim0Data();
         imp->learnDynamicsInSim1();

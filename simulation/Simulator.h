@@ -96,6 +96,10 @@ public:
     // Visualization functions
     virtual void renderInfo();
     virtual void render() = 0;
+
+    std::vector<SimulatorHistory> allHistories() { return mHistory; }
+    void setAllHistories(const std::vector<SimulatorHistory>& h) { mHistory = h; }
+
 protected:
     std::string mType;
     double mTimestep;

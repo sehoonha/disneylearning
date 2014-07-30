@@ -12,10 +12,12 @@
   <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" unitIsDeg="1"/>
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="0" goodValue="120.0" 
+        maxOuterLoop="2" goodValue="120.0" 
         innerLoopOnSim0="0"
         >
-    <training stepParallel="0" loadDataAtInitialTraining="0" />
+    <training stepParallel="1" loadDataAtInitialTraining="0" />
+    <cma startFromLast="1" initialStep="1000.0" lambda="32" mu="16" />
+    <!-- <cma startFromLast="1" initialStep="0.1" lambda="8" mu="4" /> -->
   </eval>
 
   <gp dataRate="40" maxOptLoop="0" >
