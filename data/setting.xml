@@ -1,6 +1,6 @@
 <simulation>
   <sim type="SimBox2D" />
-  <sim type="SimMathcalBongo" />
+  <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
 
   <sim type="SimGaussianProcess" isReserved="1"/>
@@ -16,7 +16,7 @@
         innerLoopOnSim0="0"
         >
     <training stepParallel="1" loadDataAtInitialTraining="0" />
-    <cma startFromLast="1" initialStep="1000.0" lambda="32" mu="16" />
+    <cma startFromLast="0" initialStep="1000.0" lambda="16" mu="8" />
     <!-- <cma startFromLast="1" initialStep="0.1" lambda="8" mu="4" /> -->
   </eval>
 
@@ -34,15 +34,17 @@
     <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="1" />
     <behavior loadAtConsume="0" saveAfterOptimize="0" />
 
-    <data filename="data_SimBox2D_Math1.csv" />
-    <data filename="data_SimBox2D_Math2.csv" />
-    <data filename="data_SimBox2D_Math3.csv" />
+    <!-- <data filename="data_SimBox2D_Math1.csv" /> -->
+    <!-- <data filename="data_SimBox2D_Math2.csv" /> -->
+    <!-- <data filename="data_SimBox2D_Math3.csv" /> -->
+    <data filename="data_test.csv" />
 
     <!-- <test filename="data_SimBox2D_Math1.csv" /> -->
     <!-- <test filename="data_SimBox2D_Math2.csv" /> -->
     <!-- <test filename="data_SimBox2D_Math3.csv" /> -->
     <!-- <test filename="data_SimBox2D_Math4.csv" /> -->
-    <test filename="data_SimBox2D_Zero.csv" />
+    <!-- <test filename="data_SimBox2D_Zero.csv" /> -->
+    <test filename="data_test.csv" />
   </gp>
 
   <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1" name="Zero" />
@@ -63,6 +65,7 @@
   <policy type="Feedback" params="-2056.9422726053, -5547.2074543877, 732.1323868336, 595.1874767528, -1050.2774304269" controlStep="1" name="Math9"  />
   <policy type="Feedback" params=" -6409.0954574768, -5702.6579569730, 4273.9854222577, 704.6754363914, 2264.9605829988" controlStep="1" name="Box1" />
   <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" />
+  <policy type="Feedback" params="2788.4729090887, -15066.3250575927, 372.2093466357, 2507.3484365012, -34.9733026960" controlStep="1" name="Test" />
 
 
   <!-- old controllers for initial mathcal model (without mass modification) -->

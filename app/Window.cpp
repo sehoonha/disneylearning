@@ -177,6 +177,7 @@ void Window::createMenus() {
     QMenu* menuFile = menuBar()->addMenu(tr("File"));
     menuFile->addAction( actions["LoadHistory"] );
      
+    std::string prevName = "";
     QMenu* menuPolicy = menuBar()->addMenu(tr("Policy"));
     for (int i = 0; i < app()->numPolicies(); i++) {
         std::string name = app()->nameOfPolicy(i);
@@ -184,11 +185,14 @@ void Window::createMenus() {
         if (i < 10) {
             action->setShortcut( QKeySequence(QString("Ctrl+%1").arg(i) ) );
         }
-        menuPolicy->addAction(action);
-        // menuPolicy->addAction(name.c_str());
-        if (name == "Zero") {
+        if (name.substr(0, 3) != prevName.substr(0, 3)) {
             menuPolicy->addSeparator();
         }
+        menuPolicy->addAction(action);
+        // if (name == "Zero") {
+        //     menuPolicy->addSeparator();
+        // }
+        prevName = name;
     }
     connect(menuPolicy, SIGNAL(triggered(QAction*)), this, SLOT(onMenuPolicy(QAction*)));
 
