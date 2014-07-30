@@ -12,7 +12,7 @@
   <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" unitIsDeg="1"/>
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="2" goodValue="120.0" 
+        maxOuterLoop="100" goodValue="120.0" 
         innerLoopOnSim0="0"
         >
     <training stepParallel="1" loadDataAtInitialTraining="0" />

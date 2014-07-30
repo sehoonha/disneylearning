@@ -454,7 +454,7 @@ void exportIntermediateResult(LearningGPSimSearchImp* imp, int loop) {
     LOG(INFO) << "Save(append) the statistics to " << filename_txt;
     std::ofstream fout(filename_txt.c_str(), std::ios::app);
     if (isFirstLoop) {
-        fout << "iter, num_data, num_gp_data, sim, real, params" << endl; 
+        fout << "iter, num_data, num_gp_data, real, sim, params" << endl; 
     }
     fout << std::fixed << std::setprecision(6);
     fout << loop << ", ";
@@ -531,17 +531,17 @@ void worker(LearningGPSimSearchImp* imp) {
         LOG(INFO) << "result: " << v;
 
         finalRunInSimulation(imp);
-        // Now learn the new dynamics
-        imp->collectSim0Data();
-        imp->learnDynamicsInSim1();
+        // // Now learn the new dynamics
+        // imp->collectSim0Data();
+        // imp->learnDynamicsInSim1();
 
         // Export some intermediate data 
         exportIntermediateResult(imp, loop);
 
-        if (v < imp->goodValue) {
-            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-            break;
-        }
+        // if (v < imp->goodValue) {
+        //     LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+        //     break;
+        // }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
             break;
