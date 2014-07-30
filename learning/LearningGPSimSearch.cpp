@@ -544,6 +544,7 @@ void worker(LearningGPSimSearchImp* imp) {
         }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
+            break;
         }
         imp->optimizePolicyInSim1(loop);
     }

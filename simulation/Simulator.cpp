@@ -11,6 +11,7 @@
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
 #include "utils/GLObjects.h"
+#include "utils/Misc.h"
 #include "learning/Policy.h"
 #include "Evaluator.h"
 
@@ -79,6 +80,14 @@ void Simulator::integrate() {
 
 void Simulator::reset() {
     updateToHistory(0);
+    if (type() == "SimBox2D") {
+        LOG(INFO) << "Simulator::reset = "
+                  << " Type = " << type()
+                  << " # history = " << numHistories()
+                  << endl << " history.state = " << utils::V2S(mHistory[0].state)
+                  << endl << " current.state = " << utils::V2S(state())
+                  << endl;
+    }
     clearHistory();
     if (eval()) {
         eval()->reset();

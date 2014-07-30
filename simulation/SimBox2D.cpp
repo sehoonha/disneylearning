@@ -224,12 +224,13 @@ SimBox2DImp::SimBox2DImp() {
     bodies.push_back(l2);
     bodies.push_back(r2);
 
-    for (int i = 0; i < bodies.size(); i++) {
-        LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
-    }
+    // for (int i = 0; i < bodies.size(); i++) {
+    //     LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
+    // }
 }
 
 SimBox2DImp::~SimBox2DImp() {
+    delete world;
 }
 
 void SimBox2DImp::drawBody(b2Body* body) {
@@ -462,11 +463,13 @@ void SimBox2D::applyTorque() {
 }
 
 void SimBox2D::reset() {
+    if (imp) { delete imp; imp = NULL; }
+    init();
     Simulator::reset();
-    for (int i = 0; i < imp->bodies.size(); i++) {
-        b2Body* body = imp->bodies[i];
-        body->SetAwake(true);
-    }    
+    // for (int i = 0; i < imp->bodies.size(); i++) {
+    //     b2Body* body = imp->bodies[i];
+    //     body->SetAwake(true);
+    // }    
 }
 
 void SimBox2D::render() {
