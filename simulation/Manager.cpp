@@ -32,7 +32,16 @@ void Manager::init() {
         const std::string type = o.attrString("type");
         bool isReserved = (o.hasAttr("isReserved") && o.attrBool("isReserved"));
         if (type == SIMTYPE_BOX2D) {
-            add( (new SimBox2D())->init(), isReserved );
+            double noiseTorqueLo = 1.0;
+            double noiseTorqueHi = 1.0;
+            if (o.hasAttr("noiseTorqueLo")) { noiseTorqueLo = o.attrDouble("noiseTorqueLo"); }
+            if (o.hasAttr("noiseTorqueHi")) { noiseTorqueHi = o.attrDouble("noiseTorqueHi"); }
+
+            SimBox2D* s = new SimBox2D();
+            s->init();
+            s->setNoiseTorqueLo(noiseTorqueLo);
+            s->setNoiseTorqueHi(noiseTorqueHi);
+            add( s, isReserved );
         } else if (type == SIMTYPE_MATHCALBONGO) {
             add( (new SimMathcalBongo())->init(), isReserved );
         } else if (type == SIMTYPE_GAUSSIANPROCESS) {

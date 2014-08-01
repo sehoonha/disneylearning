@@ -42,9 +42,15 @@ public:
 
     // Visualization functions
     virtual void render();
-    
+
+    double noiseTorqueLo() const { return mNoiseTorqueLo; }
+    double noiseTorqueHi() const { return mNoiseTorqueHi; }
+    void setNoiseTorqueLo(double _n) { mNoiseTorqueLo = _n; }
+    void setNoiseTorqueHi(double _n) { mNoiseTorqueHi = _n; }
 protected:
     SimBox2DImp* imp;
+    double mNoiseTorqueLo;
+    double mNoiseTorqueHi;
 }; // class SimBox2D
 
 } // namespace simulation

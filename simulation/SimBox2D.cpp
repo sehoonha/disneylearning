@@ -9,6 +9,7 @@
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
 #include "utils/Option.h"
+#include "utils/Misc.h"
 #include <Box2D/Box2D.h>
 
 namespace disney {
@@ -331,6 +332,8 @@ void SimBox2DImp::drawContact(const Eigen::Vector2d& c) {
 SimBox2D::SimBox2D()
     : Simulator(SIMTYPE_BOX2D)
     , imp(NULL)
+    , mNoiseTorqueLo(1.0)
+    , mNoiseTorqueHi(1.0)
 {
 }
 
@@ -362,6 +365,8 @@ Simulator* SimBox2D::init() {
 
     mTorque = Eigen::VectorXd::Zero( numDimTorque() );
 
+    mNoiseTorqueLo = 1.0;
+    mNoiseTorqueHi = 1.0;
     clearHistory();
     LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
@@ -410,6 +415,7 @@ Eigen::VectorXd SimBox2D::fullState() const {
 
 void SimBox2D::integrate() {
     // Apply Torque first
+    mTorque *= utils::random_uniform(mNoiseTorqueLo, mNoiseTorqueHi);
     applyTorque();
     
     // Prepare for simulation. Typically we use a time step of 1/60 of a

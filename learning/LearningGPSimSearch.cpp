@@ -17,6 +17,7 @@
 #include "utils/Misc.h"
 #include "simulation/Manager.h"
 #include "simulation/Simulator.h"
+#include "simulation/SimBox2D.h"
 #include "simulation/SimGaussianProcess.h"
 #include "simulation/Evaluator.h"
 #include "learning/Policy.h"
@@ -517,15 +518,19 @@ void worker(LearningGPSimSearchImp* imp) {
 
     // report the simulations
     FOREACH(simulation::Simulator* s, imp->manager->allExistingSimulators()) {
+        simulation::SimBox2D* sbox = dynamic_cast<simulation::SimBox2D*>(s);
         simulation::SimGaussianProcess* sgp = dynamic_cast<simulation::SimGaussianProcess*>(s);
-        if (sgp == NULL) {
-            LOG(INFO) << s->type() << "[" << s->id() << "]";
-        } else {
+        if (sgp != NULL) {
             if (sgp->gaussianProcess() == NULL) {
                 LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : NO GP";
             } else {
                 LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : # data = " << sgp->gaussianProcess()->numData() << " decay = " << sgp->kDecay();
             }
+        } else if (sbox != NULL) {
+            LOG(INFO) << s->type() << "[" << s->id() << "] noiseTorque = {" << sbox->noiseTorqueLo() << " " << sbox->noiseTorqueHi() << "}";
+
+        } else {
+            LOG(INFO) << s->type() << "[" << s->id() << "]";
         }
             
     }

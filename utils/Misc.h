@@ -37,7 +37,10 @@ static std::string V2S_SHORT(const Eigen::VectorXd& v) {
     return sout.str();
 }
 
-
+inline double random_uniform(double _min, double _max) {
+  return _min + ((static_cast<double>(rand()) / (RAND_MAX + 1.0))
+                * (_max - _min));
+}
 
 } // namespace utils
 } // namespace disney
