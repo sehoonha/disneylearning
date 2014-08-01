@@ -74,6 +74,7 @@ public:
     virtual void render();
 
     learning::GaussianProcess* gaussianProcess() { return gp; }
+    double kDecay() { return K_DECAY; }
 
 protected:
     Eigen::VectorXd mState;

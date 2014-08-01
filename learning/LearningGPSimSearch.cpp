@@ -512,7 +512,7 @@ void worker(LearningGPSimSearchImp* imp) {
             if (sgp->gaussianProcess() == NULL) {
                 LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : NO GP";
             } else {
-                LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : # data = " << sgp->gaussianProcess()->numData();
+                LOG(INFO) << sgp->type() << "[" << sgp->id() << "] : # data = " << sgp->gaussianProcess()->numData() << " decay = " << sgp->kDecay();
             }
         }
             
