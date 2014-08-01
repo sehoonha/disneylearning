@@ -65,7 +65,7 @@ struct LearningGPSimSearchImp {
     double evaluateSim0(const Eigen::VectorXd& params);
     double evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId = NULL);
     void learnDynamicsInSim1();
-    void optimizePolicyInSim1(int outerLoop); // CMA Optimization
+    double optimizePolicyInSim1(int outerLoop); // CMA Optimization
     void testAllSimulators();
 
     bool flagPause;
@@ -300,7 +300,7 @@ private:
 
 
 // CMA Optimization
-void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
+double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME();
 
     shark::Rng::seed( (unsigned int) time (NULL) );
@@ -373,7 +373,7 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
         }
         // hmm...for checking..
         policy->setParams(bestParams);
-        
+
         
 
         LOG(INFO) << "Summarize the inner loop : ";
@@ -384,6 +384,10 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
         LOG(INFO) << std::flush;
         if (noUpdateCount >= maxInnerNoUpdateLoop) {
             LOG(INFO) << "Exit the inner loop optimization (CMA) because it is not improving";
+            break;
+        }
+        if (cma.sigma() > 30000.0) {
+            LOG(INFO) << "Exit the inner loop optimization (CMA) because it is was diverged: sigma = " << cma.sigma();
             break;
         }
 
@@ -405,7 +409,15 @@ void LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     policy->setParams(bestParams);
     LOG(INFO) << endl << endl;
 
+
+    if (bestValue > this->goodValue) {
+        LOG(INFO) << "==== Unsatisfactory optimization:: do it once more!!!! ==== ";
+        return this->optimizePolicyInSim1(outerLoop);
+    }
+    
     LOG(INFO) << FUNCTION_NAME() << " OK";
+
+    
 }
 
 void finalRunInSimulation(LearningGPSimSearchImp* imp) {
@@ -531,17 +543,17 @@ void worker(LearningGPSimSearchImp* imp) {
         LOG(INFO) << "result: " << v;
 
         finalRunInSimulation(imp);
-        // Now learn the new dynamics
-        imp->collectSim0Data();
-        imp->learnDynamicsInSim1();
+        // // Now learn the new dynamics
+        // imp->collectSim0Data();
+        // imp->learnDynamicsInSim1();
 
         // Export some intermediate data 
         exportIntermediateResult(imp, loop);
 
-        if (v < imp->goodValue) {
-            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-            break;
-        }
+        // if (v < imp->goodValue) {
+        //     LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+        //     break;
+        // }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
             break;
