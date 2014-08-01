@@ -117,6 +117,7 @@ void Window::createActions() {
     // For menus
     createAction("LoadHistory");
     createAction("TestAll");
+    createAction("TestAllParams");
     createAction("VectorField");
     createAction("VectorField3D");
     createAction("Comparison");
@@ -198,6 +199,8 @@ void Window::createMenus() {
 
     QMenu* menuScenario = menuBar()->addMenu(tr("Scripts"));
     menuScenario->addAction( actions["TestAll"] );
+    menuScenario->addAction( actions["TestAllParams"] );
+    menuScenario->addSeparator();
     menuScenario->addAction( actions["VectorField"] );
     menuScenario->addAction( actions["VectorField3D"] );
     menuScenario->addAction( actions["Comparison"] );
@@ -367,6 +370,13 @@ void Window::onActionTestAll() {
     boost::thread t(&ScenarioTestAll, app());
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
+
+void Window::onActionTestAllParams() {
+    LOG(INFO) << FUNCTION_NAME();
+    boost::thread t(&ScenarioTestAllParams, app());
+    LOG(INFO) << FUNCTION_NAME() << " OK";
+}
+
 
 void Window::onActionVectorField() {
     LOG(INFO) << FUNCTION_NAME();

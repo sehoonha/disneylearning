@@ -18,6 +18,7 @@ namespace disney {
 namespace app {
 
 void ScenarioTestAll(Application* app);
+void ScenarioTestAllParams(Application* app);
 
 } // namespace app
 } // namespace disney
