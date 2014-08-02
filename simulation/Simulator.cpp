@@ -8,6 +8,7 @@
 #include "Simulator.h"
 #include <fstream>
 #include <iomanip>
+#include <boost/thread/mutex.hpp>
 #include "utils/CppCommon.h"
 #include "utils/LoadOpengl.h"
 #include "utils/GLObjects.h"
@@ -26,6 +27,7 @@ Simulator::Simulator()
     , mIsReserved(false)
     , mIsOccupied(false)
 {
+    mMutex = new boost::mutex();
 }
 
 Simulator::Simulator(const char* const _type) 
@@ -36,7 +38,7 @@ Simulator::Simulator(const char* const _type)
     , MEMBER_INIT_NULL(policy)
     , MEMBER_INIT_NULL(eval)
 {
-
+    mMutex = new boost::mutex();
 }
 
 Simulator::~Simulator() {
@@ -174,6 +176,7 @@ void Simulator::saveHistoryToFile(const char* const filename) {
 }
 
 void Simulator::renderInfo() {
+    boost::mutex::scoped_lock lock(*mMutex);
     glColor3d(0.0, 0.0, 0.0);
     // utils::renderString(0.1, 0.1, "HAHAHA");
     std::stringstream sout;

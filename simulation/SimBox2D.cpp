@@ -11,6 +11,7 @@
 #include "utils/Option.h"
 #include "utils/Misc.h"
 #include <Box2D/Box2D.h>
+#include <boost/thread/mutex.hpp>
 
 namespace disney {
 namespace simulation {
@@ -151,14 +152,16 @@ SimBox2DImp::SimBox2DImp() {
         double mass;
         switch(i) {
         case 0: 
+            sx = WIDTH; sy = height; mass = 10.0; break;
         case 1:
             sx = WIDTH; sy = height; mass = 10.0; break;
             // shape.SetAsBox(width, height); break;
         case 2:
+            sx = WIDTH; sy = 0.05; mass = 21.0; break;
         case 3: 
             // shape.SetAsBox(0.05, width); break;
             // shape.SetAsBox(width, 0.05); break;
-            sx = WIDTH; sy = 0.05; mass = 20.0; break;
+            sx = WIDTH; sy = 0.05; mass = 19.0; break;
         }
         shape.SetAsBox(sx, sy);
         shape.m_radius = SKIN; 
@@ -231,6 +234,11 @@ SimBox2DImp::SimBox2DImp() {
 }
 
 SimBox2DImp::~SimBox2DImp() {
+    for (int i = 0; i < bodies.size(); i++) {
+        b2Body* b = bodies[i];
+        world->DestroyBody(b);
+    }
+    world->DestroyBody(ground);
     delete world;
 }
 
@@ -365,10 +373,10 @@ Simulator* SimBox2D::init() {
 
     mTorque = Eigen::VectorXd::Zero( numDimTorque() );
 
-    mNoiseTorqueLo = 1.0;
-    mNoiseTorqueHi = 1.0;
+    // mNoiseTorqueLo = 1.0;
+    // mNoiseTorqueHi = 1.0;
     clearHistory();
-    LOG(INFO) << FUNCTION_NAME() << " OK";
+    // LOG(INFO) << FUNCTION_NAME() << " OK";
     return this;
 }
 
@@ -469,9 +477,12 @@ void SimBox2D::applyTorque() {
 }
 
 void SimBox2D::reset() {
+    boost::mutex::scoped_lock lock(*mMutex);
     if (imp) { delete imp; imp = NULL; }
+    // LOG(INFO) << "noises = " << mNoiseTorqueLo << " " << mNoiseTorqueHi;
     init();
     Simulator::reset();
+    // LOG(INFO) << "reset done";
     // for (int i = 0; i < imp->bodies.size(); i++) {
     //     b2Body* body = imp->bodies[i];
     //     body->SetAwake(true);
@@ -479,6 +490,7 @@ void SimBox2D::reset() {
 }
 
 void SimBox2D::render() {
+    boost::mutex::scoped_lock lock(*mMutex);
     glPushMatrix();
     // {
     //     double scale = 1.0;

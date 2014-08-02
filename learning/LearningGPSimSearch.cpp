@@ -495,12 +495,6 @@ void worker(LearningGPSimSearchImp* imp) {
 
     LOG(INFO) << "Initial optimization";
 
-    // {
-    //     // Testing code
-    //     imp->collectSim0Data();
-    //     imp->learnDynamicsInSim1();
-    //     imp->testAllSimulators();
-    // }
     bool loadDataAtInitialTraining = utils::Option::read("simulation.eval.training.loadDataAtInitialTraining").toBool();
     LOG(INFO) << "loadDataAtInitialTraining = " << loadDataAtInitialTraining;
     if (loadDataAtInitialTraining) {
@@ -548,17 +542,17 @@ void worker(LearningGPSimSearchImp* imp) {
         LOG(INFO) << "result: " << v;
 
         finalRunInSimulation(imp);
-        // // Now learn the new dynamics
-        // imp->collectSim0Data();
-        // imp->learnDynamicsInSim1();
+        // Now learn the new dynamics
+        imp->collectSim0Data();
+        imp->learnDynamicsInSim1();
 
         // Export some intermediate data 
         exportIntermediateResult(imp, loop);
 
-        // if (v < imp->goodValue) {
-        //     LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-        //     break;
-        // }
+        if (v < imp->goodValue) {
+            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+            break;
+        }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
             break;

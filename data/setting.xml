@@ -1,12 +1,12 @@
 <simulation>
-  <!-- <sim type="SimBox2D" /> -->
-  <sim type="SimBox2D" noiseTorqueLo="0.6" noiseTorqueHi="0.8" />
+  <sim type="SimBox2D" />
+  <!-- <sim type="SimBox2D" noiseTorqueLo="0.6" noiseTorqueHi="0.8" /> -->
   <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
 
-  <sim type="SimGaussianProcess" isReserved="1"/>
-  <sim type="SimGaussianProcess" isReserved="1"/>
-  <sim type="SimGaussianProcess" isReserved="1"/>
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
+  <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
 
 
@@ -14,9 +14,9 @@
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="1000" maxInnerNoUpdateLoop="100" 
         maxOuterLoop="0" goodValue="120.0" 
-        innerLoopOnSim0="0"
+        innerLoopOnSim0="1"
         >
-    <training stepParallel="1" loadDataAtInitialTraining="0" />
+    <training stepParallel="0" loadDataAtInitialTraining="0" />
     <cma startFromLast="0" initialStep="1000.0" lambda="16" mu="8" />
     <!-- <cma startFromLast="1" initialStep="0.1" lambda="8" mu="4" /> -->
   </eval>
@@ -28,7 +28,7 @@
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.05" decay="50.0"/>
+    <weight vel="0.1" tor="0.05" decay="40.0"/>
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->

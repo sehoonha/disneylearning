@@ -13,6 +13,10 @@
 #include <vector>
 #include "utils/HppCommon.h"
 
+namespace boost {
+class mutex;
+} // namespace boost
+
 namespace disney {
 namespace learning {
 class Policy;
@@ -116,6 +120,7 @@ protected:
     int mId;
     bool mIsReserved;
     bool mIsOccupied;
+    boost::mutex* mMutex;
 }; // class Simulator
 
 } // namespace simulation
