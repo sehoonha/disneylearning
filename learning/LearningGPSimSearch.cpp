@@ -7,10 +7,11 @@
 
 #include "LearningGPSimSearch.h"
 
-
 #include <fstream>
+#include <algorithm>
 #include <iomanip>
 #include <boost/thread.hpp>
+#include <boost/format.hpp>
 
 #include "utils/Option.h"
 #include "utils/CppCommon.h"
@@ -36,6 +37,7 @@
 #include <shark/Algorithms/DirectSearch/ElitistCMA.h>
 #include <shark/ObjectiveFunctions/Benchmarks/Benchmarks.h> // Access to benchmark functions
 ////////////////////////////////////////////////////////////
+#include "nlopt.h"
 
 
 namespace disney {
@@ -462,7 +464,8 @@ void exportIntermediateResult(LearningGPSimSearchImp* imp, int loop) {
     std::string filename_txt = "intermediate.txt";
     if (isFirstLoop) {
         LOG(INFO) << "Delete " << filename_txt;
-        system("rm intermediate.txt");
+        int result = system("rm intermediate.txt");
+        LOG(INFO) << "result = " << result;
     }
     LOG(INFO) << "Save(append) the statistics to " << filename_txt;
     std::ofstream fout(filename_txt.c_str(), std::ios::app);
@@ -565,9 +568,68 @@ void worker(LearningGPSimSearchImp* imp) {
 
 }
 
+int g_cnt_tst_obj = 0;
+double g_min_tst_obj = 0;
+double tst_obj(int n, const double *x, int *undefined_flag, void *data)
+{
+    g_cnt_tst_obj++;
+    LearningGPSimSearchImp* imp = (LearningGPSimSearchImp*)data;
+    Eigen::VectorXd params( n );
+    for (int i = 0; i < n; i++) params(i) = x[i];
+    double value = imp->evaluateSim0(params);
+    g_min_tst_obj = std::min(value, g_min_tst_obj);
+    LOG(INFO) << "# " << g_cnt_tst_obj << " : " << utils::V2S(params)
+              << " -> " << (boost::format("%.2lf (%.2lf)") % value % g_min_tst_obj);
+    
+    // double x, y, f;
+    // x = xy[0];
+    // y = xy[1];
+    // f = ((x*x)*(4-2.1*(x*x)+((x*x)*(x*x))/3) + x*y + (y*y)*(-4+4*(y*y)));
+    // cout << "(" << x << ", " << y << ") -> " << f << endl;
+    // printf("feval:, %d, %g, %g, %g\n", ++cnt, x,y, f);
+    return value;
+}
+
+
 void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
     LOG(INFO) << FUNCTION_NAME() << " begins";
-    imp->optimizePolicyInSim1(-1);
+    int n = 5;
+    double x[5], l[5], u[5];
+    long int maxits = 0;
+    double minf;
+    int force_stop = 0;
+    nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT, n);
+
+
+    u[0] = 8000.0;
+    u[1] = 8000.0;
+    u[2] = 3000.0;
+    u[3] = 1000.0;
+    u[4] = 1000.0;
+    for (int i = 0; i < n; i++) {
+        x[i] = 0.0;
+        l[i] = -u[i];
+    }
+    
+    nlopt_set_min_objective(opt, (nlopt_func)tst_obj, imp);
+    nlopt_set_lower_bounds(opt, l);
+    nlopt_set_upper_bounds(opt, u);
+    nlopt_set_maxeval(opt, 2000);
+
+    g_min_tst_obj = 10e8;
+    
+    int info = nlopt_optimize(opt, x, &minf);
+    if (info < 0) {
+        LOG(ERROR) << "nlopt failed!";
+    }
+    else {
+        Eigen::Map<Eigen::VectorXd> sol(x, n);
+        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(sol, 4);
+        LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
+    }
+
+
+    // imp->optimizePolicyInSim1(-1);
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

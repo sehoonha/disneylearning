@@ -116,6 +116,7 @@ target_link_libraries(disneylearning Box2D)
 target_link_libraries(disneylearning gp)
 target_link_libraries(disneylearning ${TBB_LIBRARIES})
 target_link_libraries(disneylearning tinyxml2)
+target_link_libraries(disneylearning nlopt)
 
 
 set_target_properties(disneylearning PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
