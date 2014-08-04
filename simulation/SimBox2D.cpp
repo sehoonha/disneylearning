@@ -157,11 +157,11 @@ SimBox2DImp::SimBox2DImp() {
             sx = WIDTH; sy = height; mass = 10.0; break;
             // shape.SetAsBox(width, height); break;
         case 2:
-            sx = WIDTH; sy = 0.05; mass = 22.5; break;
+            sx = WIDTH; sy = 0.05; mass = 20.0; break;
         case 3: 
             // shape.SetAsBox(0.05, width); break;
             // shape.SetAsBox(width, 0.05); break;
-            sx = WIDTH; sy = 0.05; mass = 17.5; break;
+            sx = WIDTH; sy = 0.05; mass = 20.0; break;
         }
         shape.SetAsBox(sx, sy);
         shape.m_radius = SKIN; 

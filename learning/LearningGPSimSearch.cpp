@@ -60,6 +60,8 @@ struct LearningGPSimSearchImp {
     int maxInnerNoUpdateLoop;
     int maxOuterLoop;
     double goodValue;
+    bool innerLoopOnSim0;
+    std::string algorithm;
 
     LearningGPSimSearchImp();
 
@@ -68,7 +70,11 @@ struct LearningGPSimSearchImp {
     double evaluateSim0(const Eigen::VectorXd& params);
     double evaluateSim1(const Eigen::VectorXd& params, int* pOutSimId = NULL);
     void learnDynamicsInSim1();
-    double optimizePolicyInSim1(int outerLoop); // CMA Optimization
+
+    double optimizePolicyInSim1(int outerLoop); 
+    double optimizePolicyInSim1CMA(int outerLoop); // CMA Optimization
+    double optimizePolicyInSim1Direct(int outerLoop); // Direct search
+
     void testAllSimulators();
 
     bool flagPause;
@@ -84,6 +90,7 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
     , evalCnt0(0)
     , evalCnt1(0)
     , flagPause(false)
+    , innerLoopOnSim0(false)
 {
     data.clear();
     this->maxSimLoop   = utils::Option::read("simulation.eval.maxSimLoop").toInt();
@@ -91,11 +98,16 @@ LearningGPSimSearchImp::LearningGPSimSearchImp()
     this->maxInnerNoUpdateLoop = utils::Option::read("simulation.eval.maxInnerNoUpdateLoop").toInt();
     this->maxOuterLoop = utils::Option::read("simulation.eval.maxOuterLoop").toInt();
     this->goodValue    = utils::Option::read("simulation.eval.goodValue").toDouble();
+    this->algorithm    = utils::Option::read("simulation.eval.algorithm").toString();
+    this->innerLoopOnSim0 = utils::Option::read("simulation.eval.innerLoopOnSim0").toBool();
 
     LOG(INFO) << "LearningGPSimSearchImp.maxSimLoop = " << maxSimLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxInnerLoop = " << maxInnerLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxInnerNoUpdateLoop = " << maxInnerNoUpdateLoop;
     LOG(INFO) << "LearningGPSimSearchImp.maxOuterLoop = " << maxOuterLoop;
+    LOG(INFO) << "LearningGPSimSearchImp.goodValue = " << goodValue;
+    LOG(INFO) << "LearningGPSimSearchImp.algorithm = " << algorithm;
+    LOG(INFO) << "LearningGPSimSearchImp.innerLoopOnSim0 = " << innerLoopOnSim0;
 
 }
 
@@ -301,9 +313,18 @@ private:
 };
 ////////////////////////////////////////////////////////////
 
+double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
+    if (this->algorithm == "CMA") {
+        this->optimizePolicyInSim1CMA(outerLoop);
+    } else if (this->algorithm == "direct") {
+        this->optimizePolicyInSim1Direct(outerLoop);
+    } else {
+        LOG(FATAL) << "Invalid algorithm : {" << this->algorithm << "}";
+    }
+}
 
 // CMA Optimization
-double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
+double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME();
 
     shark::Rng::seed( (unsigned int) time (NULL) );
@@ -422,6 +443,74 @@ double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
 
     
 }
+
+int g_cnt_tst_obj = 0;
+double g_min_tst_obj = 0;
+double tst_obj(int n, const double *x, int *undefined_flag, void *data)
+{
+    g_cnt_tst_obj++;
+    LearningGPSimSearchImp* imp = (LearningGPSimSearchImp*)data;
+    Eigen::VectorXd params( n );
+    for (int i = 0; i < n; i++) params(i) = x[i];
+
+    double value = 0.0;
+    if (imp->innerLoopOnSim0 == false) {
+        value = imp->evaluateSim1(params);
+    } else {
+        value = imp->evaluateSim0(params);
+    }
+
+    g_min_tst_obj = std::min(value, g_min_tst_obj);
+    LOG(INFO) << "# " << g_cnt_tst_obj << " : " << utils::V2S(params)
+              << " -> " << (boost::format("%.2lf (%.2lf)") % value % g_min_tst_obj);
+    return value;
+}
+
+double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
+    LOG(INFO) << FUNCTION_NAME();
+    const int n = policy->numDimParams();;
+    double x[20], l[20], u[20];
+
+    // nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT, n);
+    nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT_L_RAND, n);
+    Eigen::VectorXd upper = utils::Option::read("simulation.eval.direct.upper").toVectorXd();
+    LOG(INFO) << "upperbound = " << utils::V2S(upper);
+
+    // u[0] = 8000.0;
+    // u[1] = 8000.0;
+    // u[2] = 3000.0;
+    // u[3] = 1000.0;
+    // u[4] = 1000.0;
+    for (int i = 0; i < n; i++) {
+        x[i] = 0.0;
+        u[i] = upper(i);
+        l[i] = -u[i];
+    }
+    
+    
+    nlopt_set_min_objective(opt, (nlopt_func)tst_obj, this);
+    nlopt_set_lower_bounds(opt, l);
+    nlopt_set_upper_bounds(opt, u);
+    nlopt_set_maxeval(opt, this->maxInnerLoop);
+    nlopt_set_stopval(opt, this->goodValue);
+    
+    double minf = 10e8;
+    g_cnt_tst_obj = 0;
+    g_min_tst_obj = minf;
+
+    int info = nlopt_optimize(opt, x, &minf);
+    if (info < 0) {
+        LOG(ERROR) << "nlopt failed!";
+    }
+    else {
+        Eigen::Map<Eigen::VectorXd> sol(x, n);
+        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(sol);
+        LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
+    }
+
+
+}
+
 
 void finalRunInSimulation(LearningGPSimSearchImp* imp) {
     // 0. execute the best parameters in the simulation
@@ -568,29 +657,6 @@ void worker(LearningGPSimSearchImp* imp) {
 
 }
 
-int g_cnt_tst_obj = 0;
-double g_min_tst_obj = 0;
-double tst_obj(int n, const double *x, int *undefined_flag, void *data)
-{
-    g_cnt_tst_obj++;
-    LearningGPSimSearchImp* imp = (LearningGPSimSearchImp*)data;
-    Eigen::VectorXd params( n );
-    for (int i = 0; i < n; i++) params(i) = x[i];
-    double value = imp->evaluateSim0(params);
-    g_min_tst_obj = std::min(value, g_min_tst_obj);
-    LOG(INFO) << "# " << g_cnt_tst_obj << " : " << utils::V2S(params)
-              << " -> " << (boost::format("%.2lf (%.2lf)") % value % g_min_tst_obj);
-    
-    // double x, y, f;
-    // x = xy[0];
-    // y = xy[1];
-    // f = ((x*x)*(4-2.1*(x*x)+((x*x)*(x*x))/3) + x*y + (y*y)*(-4+4*(y*y)));
-    // cout << "(" << x << ", " << y << ") -> " << f << endl;
-    // printf("feval:, %d, %g, %g, %g\n", ++cnt, x,y, f);
-    return value;
-}
-
-
 void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
     LOG(INFO) << FUNCTION_NAME() << " begins";
     int n = 5;
@@ -615,7 +681,8 @@ void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
     nlopt_set_lower_bounds(opt, l);
     nlopt_set_upper_bounds(opt, u);
     nlopt_set_maxeval(opt, 2000);
-
+    nlopt_set_stopval(opt, 120.0);
+    
     g_min_tst_obj = 10e8;
     
     int info = nlopt_optimize(opt, x, &minf);
@@ -624,7 +691,7 @@ void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
     }
     else {
         Eigen::Map<Eigen::VectorXd> sol(x, n);
-        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(sol, 4);
+        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(sol);
         LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
     }
 
