@@ -11,8 +11,11 @@
 #include "Scripts.h"
 // #include "box2dsimulation.h"
 
+
 namespace disney {
 namespace app {
+Window* g_window_instance = NULL;
+
 Window::Window()
     : QMainWindow()
     , MEMBER_INIT_NULL(timerRender)
@@ -24,7 +27,6 @@ Window::Window()
     initUI();
     initTimer();
     setCenter();
-
     set_wasRunning(true);
 }
 
@@ -215,6 +217,8 @@ void Window::onTimerRender() {
 }
 
 void Window::onTimerIdle() {
+    g_window_instance = this;
+
     int maxSimLoop = app()->maxSimLoop();
     
     if (actions["Play"]->isChecked()) {
@@ -244,7 +248,6 @@ void Window::onTimerIdle() {
             takeCapture();
         }
     }
-    
 
     // updateInfo
     // std::stringstream sout;
@@ -291,6 +294,11 @@ void Window::onActionPlay() {
     } else {
         LOG(INFO) << FUNCTION_NAME() << " pauses";
     }
+}
+
+void Window::onActionAnim() {
+    int n = app()->numMaximumHistory();
+    sliderFrame()->setRange(0, n - 1);
 }
 
 void Window::onActionStep() {
@@ -416,6 +424,11 @@ void Window::keyPressEvent(QKeyEvent* event) {
     }
 }
 
+void Window::gTakeCapture() {
+    g_window_instance->takeCapture();
+}
+
+
 int captureRate = 0;
 int captureID = 0;
 void Window::takeCapture() {
@@ -439,6 +452,7 @@ void Window::takeCapture() {
 }
 
 // avconv -r 100 -i ./capture.%04d.png output.mp4
+
 
 void Window::takeScreenshot(const char* const filename) {
     // QPixmap pixmap;

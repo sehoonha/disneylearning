@@ -106,20 +106,45 @@ bool SimGaussianProcess::isGoodInput(int index,
                                      const Eigen::VectorXd& currSimState,
                                      bool includeTesting ) {
     double stepLength = (currState - prevState).norm();
+    const double STEP_LENGTH_MIN = 0.000001;
+    const double STEP_LENGTH_MAX = 1.0;
+    if (stepLength < STEP_LENGTH_MIN) return false;
+    if (stepLength > STEP_LENGTH_MAX) return false;
+
     double stateDifference = (currState - currSimState).norm();
-    const double STEP_LENGTH_LIMIT = 1.0;
-    const double STATE_DIFFERENCE_LIMIT = 10.0;
-    if (stepLength < STEP_LENGTH_LIMIT
-        && stateDifference < STATE_DIFFERENCE_LIMIT
-        && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
-        && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
-        && ((prevState -  currState).norm() > 0.000001)
-        // && (prevTorque.norm() < 1.0)
-        // && (prevTorque(0) > 15)
-        && ( ((index % dataRate) == 0) || ((index % dataRate) == (dataRate / 2)) ) ) {
-        return true;
+    const double STATE_DIFFERENCE_MAX = 0.2;
+    if (stateDifference > STATE_DIFFERENCE_MAX) return false;
+
+    double tilt = fabs(prevState(0) + prevState(1) + prevState(2));
+    const double TILT_MAX = 0.7;
+    if (tilt > TILT_MAX) return false;
+
+    double distToEquilibrium = fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2));
+    const double DIST_TO_EQUILIBRIUM_MAX = 4.5;
+    if (distToEquilibrium > DIST_TO_EQUILIBRIUM_MAX) return false;
+
+
+    bool isCorrectFrame = ((index % dataRate) == 0);
+    if (// includeTesting &&
+        ((index % dataRate) == (dataRate / 2))) {
+        isCorrectFrame = true;
     }
-    return false;
+    if (!isCorrectFrame) return false;
+
+    return true;
+
+
+    // if (stepLength < STEP_LENGTH_LIMIT
+    //     && stateDifference < STATE_DIFFERENCE_LIMIT
+    //     && fabs(prevState(0) + prevState(1) + prevState(2)) < 0.5
+    //     && fabs(prevState(0)) + fabs(prevState(1)) + fabs(prevState(2)) < 4.5
+    //     && ((prevState -  currState).norm() > 0.000001)
+    //     // && (prevTorque.norm() < 1.0)
+    //     // && (prevTorque(0) > 15)
+    //     && ( ((index % dataRate) == 0) || ((index % dataRate) == (dataRate / 2)) ) ) {
+    //     return true;
+    // }
+    // return false;
 
 }
 
@@ -290,16 +315,7 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             if ( (loop % dataRate) == 0) {
                 inputs.push_back(input);
                 outputs.push_back(output);
-
-                // using disney::utils::V2S;
-                // LOG(INFO) << "== " << loop << " ==";
-                // LOG(INFO) << "input  = " << V2S(input);
-                // LOG(INFO) << "output = " << V2S(output);
-                // LOG(INFO) << "prevBoxState = " << V2S(prevState.head(3)) << " | " << V2S(prevState.segment(6, 3));
-                // LOG(INFO) << "currBoxState = " << V2S((currState - prevState).head(3)) << " | " << V2S((currState - prevState).segment(6, 3));
-                // LOG(INFO) << "currSimState = " << V2S((currSimState - prevState).head(3)) << " | " << V2S((currSimState - prevState).segment(6, 3));
             } else {
-                // LOG(INFO) << "== " << loop << " == is collected as a training data";
                 testinputs.push_back(input);
                 testoutputs.push_back(output);
             }
@@ -309,8 +325,10 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         prevTorque = currTorque;
     }
 
+
     // Convert to the matrix form
     int N = inputs.size();
+    LOG(INFO) << "# of inputs/outputs = " << N;
     Eigen::MatrixXd X(N, numDimInput() );
     Eigen::MatrixXd Y(N, numDimOutput() );
     for (int i = 0; i < N; i++) {
@@ -318,7 +336,8 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
         Y.row(i) = outputs[i];
     }
 
-    int M = inputs.size();
+    int M = testinputs.size();
+    LOG(INFO) << "# of test inputs/outputs = " << M;
     Eigen::MatrixXd P(M, numDimInput() );
     Eigen::MatrixXd Q(M, numDimOutput() );
     for (int i = 0; i < M; i++) {

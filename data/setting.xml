@@ -1,7 +1,7 @@
 <simulation>
   <sim type="SimBox2D" />
+  <sim type="SimMathcalBongo" />
   <!-- <sim type="SimBox2D" noiseTorqueLo="0.6" noiseTorqueHi="0.8" /> -->
-  <!-- <sim type="SimMathcalBongo" /> -->
   <sim type="SimGaussianProcess"/>
 
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
@@ -13,41 +13,45 @@
   <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" unitIsDeg="1"/>
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="3000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="20" goodValue="120.0" 
+        maxOuterLoop="0" goodValue="20.0" 
         algorithm="direct"
         innerLoopOnSim0="0" 
         >
-    <training stepParallel="0" loadDataAtInitialTraining="0" />
+    <training stepParallel="0" loadDataAtInitialTraining="1" />
     <cma startFromLast="0" initialStep="1000.0" lambda="16" mu="8" />
     <direct upper="10000.0 20000.0 10000.0 5000.0 5000.0" />
     <!-- <cma startFromLast="1" initialStep="0.1" lambda="8" mu="4" /> -->
   </eval>
 
   <gp dataRate="40" maxOptLoop="0" >
-    <svd enabled="0" selectedAxes="3" />
+    <svd enabled="1" selectedAxes="3" />
     <hyper />
     <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.05" decay="20.0"/>
+    <weight vel="0.1" tor="0.05" decay="15.0"/>
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
     <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="1" />
     <behavior loadAtConsume="0" saveAfterOptimize="0" />
 
-    <!-- <data filename="data_SimBox2D_Math1.csv" /> -->
-    <!-- <data filename="data_SimBox2D_Math2.csv" /> -->
-    <!-- <data filename="data_SimBox2D_Math3.csv" /> -->
-    <data filename="data_test.csv" />
+    <data filename="data_SimBox2D_Math1.csv" />
+    <data filename="data_SimBox2D_Math2.csv" />
+    <data filename="data_SimBox2D_Math3.csv" />
+    <data filename="data_SimBox2D_Math5.csv" />
+    <data filename="data_SimBox2D_Math6.csv" />
+    <data filename="data_SimBox2D_Math7.csv" />
+    <data filename="data_SimBox2D_Math8.csv" />
+    <!-- <data filename="data_test.csv" /> -->
 
     <!-- <test filename="data_SimBox2D_Math1.csv" /> -->
     <!-- <test filename="data_SimBox2D_Math2.csv" /> -->
     <!-- <test filename="data_SimBox2D_Math3.csv" /> -->
-    <!-- <test filename="data_SimBox2D_Math4.csv" /> -->
+    <test filename="data_SimBox2D_Math4.csv" />
     <!-- <test filename="data_SimBox2D_Zero.csv" /> -->
-    <test filename="data_test.csv" />
+    <!-- <test filename="data_test.csv" /> -->
   </gp>
 
   <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1" name="Zero" />
@@ -59,17 +63,17 @@
 
   <policy type="Feedback" params="-1454.02, -2874.23, 0582.331, 380.828, -531.899" controlStep="1" name="Math1" />
   <policy type="Feedback" params="127.56746405, -7883.79933312, -77.48762756, 892.10510117, -378.39292809" controlStep="1" name="Math2" />
-  <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" name="Math3"/>
-  <policy type="Feedback" params="-8537.2140838521, -3375.6105153636, 3263.3788594249, 826.1767448669, 358.2607696150" controlStep="1" name="Math4" />
+  <!-- <policy type="Feedback" params="463.4398541795, -8549.3603399693, 3007.7221634309, 3043.7898940328, 247.7087144996" controlStep="1" name="Math3"/> -->
+  <!-- <policy type="Feedback" params="-8537.2140838521, -3375.6105153636, 3263.3788594249, 826.1767448669, 358.2607696150" controlStep="1" name="Math4" /> -->
   <policy type="Feedback" params="-1834.9625960782, -2490.0811554657, 703.9986125618, 450.2167513827, 242.7485462668" controlStep="1" name="Math5"  select="1" />
-  <policy type="Feedback" params="-4361.6150309039, -7593.9137385732, 2780.9220997782, 851.2634071987, 335.0614463922" controlStep="1" name="Math6"  />
-  <policy type="Feedback" params="-5909.1026540602, -6788.4020208260, 4786.7438901271, 1662.6632317915, 1154.5456731282" controlStep="1" name="Math7"  />
-  <policy type="Feedback" params="-2555.0498636374, -2878.3514288356, 1217.7652241915, 718.8665456008, -81.0544713042" controlStep="1" name="Math8"  />
+  <!-- <policy type="Feedback" params="-4361.6150309039, -7593.9137385732, 2780.9220997782, 851.2634071987, 335.0614463922" controlStep="1" name="Math6"  /> -->
+  <!-- <policy type="Feedback" params="-5909.1026540602, -6788.4020208260, 4786.7438901271, 1662.6632317915, 1154.5456731282" controlStep="1" name="Math7"  /> -->
+  <!-- <policy type="Feedback" params="-2555.0498636374, -2878.3514288356, 1217.7652241915, 718.8665456008, -81.0544713042" controlStep="1" name="Math8"  /> -->
   <policy type="Feedback" params="-2056.9422726053, -5547.2074543877, 732.1323868336, 595.1874767528, -1050.2774304269" controlStep="1" name="Math9"  />
   <policy type="Feedback" params=" -6409.0954574768, -5702.6579569730, 4273.9854222577, 704.6754363914, 2264.9605829988" controlStep="1" name="Box1" />
   <policy type="Feedback" params="-7989.0261, -7023.3196, 1950.6173, 633.7449, 998.6283" controlStep="1" name="BoxAsym" />
-  <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" />
-  <policy type="Feedback" params="2788.4729090887, -15066.3250575927, 372.2093466357, 2507.3484365012, -34.9733026960" controlStep="1" name="Test" />
+  <!-- <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" /> -->
+  <!-- <policy type="Feedback" params="6666.6666666667, -17777.7777777778, 4444.4444444444, 4444.4444444444, -4444.4444444444" controlStep="1" name="Test" /> -->
 
 
   <!-- old controllers for initial mathcal model (without mass modification) -->

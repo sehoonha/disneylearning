@@ -18,10 +18,12 @@
 #include "utils/Misc.h"
 #include "simulation/Manager.h"
 #include "simulation/Simulator.h"
+#include "simulation/SimBox2D.h"
 #include "simulation/Evaluator.h"
 #include "learning/Policy.h"
 
 #include "Application.h"
+#include "Window.h"
 
 namespace disney {
 namespace app {
@@ -40,20 +42,38 @@ void ScenarioTestAll(Application* app) {
     int maxSimLoop = app->maxSimLoop();
     LOG(INFO) << "maxSimLoop = " << maxSimLoop;
 
+    std::vector< std::vector<simulation::SimulatorHistory> > allHistories(NS);
+
     for (int i = 0; i < NP; i++) {
         LOG(INFO) << "Evaluate policy " << i << " (" << app->nameOfPolicy(i) << ")";
         app->selectPolicy(i);
         app->reset();
-        for (int j = 0; j < maxSimLoop; j++) {
-            app->step();
+        for (int j = 0; j < maxSimLoop; j++) { 
+            app->step(); // step all simulators
+
         }
 
         for (int j = 0; j < NS; j++) {
             simulation::Simulator* s = manager->simulator(j);
+            for (int k = 0; k < s->numHistories(); k++) {
+                allHistories[j].push_back( s->history(k) );
+            }
+
             double value = s->eval()->cost();
             R(i, j) = value;
         }
         LOG(INFO) << "Cost at row " << i << " : " << utils::V2S_SHORT(R.row(i));
+
+        // LOG(INFO) << "attempt to collect simulator Box2D"; 
+        // app->collectData(SIMTYPE_BOX2D);
+        // LOG(INFO) << "attempt to collect simulator Box2D done."; 
+
+
+    }
+
+    for (int j = 0; j < NS; j++) {
+        simulation::Simulator* s = manager->simulator(j);
+        s->setAllHistories( allHistories[j] );
     }
 
     // LOG(INFO) << "Final result" << endl << R;

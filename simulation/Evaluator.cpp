@@ -7,6 +7,7 @@
 
 #include "Evaluator.h"
 #include "utils/CppCommon.h"
+#include "utils/Option.h"
 #include "Simulator.h"
 
 namespace disney {
@@ -16,6 +17,7 @@ namespace simulation {
 // class Evaluator implementation
 Evaluator::Evaluator() {
     reset();
+    this->maxSimLoop   = utils::Option::read("simulation.eval.maxSimLoop").toInt();
 }
 
 Evaluator::~Evaluator() {
@@ -81,6 +83,21 @@ double Evaluator::eval2(Simulator* _sim) {
     
     if (mIsFailed) {
         mCost += FAILED_COST;
+    }
+
+    bool isFinal = (_sim->numHistories() == this->maxSimLoop);
+    if (isFinal) {
+        Eigen::MatrixXd RF = Eigen::MatrixXd::Zero(n * 2, n * 2);
+        RF(0, 0) = 1.0;
+        RF(1, 1) = 1.0;
+        RF(2, 2) = RF(3, 3) = RF(4, 4) = RF(5, 5) = 1.0;
+        RF(6, 6) = 0.5;
+        RF(7, 7) = 0.5;
+        RF(8, 8) = RF(9, 9) = RF(10, 10) = RF(11, 11) = 0.5;
+        RF *= 2.0;
+        double finalCost = dx.dot(RF * dx);
+        mCost += finalCost;
+        // LOG(INFO) << _sim->type() << " reaches the final!! : " << finalCost;
     }
     
     return mCost;

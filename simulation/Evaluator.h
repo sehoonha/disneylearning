@@ -33,6 +33,7 @@ public:
     double eval1(Simulator* _sim);
     double eval2(Simulator* _sim);
 protected:
+    int maxSimLoop;
     double mCost;
     bool mIsFailed;
 }; // class Evaluator

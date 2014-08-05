@@ -51,6 +51,7 @@ public slots:
     void onSliderFrameChanged(int index);
     void onActionReset();
     void onActionPlay();
+    void onActionAnim();
     void onActionStep();
     void onActionLoad();
 
@@ -68,6 +69,7 @@ public slots:
     void onActionVectorField3D();
     void onActionComparison();
 
+    static void gTakeCapture();
 protected:
     void keyPressEvent(QKeyEvent* event);
 
