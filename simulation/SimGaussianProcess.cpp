@@ -112,7 +112,7 @@ bool SimGaussianProcess::isGoodInput(int index,
     if (stepLength > STEP_LENGTH_MAX) return false;
 
     double stateDifference = (currState - currSimState).norm();
-    const double STATE_DIFFERENCE_MAX = 0.2;
+    const double STATE_DIFFERENCE_MAX = 1.0;
     if (stateDifference > STATE_DIFFERENCE_MAX) return false;
 
     double tilt = fabs(prevState(0) + prevState(1) + prevState(2));
@@ -315,6 +315,9 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             if ( (loop % dataRate) == 0) {
                 inputs.push_back(input);
                 outputs.push_back(output);
+                LOG(INFO) << "input/output" << endl
+                          << utils::V2S(input) << endl
+                          << utils::V2S(output);
             } else {
                 testinputs.push_back(input);
                 testoutputs.push_back(output);
@@ -651,7 +654,6 @@ void SimGaussianProcess::testVectorField3D() {
         Eigen::VectorXd y = gp->predict(x);
         Eigen::VectorXd var = gp->varianceOfLastPrediction();
         Eigen::VectorXd ybar = Q.row(i);
-
         double v = var.norm();
         double w = exp(-K_DECAY * v);
         y *= w;
@@ -663,9 +665,10 @@ void SimGaussianProcess::testVectorField3D() {
 
         using disney::utils::V2S;
         LOG(INFO) << "Case " << i;
+        LOG(INFO) << "input " << V2S(x);
         LOG(INFO) << "predict: " << V2S(y);
         LOG(INFO) << "answer : " << V2S(ybar);
-        LOG(INFO) << "variance : " << "|" << var.norm() << "| <- " << V2S(var);
+        LOG(INFO) << "variance : " << "|" << var.norm() << ", " << w << "| <- " << V2S(var);
     }
 
     if (mIsInitedU) {
@@ -741,6 +744,7 @@ void SimGaussianProcess::integrate() {
             dx_delta(i + 6) = (1.0 / W_VEL) * output(i + 3);
         }
 
+        // LOG(INFO) << "before = " << utils::V2S(dx_delta, 6);
         // Adjust the difference using the variance
         double v = var.norm();
         // double w = exp(-1000000.0 * v);
@@ -755,8 +759,10 @@ void SimGaussianProcess::integrate() {
         // LOG(INFO) << endl;
         // LOG(INFO) << "Input: " << utils::V2S(input);
         // LOG(INFO) << "Output: " << utils::V2S(output);
-        // LOG_EVERY_N(INFO, 20) << "|var|, w = " << v << ", " << w;
         // LOG(INFO) << "dx_delta = " << utils::V2S(dx_delta, 6);
+        // LOG(INFO) << "|var|, w = " << v << ", " << w;
+
+        // LOG_EVERY_N(INFO, 20) << "|var|, w = " << v << ", " << w;
 
         // if (var.norm() < 0.0001) {
         //     for (int i = 0; i < 3; i++) {

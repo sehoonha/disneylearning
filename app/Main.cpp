@@ -36,8 +36,14 @@ int main(int argc, char *argv[])
     app.setWindowIcon(icon);
 
     disney::app::Window window;
+
+    Qt::WindowFlags eFlags = window.windowFlags();
+    eFlags |= Qt::WindowStaysOnTopHint;
+    window.setWindowFlags(eFlags);
+
     window.show();
     window.activateWindow();
     window.raise();
+    
     return app.exec();
 }
