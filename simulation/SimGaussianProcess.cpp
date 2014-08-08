@@ -315,9 +315,9 @@ void SimGaussianProcess::train(const std::vector<Eigen::VectorXd>& states,
             if ( (loop % dataRate) == 0) {
                 inputs.push_back(input);
                 outputs.push_back(output);
-                LOG(INFO) << "input/output" << endl
-                          << utils::V2S(input) << endl
-                          << utils::V2S(output);
+                // LOG(INFO) << "input/output" << endl
+                //           << utils::V2S(input) << endl
+                //           << utils::V2S(output);
             } else {
                 testinputs.push_back(input);
                 testoutputs.push_back(output);

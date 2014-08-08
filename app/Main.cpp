@@ -37,9 +37,9 @@ int main(int argc, char *argv[])
 
     disney::app::Window window;
 
-    Qt::WindowFlags eFlags = window.windowFlags();
-    eFlags |= Qt::WindowStaysOnTopHint;
-    window.setWindowFlags(eFlags);
+    // Qt::WindowFlags eFlags = window.windowFlags();
+    // eFlags |= Qt::WindowStaysOnTopHint;
+    // window.setWindowFlags(eFlags);
 
     window.show();
     window.activateWindow();

@@ -314,6 +314,7 @@ private:
 ////////////////////////////////////////////////////////////
 
 double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
+    evalCnt1 = 0;
     if (this->algorithm == "CMA") {
         this->optimizePolicyInSim1CMA(outerLoop);
     } else if (this->algorithm == "direct") {
@@ -559,7 +560,7 @@ void exportIntermediateResult(LearningGPSimSearchImp* imp, int loop) {
     LOG(INFO) << "Save(append) the statistics to " << filename_txt;
     std::ofstream fout(filename_txt.c_str(), std::ios::app);
     if (isFirstLoop) {
-        fout << "iter, num_data, num_gp_data, real, sim, params" << endl; 
+        fout << "iter, num_data, num_gp_data, num_gp_evals, real, sim, params" << endl; 
     }
     fout << std::fixed << std::setprecision(6);
     fout << loop << ", ";
@@ -569,6 +570,7 @@ void exportIntermediateResult(LearningGPSimSearchImp* imp, int loop) {
     } else {
         fout << imp->s1->gaussianProcess()->numData() << ", ";
     }
+    fout << imp->evalCnt1 << ", ";
     fout << imp->s0->eval()->cost() << ", ";
     fout << imp->s1->eval()->cost() << ", ";
     fout << utils::V2S(imp->policy->params());

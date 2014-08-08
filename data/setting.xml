@@ -1,8 +1,8 @@
 <simulation>
-  <sim type="SimBox2D" />
+  <!-- <sim type="SimBox2D" /> -->
   <sim type="SimMathcalBongo" />
   <!-- <sim type="SimBox2D" noiseTorqueLo="0.6" noiseTorqueHi="0.8" /> -->
-  <sim type="SimGaussianProcess"/>
+  <!-- <sim type="SimGaussianProcess"/> -->
 
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
@@ -12,26 +12,26 @@
 
   <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" unitIsDeg="1"/>
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
-  <eval maxSimLoop="5000" maxInnerLoop="3000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="20" goodValue="120.0" 
+  <eval maxSimLoop="5000" maxInnerLoop="10000" maxInnerNoUpdateLoop="100" 
+        maxOuterLoop="0" goodValue="40.0" 
         algorithm="direct"
         innerLoopOnSim0="0" 
         >
-    <training stepParallel="0" loadDataAtInitialTraining="0" />
+    <training stepParallel="0" loadDataAtInitialTraining="1" />
     <cma startFromLast="0" initialStep="1000.0" lambda="16" mu="8" />
     <direct upper="10000.0 20000.0 10000.0 5000.0 5000.0" />
     <!-- <cma startFromLast="1" initialStep="0.1" lambda="8" mu="4" /> -->
   </eval>
 
   <gp dataRate="40" maxOptLoop="0" >
-    <svd enabled="1" selectedAxes="3" />
+    <svd enabled="0" selectedAxes="3" />
     <hyper />
     <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <!-- <hyper params="0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000,   0.000, -2.00" /> -->
     <cov>CovSum (CovSEard, CovNoise)</cov>
     <!-- <cov>CovSum( CovSum (CovSEard, CovNoise), CovLinearard )</cov> -->
 
-    <weight vel="0.1" tor="0.05" decay="200.0"/>
+    <weight vel="0.1" tor="0.05" decay="300.0"/>
     <!-- <weight vel="1.0" tor="0.5" /> -->
     <!-- <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"  outputDiff="1" /> -->
     <!-- <function inputPrevState="0" inputCurrSimState="1" inputTorque="0"   outputDiff="0" /> -->
@@ -56,7 +56,7 @@
     <test filename="data_test.csv" />
   </gp>
 
-  <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1" name="Zero" />
+  <!-- <policy type="Feedback" params="0.0, 0.0, 0.0, 0.0, 0.0" controlStep="1" name="Zero" /> -->
 
   <!-- <policy type="Playback" filename="data_torque.csv" n="12" m="4" controlStep="1" /> -->
   <!-- <policy type="Feedback" params="9400.85,-19467.2,9782.43,13117.1,20555.5" comment="Box2D"/> -->
@@ -76,6 +76,10 @@
   <policy type="Feedback" params="-7989.0261, -7023.3196, 1950.6173, 633.7449, 998.6283" controlStep="1" name="BoxAsym" />
   <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" />
   <policy type="Feedback" params="-8888.8888888889, -4444.4444444444, 8806.5843621399, 3333.3333333333, 3333.3333333333" controlStep="1" name="Test" select="1"/>
+
+  <policy type="Feedback" params="9629.6296296296, 0.0000000000, -4444.4444444444, 0.0000000000, -370.3703703704" controlStep="1" name="Loop0" select="1"/>
+  <!-- <policy type="Feedback" params="-8888.8888888889, -17777.7777777778, 6666.6666666667, 2222.2222222222, -3333.3333333333" controlStep="1" name="Loop1" /> -->
+  <!-- <policy type="Feedback" params="-7407.4074074074, -17777.7777777778, 8888.8888888889, 2222.2222222222, 4444.4444444444" controlStep="1" name="Loop2" /> -->
 
 
   <!-- old controllers for initial mathcal model (without mass modification) -->
