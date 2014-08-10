@@ -74,7 +74,11 @@ void Simulator::step() {
 
 void Simulator::control() {
     Eigen::VectorXd x = state();
+    mLastTorque = mTorque;
     mTorque = policy()->control(x);
+    if (mTorque.size() != mLastTorque.size()) {
+        mLastTorque = Eigen::VectorXd::Zero( mTorque.size() );
+    }
 }
 
 void Simulator::integrate() {

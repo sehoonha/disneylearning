@@ -71,6 +71,7 @@ public:
     virtual int numDimTorque() const = 0;
     virtual void setTorque(const Eigen::VectorXd& _torque) { mTorque = _torque; }
     virtual Eigen::VectorXd torque() const { return mTorque; }
+    virtual Eigen::VectorXd lastTorque() const { return mLastTorque; }
     
     virtual double time() const { return (timeStep() * (double)(numHistories() - 1)); }
     virtual double timeStep() const { return mTimestep; }
@@ -114,6 +115,7 @@ protected:
     // int mControlStep;
     MEMBER_PTR(learning::Policy*, policy);
     Eigen::VectorXd mTorque;
+    Eigen::VectorXd mLastTorque;
     Eigen::VectorXd mContacts;
 
     MEMBER_PTR(Evaluator*, eval);

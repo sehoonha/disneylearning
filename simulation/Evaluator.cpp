@@ -63,6 +63,21 @@ double Evaluator::eval2(Simulator* _sim) {
     // Add a cost
     Eigen::VectorXd dx = (x - xEq);
     double costNow = dx.dot( R * dx );
+
+    // Add a cost for torque
+    {
+        Eigen::MatrixXd T = Eigen::MatrixXd::Zero(u.size(), u.size());
+        // T(0, 0) = 0.0;
+        T(0, 0) = 0.00001;
+        costNow += u.dot(T * u);
+
+        Eigen::MatrixXd U = Eigen::MatrixXd::Zero(u.size(), u.size());
+        U(0, 0) = 0.0001;
+        Eigen::VectorXd du = (u - _sim->lastTorque());
+        costNow += du.dot(U * du);
+
+    }
+
     mCost += costNow;
 
     // Check failure

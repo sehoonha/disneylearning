@@ -483,9 +483,11 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     // u[3] = 1000.0;
     // u[4] = 1000.0;
     for (int i = 0; i < n; i++) {
+        u[i] = upper(i) * utils::random_uniform(0.9, 1.1);
+        l[i] = -upper(i) * utils::random_uniform(0.9, 1.1);
+        // x[i] = 0.5 * utils::random_uniform(l[i], u[i]);
         x[i] = 0.0;
-        u[i] = upper(i);
-        l[i] = -u[i];
+        LOG(INFO) << i << " : " << l[i] << " < " << x[i] << " < " << u[i];
     }
     
     
