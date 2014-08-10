@@ -315,7 +315,7 @@ private:
 
 double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     evalCnt1 = 0;
-    if (this->algorithm == "CMA") {
+    if (this->algorithm == "cma") {
         this->optimizePolicyInSim1CMA(outerLoop);
     } else if (this->algorithm == "direct") {
         this->optimizePolicyInSim1Direct(outerLoop);
@@ -483,8 +483,8 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     // u[3] = 1000.0;
     // u[4] = 1000.0;
     for (int i = 0; i < n; i++) {
-        u[i] = upper(i) * utils::random_uniform(0.9, 1.1);
-        l[i] = -upper(i) * utils::random_uniform(0.9, 1.1);
+        u[i] = upper(i) * utils::random_uniform(1.0, 1.2);
+        l[i] = -upper(i) * utils::random_uniform(1.0, 1.2);
         // x[i] = 0.5 * utils::random_uniform(l[i], u[i]);
         x[i] = 0.0;
         LOG(INFO) << i << " : " << l[i] << " < " << x[i] << " < " << u[i];
@@ -513,6 +513,7 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
 
 
 }
+
 
 
 void finalRunInSimulation(LearningGPSimSearchImp* imp) {
@@ -593,6 +594,10 @@ void worker(LearningGPSimSearchImp* imp) {
 
     bool loadDataAtInitialTraining = utils::Option::read("simulation.eval.training.loadDataAtInitialTraining").toBool();
     LOG(INFO) << "loadDataAtInitialTraining = " << loadDataAtInitialTraining;
+    bool learningAtNextStep = utils::Option::read("simulation.eval.training.learningAtNextStep").toBool();
+    LOG(INFO) << "learningAtNextStep = " << learningAtNextStep;
+
+
     if (loadDataAtInitialTraining) {
         LOG(INFO) << "========================================================";
         LOG(INFO) << "================ Start to load initial data ============";
@@ -639,16 +644,21 @@ void worker(LearningGPSimSearchImp* imp) {
 
         finalRunInSimulation(imp);
         // Now learn the new dynamics
-        imp->collectSim0Data();
-        imp->learnDynamicsInSim1();
-
+        if (learningAtNextStep) {
+            LOG(INFO) << "==== Learning after the execution on the sim0 ====";
+            imp->collectSim0Data();
+            imp->learnDynamicsInSim1();
+        } else {
+            LOG(INFO) << "====== SKIP the Learning after the execution on the sim0 ====== ";
+        }
+        
         // Export some intermediate data 
         exportIntermediateResult(imp, loop);
 
-        if (v < imp->goodValue) {
-            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-            break;
-        }
+        // if (v < imp->goodValue) {
+        //     LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+        //     break;
+        // }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
             break;

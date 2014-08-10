@@ -81,7 +81,7 @@ double Evaluator::eval2(Simulator* _sim) {
     mCost += costNow;
 
     // Check failure
-    const double FAILED_COST = 1000.0;
+    const double FAILED_COST = 1.0;
 
     // if (fabs(x(0)) > 0.7 ||
     //     fabs(x(1)) > 0.7 ||
