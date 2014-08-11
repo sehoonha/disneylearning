@@ -39,7 +39,8 @@ public:
     virtual void train(simulation::Manager* _manager,
                        learning::Policy* _policy,
                        simulation::Simulator* _sim0,
-                       simulation::Simulator* _sim1);
+                       simulation::Simulator* _sim1,
+                       bool launchThread = true);
 
     virtual void togglePause() {}
 

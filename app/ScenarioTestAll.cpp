@@ -64,9 +64,9 @@ void ScenarioTestAll(Application* app) {
         }
         LOG(INFO) << "Cost at row " << i << " : " << utils::V2S_SHORT(R.row(i));
 
-        // LOG(INFO) << "attempt to collect simulator Box2D"; 
-        // app->collectData(SIMTYPE_BOX2D);
-        // LOG(INFO) << "attempt to collect simulator Box2D done."; 
+        LOG(INFO) << "attempt to collect simulator Box2D"; 
+        app->collectData(SIMTYPE_BOX2D);
+        LOG(INFO) << "attempt to collect simulator Box2D done."; 
 
 
     }

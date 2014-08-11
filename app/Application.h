@@ -36,7 +36,7 @@ public:
     void render(bool overlay = false);
     void step();
     void reset();
-    void train();
+    void train(bool launchThread = true);
     void togglePause();
 
     int numMaximumHistory() const;

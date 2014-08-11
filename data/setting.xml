@@ -42,7 +42,7 @@
     <behavior loadAtConsume="0" saveAfterOptimize="0" />
 
     <data filename="data_SimBox2D_Math1.csv" />
-    <data filename="data_SimBox2D_Math2.csv" />
+    <!-- <data filename="data_SimBox2D_Math2.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math3.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math5.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math6.csv" /> -->
@@ -76,6 +76,7 @@
   <policy type="Feedback" params="-13009.1214052736, -6175.0492753214, 7398.4557687413, 897.4926784852, 1549.6479235115" controlStep="1" name="GP" />
   <policy type="Feedback" params="-10651.8652014399, -1579.4625524239, 4514.6905230144, 159.9574417034, -17.811756874" controlStep="1" name="Test" />
   <policy type="Feedback" params="9.0979197904, -5304.8883319383, 1561.1078189044, 577.8000486664, 1158.9322029577" controlStep="1" name="Test2" />
+  <policy type="Feedback" params="432.4830684300, -1684.8967715534, -9.0430746819, 358.7573089886, 18.4310298024" controlStep="1" name="Test3" />
 
   <!-- <policy type="Feedback" params="9629.6296296296, 0.0000000000, -4444.4444444444, 0.0000000000, -370.3703703704" controlStep="1" name="Loop0" select="1"/> -->
   <!-- <policy type="Feedback" params="-8888.8888888889, -17777.7777777778, 6666.6666666667, 2222.2222222222, -3333.3333333333" controlStep="1" name="Loop1" /> -->

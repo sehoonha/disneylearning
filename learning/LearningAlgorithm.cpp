@@ -30,7 +30,8 @@ void LearningAlgorithm::train(learning::Policy* _policy,
 void LearningAlgorithm::train(simulation::Manager* _manager,
                               learning::Policy* _policy,
                               simulation::Simulator* _sim0,
-                              simulation::Simulator* _sim1) {
+                              simulation::Simulator* _sim1,
+                              bool launchThread) {
 }
 
 // class LearningAlgorithm ends

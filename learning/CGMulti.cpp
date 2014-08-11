@@ -180,13 +180,13 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
                 //test NaN and Inf's
                 for (int j = 0; j < df3.rows(); ++j)
                 {
-                    if(isnan(df3(j)))
+                    if(std::isnan(df3(j)))
                     {
                         nanFound = true;
                         break;
                     }
                 }
-                if(!isnan(f3) && !isinf(f3) && !nanFound)
+                if(!std::isnan(f3) && !std::isinf(f3) && !nanFound)
                     success = true;
                 else
                 {
@@ -213,7 +213,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
             double A = 6*(f1-f2) + 3*(d2+d1)*(x2-x1);				// make cubic extrapolation
             double B = 3*(f2-f1) - (2*d1+d2)*(x2-x1);
             x3 = x1-d1*(x2-x1)*(x2-x1)/(B+sqrt(B*B -A*d1*(x2-x1)));
-            if(isnan(x3) || x3 < 0 || x3 > x2*EXT)			// num prob | wrong sign | beyond extrapolation limit
+            if(std::isnan(x3) || x3 < 0 || x3 > x2*EXT)			// num prob | wrong sign | beyond extrapolation limit
                 x3 = EXT*x2;
             else if(x3 < x2+INT*(x2-x1))					// too close to previous point
                 x3 = x2+INT*(x2-x1);
@@ -243,7 +243,7 @@ void CGMulti::maximize(std::vector<GaussianProcess*>& _gp_array, size_t n, bool 
                 x3 = x2+sqrt(B*B-A*d2*(x4-x2)*(x4-x2) -B)/A;
             }
 
-            if(isnan(x3) || isinf(x3))
+            if(std::isnan(x3) || std::isinf(x3))
                 x3 = (x2+x4)/2;
 
             x3 = std::max(std::min(x3, x4-INT*(x4-x2)), x2+INT*(x4-x2));

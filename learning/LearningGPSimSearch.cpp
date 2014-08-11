@@ -495,8 +495,8 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     const int n = policy->numDimParams();;
     double x[20], l[20], u[20];
 
-    // nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT, n);
-    nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT_L_RAND, n);
+    nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT, n);
+    // nlopt_opt opt = nlopt_create(NLOPT_GN_DIRECT_L_RAND, n);
     Eigen::VectorXd upper = utils::Option::read("simulation.eval.direct.upper").toVectorXd();
     LOG(INFO) << "upperbound = " << utils::V2S(upper);
 
@@ -761,7 +761,8 @@ void LearningGPSimSearch::init() {
 void LearningGPSimSearch::train(simulation::Manager* _manager,
                                 learning::Policy* _policy,
                                 simulation::Simulator* _sim0,
-                                simulation::Simulator* _sim1) {
+                                simulation::Simulator* _sim1,
+                                bool launchThread) {
     using namespace simulation;
     LOG(INFO) << FUNCTION_NAME();
     bool flagInnerLoopOnSim0 = utils::Option::read("simulation.eval.innerLoopOnSim0").toBool();
@@ -795,9 +796,14 @@ void LearningGPSimSearch::train(simulation::Manager* _manager,
     imp->policy = _policy;
     LOG(INFO) << "Implementation structure is initialized OK";
 
-    LOG(INFO) << "launch the new worker thread...";
-    boost::thread t(&worker, imp);
-
+    if (launchThread) {
+        LOG(INFO) << "launch the new worker thread...";
+        boost::thread t(&worker, imp);
+    } else {
+        LOG(INFO) << "NO THREAD MODE";
+        worker(imp);
+    }
+    
     LOG(INFO) << FUNCTION_NAME() << " OK";
 }
 

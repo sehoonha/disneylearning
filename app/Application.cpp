@@ -148,13 +148,14 @@ void Application::reset() {
     }
 }
 
-void Application::train() {
+void Application::train(bool launchThread) {
     // learning()->train(policy(), manager()->simulator(1));
     learning()->train(
         manager(),
         policy(),
         manager()->findSimulator(SIMTYPE_BOX2D),
-        manager()->findSimulator(SIMTYPE_GAUSSIANPROCESS)
+        manager()->findSimulator(SIMTYPE_GAUSSIANPROCESS),
+        launchThread
         );
 }
 

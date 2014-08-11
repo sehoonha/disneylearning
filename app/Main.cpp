@@ -5,9 +5,22 @@
 #include "utils/LoadOpengl.h"
 #include "utils/Option.h"
 
+#include <string>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+
+#include "Application.h"
+
+void runNoGui() {
+    LOG(INFO) << "Run the application in NO GUI MODE!!!!!!";
+    disney::app::Application* app = new disney::app::Application();
+    app->init();
+    app->train(false);
+    LOG(INFO) << "Exit the application in NO GUI MODE!!!!!!";
+    LOG(INFO) << "BYE!!!!!";
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -18,8 +31,6 @@ int main(int argc, char *argv[])
     FLAGS_minloglevel = INFO;
     FLAGS_log_dir = "./glog/";
 
-    // Init GLUT
-    glutInit(&argc, argv);
 
     // Init Option
     disney::utils::Option::init(DATA_DIR"/setting.xml");
@@ -29,7 +40,21 @@ int main(int argc, char *argv[])
     // FOREACH(disney::utils::OptionItem& o, opts) {
     //     cout << "Sim: " << o.attrString("type") << endl;
     // }
+
+    if (argc >= 2) {
+        std::string arg1 = argv[1];
+        LOG(INFO) << "Argument 1: " << arg1;
+        if (arg1 == "nogui") {
+            runNoGui();
+            return 0;
+        }
+    }
         
+
+    // Init GLUT
+    glutInit(&argc, argv);
+
+
     // Init and launch the application
     QApplication app(argc, argv);
     QIcon icon("icon.png");
