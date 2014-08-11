@@ -445,14 +445,36 @@ double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
     
 }
 
+Eigen::VectorXd expandLogParams(const Eigen::VectorXd& lp) {
+    Eigen::VectorXd p( lp.size());
+    for (int i = 0; i < p.size(); i++) {
+        if (lp(i) < 0) {
+            p(i) = -exp(-lp(i));
+        } else {
+            p(i) = exp(lp(i));
+        }
+    }
+    return p;
+}
 int g_cnt_tst_obj = 0;
 double g_min_tst_obj = 0;
 double tst_obj(int n, const double *x, int *undefined_flag, void *data)
 {
     g_cnt_tst_obj++;
     LearningGPSimSearchImp* imp = (LearningGPSimSearchImp*)data;
+    Eigen::VectorXd xx( n );
     Eigen::VectorXd params( n );
-    for (int i = 0; i < n; i++) params(i) = x[i];
+    for (int i = 0; i < n; i++) {
+        // params(i) = x[i];
+        xx(i) = x[i];
+        // if (x[i] < 0) {
+        //     params(i) = -exp(-x[i]);
+        // } else {
+        //     params(i) = exp(x[i]);
+        // }
+
+    }
+    params = expandLogParams(xx);
 
     double value = 0.0;
     if (imp->innerLoopOnSim0 == false) {
@@ -463,6 +485,7 @@ double tst_obj(int n, const double *x, int *undefined_flag, void *data)
 
     g_min_tst_obj = std::min(value, g_min_tst_obj);
     LOG(INFO) << "# " << g_cnt_tst_obj << " : " << utils::V2S(params)
+              << " (" << utils::V2S(xx, 2) << ") "
               << " -> " << (boost::format("%.2lf (%.2lf)") % value % g_min_tst_obj);
     return value;
 }
@@ -507,7 +530,8 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     }
     else {
         Eigen::Map<Eigen::VectorXd> sol(x, n);
-        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(sol);
+        Eigen::VectorXd solp = expandLogParams(sol);
+        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(solp);
         LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
     }
 
