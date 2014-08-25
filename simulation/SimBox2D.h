@@ -39,6 +39,7 @@ public:
     virtual void integrate();
     void applyTorque();
     virtual void reset();
+    virtual void control();
 
     // Visualization functions
     virtual void render();
@@ -47,10 +48,17 @@ public:
     double noiseTorqueHi() const { return mNoiseTorqueHi; }
     void setNoiseTorqueLo(double _n) { mNoiseTorqueLo = _n; }
     void setNoiseTorqueHi(double _n) { mNoiseTorqueHi = _n; }
+    double noiseSensorLo() const { return mNoiseSensorLo; }
+    double noiseSensorHi() const { return mNoiseSensorHi; }
+    void setNoiseSensorLo(double _n) { mNoiseSensorLo = _n; }
+    void setNoiseSensorHi(double _n) { mNoiseSensorHi = _n; }
 protected:
     SimBox2DImp* imp;
     double mNoiseTorqueLo;
     double mNoiseTorqueHi;
+    double mNoiseSensorLo;
+    double mNoiseSensorHi;
+
 }; // class SimBox2D
 
 } // namespace simulation

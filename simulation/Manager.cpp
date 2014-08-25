@@ -36,11 +36,21 @@ void Manager::init() {
             double noiseTorqueHi = 1.0;
             if (o.hasAttr("noiseTorqueLo")) { noiseTorqueLo = o.attrDouble("noiseTorqueLo"); }
             if (o.hasAttr("noiseTorqueHi")) { noiseTorqueHi = o.attrDouble("noiseTorqueHi"); }
+            double noiseSensorLo = 1.0;
+            double noiseSensorHi = 1.0;
+            if (o.hasAttr("noiseSensorLo")) { noiseSensorLo = o.attrDouble("noiseSensorLo"); }
+            if (o.hasAttr("noiseSensorHi")) { noiseSensorHi = o.attrDouble("noiseSensorHi"); }
+
 
             SimBox2D* s = new SimBox2D();
             s->init();
             s->setNoiseTorqueLo(noiseTorqueLo);
             s->setNoiseTorqueHi(noiseTorqueHi);
+            s->setNoiseSensorLo(noiseSensorLo);
+            s->setNoiseSensorHi(noiseSensorHi);
+            LOG(INFO) << "SimBox2D.noise = "
+                      << noiseTorqueLo << " " << noiseTorqueHi << " "
+                      << noiseSensorLo << " " << noiseSensorHi;
             add( s, isReserved );
         } else if (type == SIMTYPE_MATHCALBONGO) {
             add( (new SimMathcalBongo())->init(), isReserved );

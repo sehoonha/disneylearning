@@ -1,8 +1,9 @@
 <simulation>
+  <noise />
   <sim type="SimBox2D" />
   <sim type="SimMathcalBongo" />
-  <!-- <sim type="SimBox2D" noiseTorqueLo="0.6" noiseTorqueHi="0.8" /> -->
-  <sim type="SimGaussianProcess"/>
+  <sim type="SimBox2D" noiseTorqueLo="1.0" noiseTorqueHi="1.0" noiseSensorLo="0.99" noiseSensorHi="1.01" />
+  <!-- <sim type="SimGaussianProcess"/> -->
 
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->
   <!-- <sim type="SimGaussianProcess" isReserved="1"/> -->

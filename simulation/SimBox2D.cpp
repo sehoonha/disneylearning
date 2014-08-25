@@ -10,6 +10,7 @@
 #include "utils/LoadOpengl.h"
 #include "utils/Option.h"
 #include "utils/Misc.h"
+#include "learning/Policy.h"
 #include <Box2D/Box2D.h>
 #include <boost/thread/mutex.hpp>
 
@@ -342,6 +343,8 @@ SimBox2D::SimBox2D()
     , imp(NULL)
     , mNoiseTorqueLo(1.0)
     , mNoiseTorqueHi(1.0)
+    , mNoiseSensorLo(1.0)
+    , mNoiseSensorHi(1.0)
 {
 }
 
@@ -420,6 +423,19 @@ Eigen::VectorXd SimBox2D::fullState() const {
     return state;
 }
 
+void SimBox2D::control() {
+    Eigen::VectorXd x = state();
+    for (int i = 0; i < x.size(); i++) {
+        x(i) *= utils::random_uniform(mNoiseSensorLo, mNoiseSensorHi);
+    }
+    
+    mLastTorque = mTorque;
+    mTorque = policy()->control(x);
+    if (mTorque.size() != mLastTorque.size()) {
+        mLastTorque = Eigen::VectorXd::Zero( mTorque.size() );
+    }
+
+}
 
 void SimBox2D::integrate() {
     // Apply Torque first
