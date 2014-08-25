@@ -367,8 +367,9 @@ double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
         LOG(INFO) << "==== Loop " << loopCount << " in " << outerLoop << " ====";
 
         if (stepParallel) {
-            LOG(INFO) << "Take the parallel step";
-            cma.stepParallel( prob );
+            // LOG(INFO) << "Take the parallel step";
+            // cma.stepParallel( prob );
+            LOG(FATAL) << "not support";
         } else {
             LOG(INFO) << "Take the single core step";
             cma.step( prob );

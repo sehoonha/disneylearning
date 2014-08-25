@@ -71,7 +71,7 @@ find_package(Eigen REQUIRED)
 message(STATUS "Eigen_INCLUDE_DIRS = ${Eigen_INCLUDE_DIRS}")
 include_directories(${Eigen_INCLUDE_DIRS})
 
-find_package(TBB REQUIRED)
+find_package(TBB)
 message(STATUS "TBB_INCLUDE_DIRS = ${TBB_INCLUDE_DIRS}")
 message(STATUS "TBB_LIBRARIES = ${TBB_LIBRARIES}")
 
@@ -114,7 +114,9 @@ target_link_libraries(disneylearning shark)
 target_link_libraries(disneylearning Box2D)
 # target_link_libraries(disneylearning GPc gfortran blas lapack)
 target_link_libraries(disneylearning gp)
+if (TBB_FOUND)
 target_link_libraries(disneylearning ${TBB_LIBRARIES})
+endif()
 target_link_libraries(disneylearning tinyxml2)
 target_link_libraries(disneylearning nlopt)
 
