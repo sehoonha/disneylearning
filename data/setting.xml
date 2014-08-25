@@ -13,11 +13,11 @@
   <init state="0.0, 0.25, 0, 0, 0, 0    , 0, 0, 0, 0, 0, 0" angle="0.25" unitIsDeg="1"/>
   <!-- <init state="0.0, 0.0, 0.0, 0.0, 0.0, 0.0    , 0, 0, 0, 0, 0, 0" unitIsDeg="0" /> -->
   <eval maxSimLoop="5000" maxInnerLoop="10000" maxInnerNoUpdateLoop="100" 
-        maxOuterLoop="0" goodValue="100.0" 
+        maxOuterLoop="10" goodValue="180.0" 
         algorithm="direct"
         innerLoopOnSim0="0"
         >
-    <training stepParallel="0" loadDataAtInitialTraining="1" learningAtNextStep="1" />
+    <training stepParallel="0" loadDataAtInitialTraining="0" learningAtNextStep="1" />
     <cma startFromLast="1" initialStep="1000.0" lambda="16" mu="8" />
     <!-- <direct upper="10000.0 20000.0 10000.0 5000.0 5000.0" /> -->
     <!-- <direct upper="10000.0 10000.0 10000.0 10000.0 10000.0" /> -->
@@ -41,7 +41,7 @@
     <function inputPrevState="1" inputCurrSimState="0" inputTorque="1"   outputDiff="1" />
     <behavior loadAtConsume="0" saveAfterOptimize="0" />
 
-    <data filename="data_SimBox2D_Math1.csv" />
+    <!-- <data filename="data_SimBox2D_Math1.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math2.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math3.csv" /> -->
     <!-- <data filename="data_SimBox2D_Math5.csv" /> -->
@@ -50,6 +50,7 @@
     <!-- <data filename="data_SimBox2D_Math8.csv" /> -->
     <!-- <data filename="data_SimBox2D_Test.csv" /> -->
     <!-- <data filename="data_test.csv" /> -->
+    <data filename="intermediate_l01_train.csv" />
 
     <test filename="data_SimBox2D_Math1.csv" />
     <!-- <test filename="data_SimBox2D_Math2.csv" /> -->
@@ -77,6 +78,11 @@
   <policy type="Feedback" params="-10651.8652014399, -1579.4625524239, 4514.6905230144, 159.9574417034, -17.811756874" controlStep="1" name="Test" />
   <policy type="Feedback" params="9.0979197904, -5304.8883319383, 1561.1078189044, 577.8000486664, 1158.9322029577" controlStep="1" name="Test2" />
   <policy type="Feedback" params="432.4830684300, -1684.8967715534, -9.0430746819, 358.7573089886, 18.4310298024" controlStep="1" name="Test3" />
+
+  <policy type="Feedback" params="-148.8532865091, -3048.2743206449, -2.3785509181, 400.8524746157, -20.0377285067" controlStep="1" name="Iter0" />
+  <policy type="Feedback" params="-1728.4245003407, 1.0998695769, 1919.7211323603, 1.6319853930, 1114.4310286060" controlStep="1" name="Iter1" />
+  <policy type="Feedback" params="-2160.0408282146, -1.9028356961, 1643.7862750996, 1.0400313997, 705.0889720947" controlStep="1" name="Iter2" />
+
 
   <!-- <policy type="Feedback" params="9629.6296296296, 0.0000000000, -4444.4444444444, 0.0000000000, -370.3703703704" controlStep="1" name="Loop0" select="1"/> -->
   <!-- <policy type="Feedback" params="-8888.8888888889, -17777.7777777778, 6666.6666666667, 2222.2222222222, -3333.3333333333" controlStep="1" name="Loop1" /> -->

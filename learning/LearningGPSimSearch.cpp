@@ -492,6 +492,9 @@ double tst_obj(int n, const double *x, int *undefined_flag, void *data)
 
 double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     LOG(INFO) << FUNCTION_NAME();
+    shark::Rng::seed( (unsigned int) time (NULL) );
+    srand( (unsigned int) time (NULL) );
+
     const int n = policy->numDimParams();;
     double x[20], l[20], u[20];
 
@@ -679,10 +682,10 @@ void worker(LearningGPSimSearchImp* imp) {
         // Export some intermediate data 
         exportIntermediateResult(imp, loop);
 
-        // if (v < imp->goodValue) {
-        //     LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
-        //     break;
-        // }
+        if (v < imp->goodValue) {
+            LOG(INFO) << "termintate. " << v << " is less than threshold " << imp->goodValue;
+            break;
+        }
         if (loop + 1 == imp->maxOuterLoop) {
             LOG(INFO) << "termintate. " << v << " because reach the last iteration";
             break;

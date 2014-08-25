@@ -228,9 +228,9 @@ SimBox2DImp::SimBox2DImp() {
     bodies.push_back(l2);
     bodies.push_back(r2);
 
-    // for (int i = 0; i < bodies.size(); i++) {
-    //     LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
-    // }
+    for (int i = 0; i < bodies.size(); i++) {
+        LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
+    }
 }
 
 SimBox2DImp::~SimBox2DImp() {
