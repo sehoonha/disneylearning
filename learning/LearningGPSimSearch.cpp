@@ -271,13 +271,15 @@ struct GPPolicyEvaluation : public shark::SingleObjectiveFunction {
     }
 
     void proposeStartingPoint(SearchPointType &x) const {
+
         Eigen::VectorXd p = policy()->params();
         x.resize(numberOfVariables());
         for (unsigned int i = 0; i < x.size(); i++) {
             x(i) = p(i);
-            // x(i) = shark::Rng::uni(MIN_PARAM, MAX_PARAM);
         }
     }
+
+    int evalCount() { return m_evaluationCounter; }
 
     double eval(const SearchPointType &p) const {
         m_evaluationCounter++;
@@ -316,11 +318,12 @@ private:
 double LearningGPSimSearchImp::optimizePolicyInSim1(int outerLoop) {
     evalCnt1 = 0;
     if (this->algorithm == "cma") {
-        this->optimizePolicyInSim1CMA(outerLoop);
+        return this->optimizePolicyInSim1CMA(outerLoop);
     } else if (this->algorithm == "direct") {
-        this->optimizePolicyInSim1Direct(outerLoop);
+        return this->optimizePolicyInSim1Direct(outerLoop);
     } else {
         LOG(FATAL) << "Invalid algorithm : {" << this->algorithm << "}";
+        return -1;
     }
 }
 
@@ -346,6 +349,20 @@ double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
             starting(i) = policyParams(i);
         }
     }
+    bool startFromRandom = utils::Option::read("simulation.eval.cma.startFromRandom").toBool();
+    LOG(INFO) << "startFromRandom = " << startFromRandom;
+    if (startFromRandom) {
+        Eigen::VectorXd range = utils::Option::read("simulation.eval.cma.startRandomRange").toVectorXd();
+        LOG(INFO) << "startRandomRange = " << utils::V2S(range, 4);
+
+        Eigen::VectorXd policyParams = policy->params();
+        for (int i = 0; i < policyParams.size(); i++) {
+            starting(i) = shark::Rng::uni(-1, 1) * range(i);
+            LOG(INFO) << "Dim " << i << " x(" << i << ") = " << starting(i);
+        }
+    }
+
+    
     int lambda = utils::Option::read("simulation.eval.cma.lambda").toInt();
     int mu = utils::Option::read("simulation.eval.cma.mu").toInt();
     double initialStep = utils::Option::read("simulation.eval.cma.initialStep").toDouble();
@@ -420,12 +437,18 @@ double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
 
         loopCount++;
 
+        if (prob.evalCount() > this->maxInnerLoop) {
+            LOG(INFO) << "Exit the inner loop because it evaluates more than I expected: " << prob.evalCount() << " (max = " << this->maxInnerLoop << ")";
+            break;
+        }
+
         while (flagPause ) {
             boost::this_thread::sleep(boost::posix_time::milliseconds(100));
             LOG_EVERY_N(INFO, 100)<< "sleeping... ";
         };
 
-    } while(cma.solution().value > this->goodValue && loopCount < this->maxInnerLoop);
+    // } while(cma.solution().value > this->goodValue && loopCount < this->maxInnerLoop);
+    } while(cma.solution().value > this->goodValue);
     
 
     LOG(INFO) << endl << endl;
@@ -437,12 +460,12 @@ double LearningGPSimSearchImp::optimizePolicyInSim1CMA(int outerLoop) {
 
 
     if (bestValue > this->goodValue) {
-        LOG(INFO) << "==== Unsatisfactory optimization:: do it once more!!!! ==== ";
+        LOG(INFO) << "==== Unsatisfactory inner loop optimization:: do it once more!!!! ==== ";
         return this->optimizePolicyInSim1(outerLoop);
     }
     
     LOG(INFO) << FUNCTION_NAME() << " OK";
-
+    return bestValue;
     
 }
 
@@ -510,8 +533,8 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     // u[3] = 1000.0;
     // u[4] = 1000.0;
     for (int i = 0; i < n; i++) {
-        u[i] = upper(i) * utils::random_uniform(1.0, 1.2);
-        l[i] = -upper(i) * utils::random_uniform(1.0, 1.2);
+        u[i] = upper(i) * utils::random_uniform(0.9, 1.4);
+        l[i] = -upper(i) * utils::random_uniform(0.9, 1.4);
         // x[i] = 0.5 * utils::random_uniform(l[i], u[i]);
         x[i] = 0.0;
         LOG(INFO) << i << " : " << l[i] << " < " << x[i] << " < " << u[i];
@@ -523,6 +546,8 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     nlopt_set_upper_bounds(opt, u);
     nlopt_set_maxeval(opt, this->maxInnerLoop);
     nlopt_set_stopval(opt, this->goodValue);
+    nlopt_set_xtol_abs1(opt, 0.5);
+
     
     double minf = 10e8;
     g_cnt_tst_obj = 0;
@@ -532,11 +557,15 @@ double LearningGPSimSearchImp::optimizePolicyInSim1Direct(int outerLoop) {
     if (info < 0) {
         LOG(ERROR) << "nlopt failed!";
     }
-    else {
-        Eigen::Map<Eigen::VectorXd> sol(x, n);
-        Eigen::VectorXd solp = expandLogParams(sol);
-        LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(solp);
-        LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
+
+    Eigen::Map<Eigen::VectorXd> sol(x, n);
+    Eigen::VectorXd solp = expandLogParams(sol);
+    LOG(INFO) << "minf = " << minf << " <- " << utils::V2S(solp);
+    LOG(INFO) << "# evaluations = " << g_cnt_tst_obj;
+
+    if (minf > this->goodValue) {
+        LOG(INFO) << "==== Unsatisfactory DIRECT inner loop optimization:: do it once more!!!! ==== ";
+        return this->optimizePolicyInSim1(outerLoop);
     }
 
 
@@ -724,6 +753,7 @@ void worker_innerloopsim0(LearningGPSimSearchImp* imp) {
     nlopt_set_upper_bounds(opt, u);
     nlopt_set_maxeval(opt, 2000);
     nlopt_set_stopval(opt, 120.0);
+    // nlopt_set_set_xtl_abs(opt, 0.5);
     
     g_min_tst_obj = 10e8;
     
