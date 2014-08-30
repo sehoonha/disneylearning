@@ -40,9 +40,15 @@ void Manager::init() {
             double noiseSensorHi = 1.0;
             if (o.hasAttr("noiseSensorLo")) { noiseSensorLo = o.attrDouble("noiseSensorLo"); }
             if (o.hasAttr("noiseSensorHi")) { noiseSensorHi = o.attrDouble("noiseSensorHi"); }
-
+            Eigen::VectorXd massAdjust = Eigen::VectorXd::Ones(6);
+            if (o.hasAttr("massAdjust")) {
+                std::vector<double> v = o.attrVectorDouble("massAdjust");
+                CHECK_EQ( (int)v.size(), (int)massAdjust.size());
+                for (int i = 0; i < v.size(); i++) massAdjust(i) = v[i];
+            }
 
             SimBox2D* s = new SimBox2D();
+            s->setMassAdjust(massAdjust);
             s->init();
             s->setNoiseTorqueLo(noiseTorqueLo);
             s->setNoiseTorqueHi(noiseTorqueHi);
@@ -51,6 +57,7 @@ void Manager::init() {
             LOG(INFO) << "SimBox2D.noise = "
                       << noiseTorqueLo << " " << noiseTorqueHi << " "
                       << noiseSensorLo << " " << noiseSensorHi;
+            LOG(INFO) << "SimBox2D.massAdjust = " << s->massAdjust().transpose();
             add( s, isReserved );
         } else if (type == SIMTYPE_MATHCALBONGO) {
             add( (new SimMathcalBongo())->init(), isReserved );

@@ -40,7 +40,7 @@ struct SimBox2DImp {
     b2Body* r2;
     std::vector<b2Body*> bodies;
     
-    SimBox2DImp();
+    SimBox2DImp(const Eigen::VectorXd& massAdjust);
     ~SimBox2DImp();
 
     void drawBody(b2Body* body);
@@ -50,7 +50,8 @@ struct SimBox2DImp {
     void drawContact(const Eigen::Vector2d& c);
 };
 
-SimBox2DImp::SimBox2DImp() {
+SimBox2DImp::SimBox2DImp(const Eigen::VectorXd& massAdjust) {
+    LOG(INFO) << "SimBox2DImp: " << utils::V2S(massAdjust, 4);
     const double SKIN = 0.001; // Default is 0.01;
     const double MU   = 1.0;
     const double WIDTH  = 0.005;
@@ -91,7 +92,7 @@ SimBox2DImp::SimBox2DImp() {
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
         // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 200.0f;
+        fixtureDef.density = massAdjust(0) * 200.0f;
         // Override the default friction.
         fixtureDef.friction = MU;
         // Add the shape to the body.
@@ -116,7 +117,7 @@ SimBox2DImp::SimBox2DImp() {
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
         // Set the box density to be non-zero, so it will be dynamic.
-        fixtureDef.density = 2.0 / (4.0 * 0.3 * 0.005);
+        fixtureDef.density = massAdjust(1) * 2.0 / (4.0 * 0.3 * 0.005);
         // Override the default friction.
         fixtureDef.friction = MU;
         // Add the shape to the body.
@@ -153,17 +154,18 @@ SimBox2DImp::SimBox2DImp() {
         double mass;
         switch(i) {
         case 0: 
-            sx = WIDTH; sy = height; mass = 10.0; break;
+            sx = WIDTH; sy = height; mass = 15.0; break;
         case 1:
-            sx = WIDTH; sy = height; mass = 10.0; break;
+            sx = WIDTH; sy = height; mass = 15.0; break;
             // shape.SetAsBox(width, height); break;
         case 2:
-            sx = WIDTH; sy = 0.05; mass = 20.0; break;
+            sx = WIDTH; sy = 0.05; mass = 15.0; break;
         case 3: 
             // shape.SetAsBox(0.05, width); break;
             // shape.SetAsBox(width, 0.05); break;
-            sx = WIDTH; sy = 0.05; mass = 20.0; break;
+            sx = WIDTH; sy = 0.05; mass = 15.0; break;
         }
+        mass *= massAdjust(i + 2);
         shape.SetAsBox(sx, sy);
         shape.m_radius = SKIN; 
         // Define the dynamic body fixture.
@@ -230,7 +232,7 @@ SimBox2DImp::SimBox2DImp() {
     bodies.push_back(r2);
 
     for (int i = 0; i < bodies.size(); i++) {
-        LOG(INFO) << i << " : " << bodies[i]->GetMass() << " " << bodies[i]->GetInertia();
+        LOG(INFO) << i << " : m = " << bodies[i]->GetMass() << " I = " << bodies[i]->GetInertia();
     }
 }
 
@@ -353,7 +355,7 @@ SimBox2D::~SimBox2D() {
 }
 
 Simulator* SimBox2D::init() {
-    imp = new SimBox2DImp;
+    imp = new SimBox2DImp(massAdjust());
 
     int n = 6;
     int m = 2 * n;

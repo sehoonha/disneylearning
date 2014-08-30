@@ -1,6 +1,6 @@
 <simulation>
   <noise />
-  <sim type="SimBox2D" />
+  <sim type="SimBox2D" massAdjust="1.0 1.0 0.66 0.66 1.33 1.33" />
   <!-- <sim type="SimMathcalBongo" /> -->
   <!-- <sim type="SimBox2D" noiseTorqueLo="1.0" noiseTorqueHi="1.0" noiseSensorLo="0.99" noiseSensorHi="1.01" /> -->
   <sim type="SimGaussianProcess"/>

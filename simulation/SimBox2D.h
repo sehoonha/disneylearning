@@ -52,13 +52,15 @@ public:
     double noiseSensorHi() const { return mNoiseSensorHi; }
     void setNoiseSensorLo(double _n) { mNoiseSensorLo = _n; }
     void setNoiseSensorHi(double _n) { mNoiseSensorHi = _n; }
+    Eigen::VectorXd massAdjust() const { return mMassAdjust; }
+    void setMassAdjust(const Eigen::VectorXd& _a) { mMassAdjust = _a; }
 protected:
     SimBox2DImp* imp;
     double mNoiseTorqueLo;
     double mNoiseTorqueHi;
     double mNoiseSensorLo;
     double mNoiseSensorHi;
-
+    Eigen::VectorXd mMassAdjust;
 }; // class SimBox2D
 
 } // namespace simulation
